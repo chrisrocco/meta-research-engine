@@ -1,5 +1,4 @@
 <?php
-
 // DIC configuration
 $container = $app->getContainer();
 
@@ -25,4 +24,9 @@ $container ['DB'] = function ($c) {
 // JWT Helper
 $container['JWT'] = function ($c){
 	return new \Firebase\JWT\JWT;
+};
+
+// ArangoDB connection
+$container["arangodb_connection"] = function($c){
+    return new ArangoDBClient\Connection($c ['settings'] ['arango_connection_options']);
 };

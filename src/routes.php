@@ -1,4 +1,19 @@
 <?php
+// set up some aliases for less typing later
+use ArangoDBClient\Collection as ArangoCollection;
+use ArangoDBClient\CollectionHandler as ArangoCollectionHandler;
+use ArangoDBClient\Connection as ArangoConnection;
+use ArangoDBClient\ConnectionOptions as ArangoConnectionOptions;
+use ArangoDBClient\DocumentHandler as ArangoDocumentHandler;
+use ArangoDBClient\Document as ArangoDocument;
+use ArangoDBClient\Exception as ArangoException;
+use ArangoDBClient\Export as ArangoExport;
+use ArangoDBClient\ConnectException as ArangoConnectException;
+use ArangoDBClient\ClientException as ArangoClientException;
+use ArangoDBClient\ServerException as ArangoServerException;
+use ArangoDBClient\Statement as ArangoStatement;
+use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
+
 // Routes
 
 // This is a control test route to make sure the server is running properly
@@ -12,6 +27,18 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
+$app->get('/test/arangodb', function ($request, $response, $args) {
+    $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
+    $user = new ArangoDocument();
+    $user->set("email", rand(0,100)."@gmail.com");
+    $user->set("age", rand(0,90));
+    $user->scopes = ["admin", "manager", "user"];
+    $userID = $documentHandler->save('created_with_php', $user);
+    $result = $documentHandler->has("created_with_php", $userID);
+    echo var_dump($result);
+    $response->getBody()->write($result);
+    return;
+});
 
 /**
  * POST loginPost
