@@ -42,7 +42,7 @@ $app->POST('/login', function ($request, $response, $args) {
     // Building the JWT
     $tokenId    = base64_encode(mcrypt_create_iv(32));
     $issuedAt   = time();
-    $expire     = $issuedAt + 60*30;            // Adding 60 seconds
+    $expire     = $issuedAt + 60*30;
     $data = [
         'iat'  => $issuedAt,         // Issued at: time when the token was generated
         'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
@@ -53,7 +53,7 @@ $app->POST('/login', function ($request, $response, $args) {
             'userEmail' => $account["name"], // User name
         ]
     ];
-    $token = JWT::encode($data, getenv("JWT_SECRET"));
+    $token = $this->JWT->encode($data, $this->get("settings")['JWT_secret']);
     // Building the response object
     $ResponseToken = [
         "status" => "OK",

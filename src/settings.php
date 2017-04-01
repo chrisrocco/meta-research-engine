@@ -11,6 +11,9 @@ return [
             'level' => \Monolog\Logger::DEBUG,
         ],
 		
+		// JWT secret
+		'JWT_secret' => 'testing',
+		
 		// Database settings
     	'DB' => [
     		'host' => 'localhost',

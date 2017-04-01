@@ -1,6 +1,6 @@
 <?php
-// DIC configuration
 
+// DIC configuration
 $container = $app->getContainer();
 
 // monolog
@@ -20,4 +20,9 @@ $container ['DB'] = function ($c) {
 	$dbName = $c ['settings'] ['DB'] ['dbname'];
 	$DB = new MeekroDB($host, $user, $pass, $dbName);
 	return $DB;
+};
+
+// JWT Helper
+$container['JWT'] = function ($c){
+	return new \Firebase\JWT\JWT;
 };
