@@ -1,3 +1,6 @@
-/vendor/
+/vendor/*
+
+!/vendor/arangodb-php
 /logs/*
+
 !/logs/README.md

@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/arangodb-php/autoload.php'; // Because the composer install is broken
 
 // Instantiate the app
 $settings = require __DIR__ . '/../src/settings.php';
