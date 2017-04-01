@@ -23,20 +23,7 @@ $app->get('/hello/{name}', function ($request, $response, $args) {
 
 // This route is authenticated using middleware
 $app->get('/secure', function ($request, $response, $args) {
-    echo var_dump($this->DB->query("SELECT * FROM users"));
-    return;
-});
-
-$app->get('/test/arangodb', function ($request, $response, $args) {
-    $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
-    $user = new ArangoDocument();
-    $user->set("email", rand(0,100)."@gmail.com");
-    $user->set("age", rand(0,90));
-    $user->scopes = ["admin", "manager", "user"];
-    $userID = $documentHandler->save('created_with_php', $user);
-    $result = $documentHandler->has("created_with_php", $userID);
-    echo var_dump($result);
-    $response->getBody()->write($result);
+    echo "You are authorized";
     return;
 });
 
@@ -183,7 +170,6 @@ $app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
     return $response;
 });
 
-
 /**
  * POST teacherIDClassesPost
  * Summary: Creates a class under a teaher
@@ -207,8 +193,6 @@ $app->POST('/teacher/{ID}/classes', function($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->POST('/users/login', function($request, $response, $args) {
-
-
     $email = $args['email'];    $password = $args['password'];
 
     $response->write('How about implementing usersLoginPost as a POST method ?');
