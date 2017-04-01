@@ -28,5 +28,5 @@ $container['JWT'] = function ($c){
 
 // ArangoDB connection
 $container["arangodb_connection"] = function($c){
-    return new ArangoDBClient\Connection($c ['settings'] ['arango_connection_options']);
+    return new ArangoDBClient\Connection($c ['settings'] ['arangodb_connection_options']);
 };

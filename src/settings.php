@@ -22,7 +22,7 @@ return [
             'dbname' => 'bigdata2'
         ],
 
-        "arango_connection_options" => [
+        "arangodb_connection_options" => [
             // database name
             ArangoDBClient\ConnectionOptions::OPTION_DATABASE => 'bigdata2',
             // server endpoint to connect to
