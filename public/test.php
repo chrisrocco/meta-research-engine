@@ -47,51 +47,36 @@ $connectionOptions = [
     ArangoConnectionOptions::OPTION_UPDATE_POLICY => ArangoUpdatePolicy::LAST,
 ];
 
-
 // turn on exception logging (logs to whatever PHP is configured)
 ArangoException::enableLogging();
 
-
-    $connection = new ArangoConnection($connectionOptions);
-	
+$connection = new ArangoConnection($connectionOptions);	
 $collectionHandler = new ArangoCollectionHandler($connection);
 
     // clean up first
-    if ($collectionHandler->has('created_with_php')) {
-        $collectionHandler->drop('created_with_php');
+    if ($collectionHandler->has('users_phptest')) {
+        $collectionHandler->drop('users_phptest');
     }
 
     // create a new collection
     $userCollection = new ArangoCollection();
-    $userCollection->setName('created_with_php');
+    $userCollection->setName('users_phptest');
     $id = $collectionHandler->create($userCollection);
 
     // print the collection id created by the server
     var_dump($id);
     // check if the collection exists
-    $result = $collectionHandler->has('created_with_php');
+    $result = $collectionHandler->has('users_phptest');
     var_dump($result);
 	
 $handler = new ArangoDocumentHandler($connection);
 
-    // create a new document
-    $user = new ArangoDocument();
-
-    // use set method to set document properties
-    $user->set('name', 'Chris Rocco');
-    $user->set('age', 20);
-    $user->set('thisIsNull', null);
-
-    // use magic methods to set document properties
-    $user->likes = ['fishing', 'hiking', 'swimming'];
-
-    // send the document to the server
-    $id = $handler->save('created_with_php', $user);
-
-    // check if a document exists
-    $result = $handler->has('created_with_php', $id);
-    var_dump($result);
-
-    // print the document id created by the server
-    var_dump($id);
-    var_dump($user->getId());
+	for($i = 0; $i < 100; $i++){
+		$user = new ArangoDocument();
+		$user->set("email", rand(0,100)."@gmail.com");
+		$user->set("age", rand(0,90));
+		$user->scopes = ["admin", "manager", "user"];
+		$userID = $handler->save('users_phptest', $user);
+		$result = $handler->has("users_phptest", $userID);
+		var_dump($result);
+	}
