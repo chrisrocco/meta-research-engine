@@ -14,14 +14,6 @@ return [
         // JWT secret
         'JWT_secret' => 'testing',
 
-        // Database settings
-        'DB' => [
-            'host' => 'localhost',
-            'user' => 'root',
-            'pass' => '',
-            'dbname' => 'bigdata2'
-        ],
-
         "arangodb_connection_options" => [
             // database name
             ArangoDBClient\ConnectionOptions::OPTION_DATABASE => 'bigdata2',
@@ -32,7 +24,7 @@ return [
             // user for basic authorization
             ArangoDBClient\ConnectionOptions::OPTION_AUTH_USER => 'root',
             // password for basic authorization
-            ArangoDBClient\ConnectionOptions::OPTION_AUTH_PASSWD => '',
+            ArangoDBClient\ConnectionOptions::OPTION_AUTH_PASSWD => 'birminghambigdata1',
             // connection persistence on server. can use either 'Close' (one-time connections) or 'Keep-Alive' (re-used connections)
             ArangoDBClient\ConnectionOptions::OPTION_CONNECTION => 'Keep-Alive',
             // connect timeout in seconds
