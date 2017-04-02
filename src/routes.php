@@ -127,11 +127,30 @@ $app->POST('/students/{ID}/assignments', function($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/classes/{ID}/students', function($request, $response, $args) {
+    $classID = $args["ID"];
+    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
 
+    //Make sure the class exists
+    if (!$collectionHandler.has('classes', $classID)) {
+        $res = [
+            'status' => "INVALID",
+            'msg' => "No class with ID ".$classID." exists"
+        ];
+    } //The class exists, proceed
+    else {
+        $statement = new ArangoStatement(
+            $this->arangodb_connection, [
+                'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolledIn RETURN student._key',
+                'bindVars' => [
+                    'studentID' => $classID
+                ],
+                '_flat' => true
+            ]
+        );
+        $res = $statement->execute()->getAll();
+    }
 
-
-
-    $response->write('How about implementing classesIDStudentsGet as a GET method ?');
+    $response->write(json_encode($res,JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -143,11 +162,44 @@ $app->GET('/classes/{ID}/students', function($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->POST('/classes/{ID}/students', function($request, $response, $args) {
+    $classID = $args["ID"];
+    $studentID = $request->getParam("studentID");
+    $collectionHandler = new ArangoCollectionHandler ($this->arangodb_connection);
 
+    //Make sure the class exists
+    if (!$collectionHandler->has('classes', $classID)) {
+        $res = [
+            'status' => "INVALID",
+            'msg' => "No class with ID ".$classID." exists."
+        ];
 
-    $studentID = $args['studentID'];
+    } //Make sure the student exists
+    else if (!$collectionHandler->has('users', $studentID)) {
+        $res = [
+            'status' => "INVALID",
+            'msg' => "No student with ID ".$studentID." exists."
+        ];
 
-    $response->write('How about implementing classesIDStudentsPost as a POST method ?');
+    } //Make sure the student isn't already enrolled
+    else if ($collectionHandler->getByExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
+        $res = [
+            'status' => "DUPLICATE",
+            'msg' => "Student ".$studentID." is already enrolled in class ".$classID
+        ];
+
+    else {
+        $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
+        $edge = new ArangoDocument();
+        $edge->set('_from', $studentID);
+        $edge->set('_to', $classID);
+        $documentHandler->save('enrolledIn', edge);
+        $res = [
+            'status' => "OK",
+            'msg' => "Successfully enrolled student ".$studentID." into class ".$classID
+        ];
+    }
+
+    $response->write (json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -159,11 +211,28 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/student/{ID}/classes', function($request, $response, $args) {
+    $studentID = $args["ID"];
 
+    $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
+    if (!$docHandler->has('users', $studentID)) {
+        $res = [
+            'status' => "ERROR",
+            'msg' => "No student with that ID found"
+        ];
+    } else { //The student exists
+        $statement = new ArangoStatement(
+            $this->arangodb_connection, [
+                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) teaches RETURN class',
+                'bindVars' => [
+                    'studentID' => $studentID
+                ],
+                '_flat' => true
+            ]
+        );
+        $res = $statement->execute()->getAll();
+    }
 
-
-
-    $response->write('How about implementing studentIDClassesGet as a GET method ?');
+    $response->write(json_encode ($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -175,11 +244,28 @@ $app->GET('/student/{ID}/classes', function($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
+    $teacherID = $args["ID"];
 
+    $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
+    if (!$docHandler->has('users', $teacherID)) {
+        $res = [
+            'status' => "ERROR",
+            'msg' => "No student with that ID found"
+        ];
+    } else { //The student exists
+        $statement = new ArangoStatement(
+            $this->arangodb_connection, [
+                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @teacherID) teaches RETURN class',
+                'bindVars' => [
+                    'teacherID' => $teacherID
+                ],
+                '_flat' => true
+            ]
+        );
+        $res = $statement->execute()->getAll();
+    }
 
-
-
-    $response->write('How about implementing teacherIDClassesGet as a GET method ?');
+    $response->write(json_encode ($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -191,11 +277,23 @@ $app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
 
  */
 $app->POST('/teacher/{ID}/classes', function($request, $response, $args) {
+    $teacherID = args["ID"];
+
+    //Make sure teacher exists
+
+    $className = $request->getParsedBody()->name;
+    $documentHandler = new ArangoDocumentHandler();
+
+    $class = new ArangoDocument();
+    $class.set("name", $className);
+    $classID = $documentHandler->save($class, "classes");
+
+    $edge = new ArangoDocument ();
+    $edge->set ("_from", "users/".$teacherID);
+    $edge->set ("_to", "classes/".$classID);
 
 
 
-    $body = $request->getParsedBody();
-    $response->write('How about implementing teacherIDClassesPost as a POST method ?');
     return $response;
 });
 
