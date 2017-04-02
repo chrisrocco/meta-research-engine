@@ -96,10 +96,28 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/students/{ID}/assignments', function ($request, $response, $args) {
-    $response->write('How about implementing studentsIDAssignmentsGet as a GET method ?');
+    $studentID = $args["ID"];
+    // make sure student exists
+    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
+        $res = [
+            'status' => "ERROR",
+            'msg' => "No student with that ID found"
+        ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+    }
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'FOR assignment IN INBOUND CONCAT("users/", @studentID) assignedTo RETURN assignment',
+            'bindVars' => [
+                'studentID' => $studentID
+            ],
+            '_flat' => true
+        ]
+    );
+    $resultSet = $statement->execute()->getAll();
+    $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
     return $response;
 });
-
 
 /**
  * POST studentsIDAssignmentsPost
@@ -167,8 +185,6 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
-
-
     $studentID = $args['studentID'];
 
     $response->write('How about implementing classesIDStudentsPost as a POST method ?');
