@@ -27,7 +27,7 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
-$app->POST("/papers", function($request, $response){
+$app->POST("/papers", function ($request, $response) {
     $formData = $request->getParams();
 
     $paper = new ArangoDocument();
@@ -36,7 +36,7 @@ $app->POST("/papers", function($request, $response){
     $ID = $this->arangodb_documentHandler->save("papers", $paper);
 
     // get the new assignment and return it
-    if($ID){
+    if ($ID) {
         $res = [
             "status" => "OK",
             "assignment" => $this->arangodb_documentHandler->get("assignedTo", $ID)->getAll()
@@ -69,7 +69,7 @@ $app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
     $ID = $args['ID'];
-    if(!$this->arangodb_documentHandler->has("assignedTo", $ID)){
+    if (!$this->arangodb_documentHandler->has("assignedTo", $ID)) {
         echo "No assignment found";
         return;
     }
@@ -84,7 +84,7 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
  */
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     // Make sure assignment exists
-    if(!$this->arangodb_documentHandler->has("assignedTo", $args["ID"])){
+    if (!$this->arangodb_documentHandler->has("assignedTo", $args["ID"])) {
         echo "That assignment does not exist";
         return;
     }
@@ -96,7 +96,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $assignment->set("encoding", $formData['encoding']);
     $result = $this->arangodb_documentHandler->update($assignment);
 
-    if($result){
+    if ($result) {
         $res = [
             "status" => "OK",
             "assignment" => $assignment->getAll(),
@@ -153,27 +153,27 @@ $app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
     $paperID = $request->getParam("pmcID");
 
     // Make sure student exists
-    if(!$this->arangodb_documentHandler->has("users", $studentID)){
+    if (!$this->arangodb_documentHandler->has("users", $studentID)) {
         echo "No student with that ID";
         return;
     }
     // Make sure paper exists
-    if(!$this->arangodb_documentHandler->has("papers", $paperID)){
+    if (!$this->arangodb_documentHandler->has("papers", $paperID)) {
         echo "No paper with that ID";
         return;
     }
 
     // Create the assignment object
     $assignmentEdge = new ArangoDocument();
-    $assignmentEdge->set("_to", "users/".$studentID);
-    $assignmentEdge->set("_from", "papers/".$paperID);
+    $assignmentEdge->set("_to", "users/" . $studentID);
+    $assignmentEdge->set("_from", "papers/" . $paperID);
     $assignmentEdge->set("done", false);
     $assignmentEdge->set("completion", 0);
     $assignmentEdge->set("encoding", null);
     $newAssignmentID = $this->arangodb_documentHandler->save("assignedTo", $assignmentEdge);
 
     // get the new assignment and return it
-    if($newAssignmentID){
+    if ($newAssignmentID) {
         $res = [
             "status" => "OK",
             "assignment" => $this->arangodb_documentHandler->get("assignedTo", $newAssignmentID)->getAll()
@@ -194,15 +194,15 @@ $app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/classes/{ID}/students', function($request, $response, $args) {
+$app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
     $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
 
     //Make sure the class exists
-    if (!$collectionHandler.has('classes', $classID)) {
+    if (!$collectionHandler . has('classes', $classID)) {
         $res = [
             'status' => "INVALID",
-            'msg' => "No class with ID ".$classID." exists"
+            'msg' => "No class with ID " . $classID . " exists"
         ];
     } //The class exists, proceed
     else {
@@ -218,7 +218,7 @@ $app->GET('/classes/{ID}/students', function($request, $response, $args) {
         $res = $statement->execute()->getAll();
     }
 
-    $response->write(json_encode($res,JSON_PRETTY_PRINT));
+    $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -229,7 +229,7 @@ $app->GET('/classes/{ID}/students', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->POST('/classes/{ID}/students', function($request, $response, $args) {
+$app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
     $studentID = $request->getParam("studentID");
     $collectionHandler = new ArangoCollectionHandler ($this->arangodb_connection);
@@ -238,14 +238,14 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
     if (!$collectionHandler->has('classes', $classID)) {
         $res = [
             'status' => "INVALID",
-            'msg' => "No class with ID ".$classID." exists."
+            'msg' => "No class with ID " . $classID . " exists."
         ];
 
     } //Make sure the student exists
     else if (!$collectionHandler->has('users', $studentID)) {
         $res = [
             'status' => "INVALID",
-            'msg' => "No student with ID ".$studentID." exists."
+            'msg' => "No student with ID " . $studentID . " exists."
         ];
 
     } //Make sure the student isn't already enrolled
@@ -262,11 +262,11 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
         $documentHandler->save('enrolledIn', edge);
         $res = [
             'status' => "OK",
-            'msg' => "Successfully enrolled student ".$studentID." into class ".$classID
+            'msg' => "Successfully enrolled student " . $studentID . " into class " . $classID
         ];
     }
 
-    $response->write (json_encode($res, JSON_PRETTY_PRINT));
+    $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -277,7 +277,7 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/student/{ID}/classes', function($request, $response, $args) {
+$app->GET('/student/{ID}/classes', function ($request, $response, $args) {
     $studentID = $args["ID"];
 
     $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
@@ -299,7 +299,7 @@ $app->GET('/student/{ID}/classes', function($request, $response, $args) {
         $res = $statement->execute()->getAll();
     }
 
-    $response->write(json_encode ($res, JSON_PRETTY_PRINT));
+    $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
@@ -310,7 +310,7 @@ $app->GET('/student/{ID}/classes', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
+$app->GET('/teacher/{ID}/classes', function ($request, $response, $args) {
     $teacherID = $args["ID"];
 
     $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
@@ -332,32 +332,58 @@ $app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
         $res = $statement->execute()->getAll();
     }
 
-    $response->write(json_encode ($res, JSON_PRETTY_PRINT));
+    $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
 
 /**
  * POST teacherIDClassesPost
- * Summary: Creates a class under a teaher
+ * Summary: Creates a class under a teacher
  * Notes:
  */
-$app->POST('/teacher/{ID}/classes', function($request, $response, $args) {
-    $teacherID = args["ID"];
+$app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
+    $teacherID = $args["ID"];
+    // make sure teacher exists
+    if (!$this->arangodb_documentHandler->has("users", $teacherID)) {
+        echo "Account does not exist";
+        return;
+    }
+    // make sure they are a teacher
+    $teacher = $this->arangodb_documentHandler->get("users", $teacherID)->getAll();
+    if ($teacher['role'] !== "teacher") {
+        echo "You're not a teacher! Fuck off, " . $teacher['name'];
+        return;
+    }
+    // make sure class name is submitted
+    if($request->getParam("name") === null){
+        echo "Class name can't be null";
+        return;
+    }
 
-    //Make sure teacher exists
-
-    $className = $request->getParsedBody()->name;
-    $documentHandler = new ArangoDocumentHandler();
-
+    // Create the class
+    $className = $request->getParam("name");
     $class = new ArangoDocument();
-    $class.set("name", $className);
-    $classID = $documentHandler->save($class, "classes");
+    $class->set("name", $className);
+    $classID = $this->arangodb_documentHandler->save("classes", $class);
 
-    $edge = new ArangoDocument ();
-    $edge->set ("_from", "users/".$teacherID);
-    $edge->set ("_to", "classes/".$classID);
+    // Link it to the teacher
+    $teachesEdge = new ArangoDocument();
+    $teachesEdge->set("_to", $classID);
+    $teachesEdge->set("_from", "users/".$teacherID);
+    $result = $this->arangodb_documentHandler->save("teaches", $teachesEdge);
 
-    return $response;
+    // Build a response object
+    if ($result) {
+        $res = [
+            "status" => "OK",
+            "teacher" => $this->arangodb_documentHandler->get("users", $teacherID)->getAll(),
+            "class" => $class->getAll()
+        ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+    } else {
+        echo "Something went wrong";
+        return;
+    }
 });
 
 
