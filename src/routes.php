@@ -56,7 +56,6 @@ $app->POST("/papers", function($request, $response){
  * Notes:
  */
 $app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
-
     $response->write('How about implementing assignmentsIDDelete as a DELETE method ?');
     return $response;
 });
@@ -84,9 +83,34 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
  * Notes:
  */
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
+    // Make sure assignment exists
+    if(!$this->arangodb_documentHandler->has("assignedTo", $args["ID"])){
+        echo "That assignment does not exist";
+        return;
+    }
 
-    $response->write('How about implementing assignmentsIDPut as a PUT method ?');
-    return $response;
+    $formData = $request->getParams();
+    $assignment = $this->arangodb_documentHandler->get("assignedTo", $args["ID"]);
+    $assignment->set("done", $formData['done']);
+    $assignment->set("completion", $formData['completion']);
+    $assignment->set("encoding", $formData['encoding']);
+    $result = $this->arangodb_documentHandler->update($assignment);
+
+    if($result){
+        $res = [
+            "status" => "OK",
+            "assignment" => $assignment->getAll(),
+        ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+            ->withStatus(200);
+    } else {
+        $res = [
+            "status" => "ERROR",
+            "msg" => "Could not update assignment",
+        ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+            ->withStatus(401);
+    }
 });
 
 /**
