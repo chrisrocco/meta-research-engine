@@ -252,10 +252,9 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
     else if ($collectionHandler->getByExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
         $res = [
             'status' => "DUPLICATE",
-            'msg' => "Student ".$studentID." is already enrolled in class ".$classID
+            'msg' => "Student " . $studentID . " is already enrolled in class " . $classID
         ];
-
-    else {
+    } else {
         $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
         $edge = new ArangoDocument();
         $edge->set('_from', $studentID);
