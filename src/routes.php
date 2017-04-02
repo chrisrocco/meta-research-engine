@@ -31,11 +31,8 @@ $app->get('/secure', function ($request, $response, $args) {
  * DELETE assignmentsIDDelete
  * Summary: Deletes an assignment
  * Notes:
-
  */
-$app->DELETE('/assignments/{ID}', function($request, $response, $args) {
-
-
+$app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
 
 
     $response->write('How about implementing assignmentsIDDelete as a DELETE method ?');
@@ -49,9 +46,7 @@ $app->DELETE('/assignments/{ID}', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/assignments/{ID}', function($request, $response, $args) {
-
-
+$app->GET('/assignments/{ID}', function ($request, $response, $args) {
 
 
     $response->write('How about implementing assignmentsIDGet as a GET method ?');
@@ -63,10 +58,8 @@ $app->GET('/assignments/{ID}', function($request, $response, $args) {
  * PUT assignmentsIDPut
  * Summary: Updates assignment with a students work
  * Notes:
-
  */
-$app->PUT('/assignments/{ID}', function($request, $response, $args) {
-
+$app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 
 
     $body = $request->getParsedBody();
@@ -81,9 +74,7 @@ $app->PUT('/assignments/{ID}', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/students/{ID}/assignments', function($request, $response, $args) {
-
-
+$app->GET('/students/{ID}/assignments', function ($request, $response, $args) {
 
 
     $response->write('How about implementing studentsIDAssignmentsGet as a GET method ?');
@@ -95,10 +86,8 @@ $app->GET('/students/{ID}/assignments', function($request, $response, $args) {
  * POST studentsIDAssignmentsPost
  * Summary: Creates an assignment to a student
  * Notes:
-
  */
-$app->POST('/students/{ID}/assignments', function($request, $response, $args) {
-
+$app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
 
 
     $body = $request->getParsedBody();
@@ -113,9 +102,7 @@ $app->POST('/students/{ID}/assignments', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/classes/{ID}/students', function($request, $response, $args) {
-
-
+$app->GET('/classes/{ID}/students', function ($request, $response, $args) {
 
 
     $response->write('How about implementing classesIDStudentsGet as a GET method ?');
@@ -129,7 +116,7 @@ $app->GET('/classes/{ID}/students', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->POST('/classes/{ID}/students', function($request, $response, $args) {
+$app->POST('/classes/{ID}/students', function ($request, $response, $args) {
 
 
     $studentID = $args['studentID'];
@@ -145,9 +132,7 @@ $app->POST('/classes/{ID}/students', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/student/{ID}/classes', function($request, $response, $args) {
-
-
+$app->GET('/student/{ID}/classes', function ($request, $response, $args) {
 
 
     $response->write('How about implementing studentIDClassesGet as a GET method ?');
@@ -161,9 +146,7 @@ $app->GET('/student/{ID}/classes', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
-
-
+$app->GET('/teacher/{ID}/classes', function ($request, $response, $args) {
 
 
     $response->write('How about implementing teacherIDClassesGet as a GET method ?');
@@ -174,10 +157,8 @@ $app->GET('/teacher/{ID}/classes', function($request, $response, $args) {
  * POST teacherIDClassesPost
  * Summary: Creates a class under a teaher
  * Notes:
-
  */
-$app->POST('/teacher/{ID}/classes', function($request, $response, $args) {
-
+$app->POST('/teacher/{ID}/classes', function ($request, $response, $args) {
 
 
     $body = $request->getParsedBody();
@@ -192,13 +173,52 @@ $app->POST('/teacher/{ID}/classes', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->POST('/users/login', function($request, $response, $args) {
-    $email = $args['email'];    $password = $args['password'];
+$app->POST('/users/login', function ($request, $response, $args) {
+    $email = $request->getParam("email");
+    $password = $request->getParam("password");
+    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
+    $cursor = $collectionHandler->byExample('users', ['email' => $email, 'password' => $password]);
 
-    $response->write('How about implementing usersLoginPost as a POST method ?');
-    return $response;
+    if ($cursor->getCount() == 0) {
+        $ResponseToken = [
+            "status" => "INVALID",
+            "msg" => "No account with that email and password in the database"
+        ];
+        $response->write(json_encode($ResponseToken, JSON_PRETTY_PRINT));
+        return $response;
+    }
+
+    $user = $cursor->current()->getAll();
+    $userDetails = [
+        "ID" => $user["_key"],
+        "name" => $user['name'],
+        "email" => $user['email'],
+        "roles" => $user['roles']
+    ];
+
+    // Building the JWT
+    $tokenId = base64_encode(mcrypt_create_iv(32));
+    $issuedAt = time();
+    $expire = $issuedAt + 60 * 30;            // Adding 60 seconds
+    $data = [
+        'iat' => $issuedAt,         // Issued at: time when the token was generated
+        'jti' => $tokenId,          // Json Token Id: an unique identifier for the token
+        'iss' => "Big Data",       // Issuer
+        'exp' => $expire,           // Expire
+        'data' => [                  // Data related to the signer user
+            'userId' => $user["_key"], // userid from the users table
+            'userEmail' => $user["name"], // User name
+        ]
+    ];
+    $token = $this->JWT->encode($data, $this->get("settings")['JWT_secret']);
+
+    $ResponseToken = [
+        "status" => "OK",
+        "token" => $token,
+        "user" => $userDetails
+    ];
+    return $response->write(json_encode($ResponseToken, JSON_PRETTY_PRINT));
 });
-
 
 /**
  * POST usersRegisterPost
@@ -206,11 +226,45 @@ $app->POST('/users/login', function($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->POST('/users/register', function($request, $response, $args) {
-
-
-    $name = $args['name'];    $email = $args['email'];    $password = $args['password'];
-
-    $response->write('How about implementing usersRegisterPost as a POST method ?');
-    return $response;
+$app->POST('/users/register', function ($request, $response, $args) {
+    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
+    $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
+    $formData = $request->getParams();
+    // Validate role input
+    if (!in_array($formData['role'], User::roles)) {
+        echo "What are you trying to pull?";
+        return;
+    }
+    // Make sure account with email does not already exist
+    if ($collectionHandler->byExample('users', ['email' => $formData['email']])->getCount() > 0) {
+        $res = [
+            "status" => "EXIST",
+            "msg" => "An account with that email already exists"
+        ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+    }
+    // create a new document
+    $user = new ArangoDocument();
+    // use set method to set document properties
+    $user->set('name', $formData['name']);
+    $user->set('email', $formData['email']);
+    $user->set('password', $formData['password']);
+    $user->set('date_created', date("Y-m-d"));
+    $user->set('role', $formData['role']);
+    // Insert user into the DB
+    $id = $documentHandler->save('users', $user);
+    // check if a document exists
+    $result = $documentHandler->has('users', $id);
+    if ($result == true) {
+        $res = [
+            "status" => "OK",
+            "user" => $documentHandler->get("users", $id)->getAll()
+        ];
+    } else {
+        $res = [
+            "status" => "ERROR",
+            "msg" => "Something went wrong"
+        ];
+    }
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
