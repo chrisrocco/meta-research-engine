@@ -27,13 +27,35 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
+$app->POST("/papers", function($request, $response){
+    $formData = $request->getParams();
+
+    $paper = new ArangoDocument();
+    $paper->set("_key", $formData['pmcID']);
+    $paper->set("title", $formData['title']);
+    $ID = $this->arangodb_documentHandler->save("papers", $paper);
+
+    // get the new assignment and return it
+    if($ID){
+        $res = [
+            "status" => "OK",
+            "assignment" => $this->arangodb_documentHandler->get("assignedTo", $ID)->getAll()
+        ];
+    } else {
+        $res = [
+            "status" => "ERROR",
+            "msg" => "Something went wrong... :("
+        ];
+    }
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+});
+
 /**
  * DELETE assignmentsIDDelete
  * Summary: Deletes an assignment
  * Notes:
  */
 $app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
-
 
     $response->write('How about implementing assignmentsIDDelete as a DELETE method ?');
     return $response;
@@ -47,12 +69,14 @@ $app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
-
-
-    $response->write('How about implementing assignmentsIDGet as a GET method ?');
-    return $response;
+    $ID = $args['ID'];
+    if(!$this->arangodb_documentHandler->has("assignedTo", $ID)){
+        echo "No assignment found";
+        return;
+    }
+    $assignment = $this->arangodb_documentHandler->get("assignedTo", $ID)->getAll();
+    return $response->write(json_encode($assignment, JSON_PRETTY_PRINT));
 });
-
 
 /**
  * PUT assignmentsIDPut
@@ -61,12 +85,9 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
  */
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 
-
-    $body = $request->getParsedBody();
     $response->write('How about implementing assignmentsIDPut as a PUT method ?');
     return $response;
 });
-
 
 /**
  * GET studentsIDAssignmentsGet
@@ -75,8 +96,6 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/students/{ID}/assignments', function ($request, $response, $args) {
-
-
     $response->write('How about implementing studentsIDAssignmentsGet as a GET method ?');
     return $response;
 });
@@ -88,11 +107,42 @@ $app->GET('/students/{ID}/assignments', function ($request, $response, $args) {
  * Notes:
  */
 $app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
+    $studentID = $args['ID'];
+    $paperID = $request->getParam("pmcID");
 
+    // Make sure student exists
+    if(!$this->arangodb_documentHandler->has("users", $studentID)){
+        echo "No student with that ID";
+        return;
+    }
+    // Make sure paper exists
+    if(!$this->arangodb_documentHandler->has("papers", $paperID)){
+        echo "No paper with that ID";
+        return;
+    }
 
-    $body = $request->getParsedBody();
-    $response->write('How about implementing studentsIDAssignmentsPost as a POST method ?');
-    return $response;
+    // Create the assignment object
+    $assignmentEdge = new ArangoDocument();
+    $assignmentEdge->set("_to", "users/".$studentID);
+    $assignmentEdge->set("_from", "papers/".$paperID);
+    $assignmentEdge->set("done", false);
+    $assignmentEdge->set("completion", 0);
+    $assignmentEdge->set("encoding", null);
+    $newAssignmentID = $this->arangodb_documentHandler->save("assignedTo", $assignmentEdge);
+
+    // get the new assignment and return it
+    if($newAssignmentID){
+        $res = [
+            "status" => "OK",
+            "assignment" => $this->arangodb_documentHandler->get("assignedTo", $newAssignmentID)->getAll()
+        ];
+    } else {
+        $res = [
+            "status" => "ERROR",
+            "msg" => "Something went wrong... :("
+        ];
+    }
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
 
 
@@ -133,7 +183,6 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
-
 
     $response->write('How about implementing studentIDClassesGet as a GET method ?');
     return $response;
@@ -184,8 +233,9 @@ $app->POST('/users/login', function ($request, $response, $args) {
             "status" => "INVALID",
             "msg" => "No account with that email and password in the database"
         ];
-        $response->write(json_encode($ResponseToken, JSON_PRETTY_PRINT));
-        return $response;
+        return $response
+            ->write(json_encode($ResponseToken, JSON_PRETTY_PRINT))
+            ->withStatus(401);
     }
 
     $user = $cursor->current()->getAll();

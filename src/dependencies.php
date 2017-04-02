@@ -30,3 +30,9 @@ $container['JWT'] = function ($c){
 $container["arangodb_connection"] = function($c){
     return new ArangoDBClient\Connection($c ['settings'] ['arangodb_connection_options']);
 };
+$container["arangodb_documentHandler"] = function($c){
+    return new ArangoDBClient\DocumentHandler($c ['arangodb_connection']);
+};
+$container["arangodb_collectionHandler"] = function($c){
+    return new ArangoDBClient\CollectionHandler($c ['arangodb_connection']);
+};
