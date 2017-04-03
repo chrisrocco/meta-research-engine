@@ -27,8 +27,9 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
-
+/**
  * Summary: Gets the domain / field structure of the specified research study
+ *
  */
 $app->GET("/study/{studyname}/structure", function ($request, $response, $args) {
    $studyName = $args['studyname'];
