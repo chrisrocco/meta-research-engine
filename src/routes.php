@@ -459,7 +459,6 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
     }
 });
 
-
 /**
  * POST usersLoginPost
  * Summary: Logs in user
@@ -527,10 +526,10 @@ $app->POST('/users/register', function ($request, $response, $args) {
     $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
     $formData = $request->getParams();
     // Validate role input
-    if (!in_array("name", $formData)    ||
-        !in_array("email", $formData)    ||
-        !in_array("password", $formData)    ||
-        !in_array("role", $formData)    ||
+    if (!isset($formData['name'])    ||
+        !isset($formData['email'])    ||
+        !isset($formData['password'])    ||
+        !isset($formData['role'])    ||
         !in_array($formData['role'], User::roles)) {
         echo "Missing or Invalid Param(s)";
         return;
@@ -553,7 +552,7 @@ $app->POST('/users/register', function ($request, $response, $args) {
     $result = $documentHandler->has('users', $id);
     if ($result == true) {
         return $response
-            ->write("Account created successfully")
+            ->write("Account created successfully. ID: " . $id)
             ->withStatus(200);
     } else {
         return $response
