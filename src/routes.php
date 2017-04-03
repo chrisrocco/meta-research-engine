@@ -16,17 +16,89 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 
 // Routes
 
-// This is a control test route to make sure the server is running properly
+/**
+ * TEST
+ * Summary: Control test for cloning to a server
+ */
 $app->get('/hello/{name}', function ($request, $response, $args) {
     $response->getBody()->write($args['name']);
 });
 
-// This route is authenticated using middleware
+/**
+ * SECURE
+ * Summary: This route is secured by PSR-7 middleware
+ */
 $app->get('/secure', function ($request, $response, $args) {
     echo "You are authorized";
     return;
 });
 
+/**
+ * GET study/{studyname}/structure
+ * Summary: Gets the domain / field structure of the specified research study
+ *
+ */
+$app->GET("/study/{studyname}/structure", function ($request, $response, $args) {
+    $studyName = $args['studyname'];
+
+    //Check if the research study exists
+    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+        $response->write("No research study with name " . $studyName . " found.")->withStatus(401);
+        return;
+    }
+
+    //The study exists, return the structure
+    $statement = new ArangoStatement($this->arangodb_connection, [
+        'query' => "FOR domain IN INBOUND CONCAT (\"ResearchStudy/\", @studyName) subDomainOf //For each top-level domain
+   
+                   //assemble the domain's fields
+                    LET fields = (
+                        FOR field IN INBOUND domain fieldOf
+                        RETURN field
+                    )
+                    
+                    //assemble the domain's subdomains
+                    LET subDomains = (
+                        FOR subDomain IN INBOUND domain subDomainOf
+                            //assemble the subDomain's fields
+                            LET subDomainFields = (
+                                FOR subDomainField IN INBOUND subDomain fieldOf
+                                RETURN subDomainField
+                            )
+                            
+                            //Returns what will be a child node in the HTML DOM tree
+                            RETURN MERGE (subDomain, {
+                                \"fields\": subDomainFields,
+                                \"subdomains\": []
+                                }
+                            )
+                    )
+                    
+                    //Sort alphabetically
+                    SORT domain.name
+                    
+                    //Returns what will be a node in the HTML DOM tree with ONE level of its children
+                    RETURN MERGE(domain, {
+                        \"fields\": fields,
+                        \"subdomains\": subDomains
+                    })",
+        'bindVars' => [
+            'studyName' => $studyName
+        ],
+        '_flat' => true
+    ]);
+
+    $res = $statement->execute()->getAll();
+
+
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+
+});
+
+/**
+ * POST papers
+ * Summary: Creates a new paper
+ */
 $app->POST("/papers", function ($request, $response) {
     $formData = $request->getParams();
 
@@ -372,7 +444,7 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
         return;
     }
     // make sure class name is submitted
-    if($request->getParam("name") === null){
+    if ($request->getParam("name") === null) {
         echo "Class name can't be null";
         return;
     }
@@ -386,7 +458,7 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
     // Link it to the teacher
     $teachesEdge = new ArangoDocument();
     $teachesEdge->set("_to", $classID);
-    $teachesEdge->set("_from", "users/".$teacherID);
+    $teachesEdge->set("_from", "users/" . $teacherID);
     $result = $this->arangodb_documentHandler->save("teaches", $teachesEdge);
 
     // Build a response object
@@ -416,6 +488,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
     $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
     $cursor = $collectionHandler->byExample('users', ['email' => $email, 'password' => $password]);
 
+    // Query the user
     if ($cursor->getCount() == 0) {
         $ResponseToken = [
             "status" => "INVALID",
@@ -423,7 +496,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
         ];
         return $response
             ->write(json_encode($ResponseToken, JSON_PRETTY_PRINT))
-            ->withStatus(401);
+            ->withStatus(403);
     }
 
     $user = $cursor->current()->getAll();
@@ -431,7 +504,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
         "ID" => $user["_key"],
         "name" => $user['name'],
         "email" => $user['email'],
-        "roles" => $user['roles']
+        "role" => $user['role']
     ];
 
     // Building the JWT
@@ -451,11 +524,12 @@ $app->POST('/users/login', function ($request, $response, $args) {
     $token = $this->JWT->encode($data, $this->get("settings")['JWT_secret']);
 
     $ResponseToken = [
-        "status" => "OK",
         "token" => $token,
         "user" => $userDetails
     ];
-    return $response->write(json_encode($ResponseToken, JSON_PRETTY_PRINT));
+    return $response
+        ->write(json_encode($ResponseToken, JSON_PRETTY_PRINT))
+        ->withStatus(200);
 });
 
 /**
@@ -469,8 +543,12 @@ $app->POST('/users/register', function ($request, $response, $args) {
     $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
     $formData = $request->getParams();
     // Validate role input
-    if (!in_array($formData['role'], User::roles)) {
-        echo "What are you trying to pull?";
+    if (!in_array("name", $formData)    ||
+        !in_array("email", $formData)    ||
+        !in_array("password", $formData)    ||
+        !in_array("role", $formData)    ||
+        !in_array($formData['role'], User::roles)) {
+        echo "Missing or Invalid Param(s)";
         return;
     }
     // Make sure account with email does not already exist
@@ -483,15 +561,13 @@ $app->POST('/users/register', function ($request, $response, $args) {
     }
     // create a new document
     $user = new ArangoDocument();
-    // use set method to set document properties
     $user->set('name', $formData['name']);
     $user->set('email', $formData['email']);
     $user->set('password', $formData['password']);
     $user->set('date_created', date("Y-m-d"));
     $user->set('role', $formData['role']);
-    // Insert user into the DB
     $id = $documentHandler->save('users', $user);
-    // check if a document exists
+    // check that the user was created
     $result = $documentHandler->has('users', $id);
     if ($result == true) {
         $res = [
@@ -506,3 +582,4 @@ $app->POST('/users/register', function ($request, $response, $args) {
     }
     return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
+
