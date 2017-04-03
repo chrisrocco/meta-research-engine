@@ -16,18 +16,25 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 
 // Routes
 
-// This is a control test route to make sure the server is running properly
+/**
+ * TEST
+ * Summary: Control test for cloning to a server
+ */
 $app->get('/hello/{name}', function ($request, $response, $args) {
     $response->getBody()->write($args['name']);
 });
 
-// This route is authenticated using middleware
+/**
+ * SECURE
+ * Summary: This route is secured by PSR-7 middleware
+ */
 $app->get('/secure', function ($request, $response, $args) {
     echo "You are authorized";
     return;
 });
 
 /**
+ * GET study/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
  *
  */
@@ -88,7 +95,10 @@ $app->GET("/study/{studyname}/structure", function ($request, $response, $args) 
 
 });
 
-
+/**
+ * POST papers
+ * Summary: Creates a new paper
+ */
 $app->POST("/papers", function ($request, $response) {
     $formData = $request->getParams();
 
@@ -533,15 +543,13 @@ $app->POST('/users/register', function ($request, $response, $args) {
     }
     // create a new document
     $user = new ArangoDocument();
-    // use set method to set document properties
     $user->set('name', $formData['name']);
     $user->set('email', $formData['email']);
     $user->set('password', $formData['password']);
     $user->set('date_created', date("Y-m-d"));
     $user->set('role', $formData['role']);
-    // Insert user into the DB
     $id = $documentHandler->save('users', $user);
-    // check if a document exists
+    // check that the user was created
     $result = $documentHandler->has('users', $id);
     if ($result == true) {
         $res = [
@@ -556,3 +564,4 @@ $app->POST('/users/register', function ($request, $response, $args) {
     }
     return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
+
