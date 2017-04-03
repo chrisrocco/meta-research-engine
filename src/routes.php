@@ -32,15 +32,15 @@ $app->get('/secure', function ($request, $response, $args) {
  *
  */
 $app->GET("/study/{studyname}/structure", function ($request, $response, $args) {
-   $studyName = $args['studyname'];
+    $studyName = $args['studyname'];
 
-   //Check if the research study exists
-   if (! $this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
-       $response->write("No research study with name ".$studyName." found.")->withStatus(401);
-       return;
-   }
+    //Check if the research study exists
+    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+        $response->write("No research study with name " . $studyName . " found.")->withStatus(401);
+        return;
+    }
 
-   //The study exists, return the structure
+    //The study exists, return the structure
     $statement = new ArangoStatement($this->arangodb_connection, [
         'query' => "FOR domain IN INBOUND CONCAT (\"ResearchStudy/\", @studyName) subDomainOf //For each top-level domain
    
@@ -81,13 +81,12 @@ $app->GET("/study/{studyname}/structure", function ($request, $response, $args) 
         '_flat' => true
     ]);
 
-   $res = $statement->execute()->getAll();
+    $res = $statement->execute()->getAll();
 
 
-    return $response->write (json_encode ($res, JSON_PRETTY_PRINT));
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 
 });
-
 
 
 $app->POST("/papers", function ($request, $response) {
@@ -418,7 +417,7 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
         return;
     }
     // make sure class name is submitted
-    if($request->getParam("name") === null){
+    if ($request->getParam("name") === null) {
         echo "Class name can't be null";
         return;
     }
@@ -432,7 +431,7 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
     // Link it to the teacher
     $teachesEdge = new ArangoDocument();
     $teachesEdge->set("_to", $classID);
-    $teachesEdge->set("_from", "users/".$teacherID);
+    $teachesEdge->set("_from", "users/" . $teacherID);
     $result = $this->arangodb_documentHandler->save("teaches", $teachesEdge);
 
     // Build a response object
@@ -462,6 +461,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
     $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
     $cursor = $collectionHandler->byExample('users', ['email' => $email, 'password' => $password]);
 
+    // Query the user
     if ($cursor->getCount() == 0) {
         $ResponseToken = [
             "status" => "INVALID",
@@ -477,7 +477,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
         "ID" => $user["_key"],
         "name" => $user['name'],
         "email" => $user['email'],
-        "roles" => $user['roles']
+        "role" => $user['role']
     ];
 
     // Building the JWT
@@ -515,8 +515,12 @@ $app->POST('/users/register', function ($request, $response, $args) {
     $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
     $formData = $request->getParams();
     // Validate role input
-    if (!in_array($formData['role'], User::roles)) {
-        echo "What are you trying to pull?";
+    if (!in_array("name", $formData)    ||
+        !in_array("email", $formData)    ||
+        !in_array("password", $formData)    ||
+        !in_array("role", $formData)    ||
+        !in_array($formData['role'], User::roles)) {
+        echo "Missing or Invalid Param(s)";
         return;
     }
     // Make sure account with email does not already exist
