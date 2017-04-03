@@ -27,6 +27,68 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
+
+ * Summary: Gets the domain / field structure of the specified research study
+ */
+$app->GET("/study/{studyname}/structure", function ($request, $response, $args) {
+   $studyName = $args['studyname'];
+
+   //Check if the research study exists
+   if (! $this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+       $response->write("No research study with name ".$studyName." found.")->withStatus(401);
+       return;
+   }
+
+   //The study exists, return the structure
+    $statement = new ArangoStatement($this->arangodb_connection, [
+        'query' => "FOR domain IN INBOUND CONCAT (\"ResearchStudy/\", @studyName) subDomainOf //For each top-level domain
+   
+                   //assemble the domain's fields
+                    LET fields = (
+                        FOR field IN INBOUND domain fieldOf
+                        RETURN field
+                    )
+                    
+                    //assemble the domain's subdomains
+                    LET subDomains = (
+                        FOR subDomain IN INBOUND domain subDomainOf
+                            //assemble the subDomain's fields
+                            LET subDomainFields = (
+                                FOR subDomainField IN INBOUND subDomain fieldOf
+                                RETURN subDomainField
+                            )
+                            
+                            //Returns what will be a child node in the HTML DOM tree
+                            RETURN MERGE (subDomain, {
+                                \"fields\": subDomainFields,
+                                \"subdomains\": []
+                                }
+                            )
+                    )
+                    
+                    //Sort alphabetically
+                    SORT domain.name
+                    
+                    //Returns what will be a node in the HTML DOM tree with ONE level of its children
+                    RETURN MERGE(domain, {
+                        \"fields\": fields,
+                        \"subdomains\": subDomains
+                    })",
+        'bindVars' => [
+            'studyName' => $studyName
+        ],
+        '_flat' => true
+    ]);
+
+   $res = $statement->execute()->getAll();
+
+
+    return $response->write (json_encode ($res, JSON_PRETTY_PRINT));
+
+});
+
+
+
 $app->POST("/papers", function ($request, $response) {
     $formData = $request->getParams();
 
