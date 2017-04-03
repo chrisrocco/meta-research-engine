@@ -196,7 +196,7 @@ $app->GET('/students/{ID}/assignments', function ($request, $response, $args) {
     }
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR assignment IN INBOUND CONCAT("users/", @studentID) assignedTo RETURN assignment',
+            'query' => 'FOR paper, assignment IN INBOUND CONCAT("users/", @studentID) assignedTo RETURN assignment',
             'bindVars' => [
                 'studentID' => $studentID
             ],
@@ -357,24 +357,23 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
     $studentID = $args["ID"];
     /* Make sure student exists */
     if (!$this->arangodb_documentHandler->has('users', $studentID)) {
-        $response
+        return $response
             ->write("No student with that ID found")
             ->withStatus(400);
-    } else { //The student exists
-        $statement = new ArangoStatement(
-            $this->arangodb_connection, [
-                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn RETURN class',
-                'bindVars' => [
-                    'studentID' => $studentID
-                ],
-                '_flat' => true
-            ]
-        );
-        $res = $statement->execute()->getAll();
     }
-
-    $response->write(json_encode($res, JSON_PRETTY_PRINT));
-    return $response;
+    /* Query the DB */
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn RETURN class',
+            'bindVars' => [
+                'studentID' => $studentID
+            ],
+            '_flat' => true
+        ]
+    );
+    $result_set = $statement->execute()->getAll();
+    return $response
+        ->write(json_encode($result_set, JSON_PRETTY_PRINT));
 });
 
 /**
