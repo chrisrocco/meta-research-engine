@@ -255,7 +255,6 @@ $app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
     return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
 
-
 /**
  * GET classesIDStudentsGet
  * Summary: Returns a list of students in a class
@@ -289,7 +288,6 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
-
 
 /**
  * POST classesIDStudentsPost
@@ -349,7 +347,6 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
 
 });
 
-
 /**
  * GET studentIDClassesGet
  * Summary:
@@ -358,13 +355,11 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
  */
 $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
     $studentID = $args["ID"];
-
-    $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
-    if (!$docHandler->has('users', $studentID)) {
-        $res = [
-            'status' => "ERROR",
-            'msg' => "No student with that ID found"
-        ];
+    /* Make sure student exists */
+    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
+        $response
+            ->write("No student with that ID found")
+            ->withStatus(400);
     } else { //The student exists
         $statement = new ArangoStatement(
             $this->arangodb_connection, [
@@ -381,7 +376,6 @@ $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
     $response->write(json_encode($res, JSON_PRETTY_PRINT));
     return $response;
 });
-
 
 /**
  * GET teacherIDClassesGet
@@ -543,13 +537,11 @@ $app->POST('/users/register', function ($request, $response, $args) {
     }
     // Make sure account with email does not already exist
     if ($collectionHandler->byExample('users', ['email' => $formData['email']])->getCount() > 0) {
-        $res = [
-            "status" => "EXIST",
-            "msg" => "An account with that email already exists"
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+        return $response
+            ->write("An account with that email already exists")
+            ->withStatus(409);
     }
-    // create a new document
+    // Create a new document
     $user = new ArangoDocument();
     $user->set('name', $formData['name']);
     $user->set('email', $formData['email']);
@@ -560,16 +552,12 @@ $app->POST('/users/register', function ($request, $response, $args) {
     // check that the user was created
     $result = $documentHandler->has('users', $id);
     if ($result == true) {
-        $res = [
-            "status" => "OK",
-            "user" => $documentHandler->get("users", $id)->getAll()
-        ];
+        return $response
+            ->write("Account created successfully")
+            ->withStatus(200);
     } else {
-        $res = [
-            "status" => "ERROR",
-            "msg" => "Something went wrong"
-        ];
+        return $response
+            ->write("Could not create account")
+            ->withStatus(500);
     }
-    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
-
