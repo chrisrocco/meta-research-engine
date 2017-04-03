@@ -202,7 +202,7 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
             'query' => 'FOR paper, assignment IN INBOUND CONCAT("users/", @studentID) assignedTo 
-                        RETURN MERGE(assignment, {title: paper.title, pmcID: paper.pmcID})',
+                        RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
             'bindVars' => [
                 'studentID' => $studentID
             ],
