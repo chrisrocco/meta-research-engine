@@ -363,7 +363,7 @@ $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
     } else { //The student exists
         $statement = new ArangoStatement(
             $this->arangodb_connection, [
-                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) teaches RETURN class',
+                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn RETURN class',
                 'bindVars' => [
                     'studentID' => $studentID
                 ],
