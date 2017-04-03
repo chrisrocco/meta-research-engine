@@ -123,16 +123,6 @@ $app->POST("/papers", function ($request, $response) {
 });
 
 /**
- * DELETE assignmentsIDDelete
- * Summary: Deletes an assignment
- * Notes:
- */
-$app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
-    $response->write('How about implementing assignmentsIDDelete as a DELETE method ?');
-    return $response;
-});
-
-/**
  * GET assignmentsIDGet
  * Summary: Returns a single assignment
  * Notes:
