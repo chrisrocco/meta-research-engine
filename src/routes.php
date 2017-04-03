@@ -60,7 +60,6 @@ $app->DELETE('/assignments/{ID}', function ($request, $response, $args) {
     return $response;
 });
 
-
 /**
  * GET assignmentsIDGet
  * Summary: Returns a single assignment
@@ -83,13 +82,24 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
  * Notes:
  */
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
-    // Make sure assignment exists
+    $formData = $request->getParams();
+    /* Validate request */
+    if(
+        !isset($formData['encoding'])   ||
+        !isset($formData['done'])       ||
+        !isset($formData['completion'])
+    ){
+        return $response
+            ->write("Bad Request")
+            ->withStatus(400);
+    }
+    // TODO - validate encoding integrity before insert
+    /* Make sure assignment exists */
     if (!$this->arangodb_documentHandler->has("assignedTo", $args["ID"])) {
         echo "That assignment does not exist";
         return;
     }
-
-    $formData = $request->getParams();
+    /* Update Document */
     $assignment = $this->arangodb_documentHandler->get("assignedTo", $args["ID"]);
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
@@ -97,19 +107,12 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $result = $this->arangodb_documentHandler->update($assignment);
 
     if ($result) {
-        $res = [
-            "status" => "OK",
-            "assignment" => $assignment->getAll(),
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+        return $response
             ->withStatus(200);
     } else {
-        $res = [
-            "status" => "ERROR",
-            "msg" => "Could not update assignment",
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
-            ->withStatus(401);
+        return $response
+            ->write("Could not update assignment")
+            ->withStatus(500);
     }
 });
 
@@ -179,6 +182,9 @@ $app->POST('/students/{ID}/assignments', function ($request, $response, $args) {
             "assignment" => $this->arangodb_documentHandler->get("assignedTo", $newAssignmentID)->getAll()
         ];
     } else {
+        return $response
+            ->write("Something went wrong :(")
+            ->
         $res = [
             "status" => "ERROR",
             "msg" => "Something went wrong... :("
@@ -232,42 +238,53 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
 $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
     $studentID = $request->getParam("studentID");
-    $collectionHandler = new ArangoCollectionHandler ($this->arangodb_connection);
 
     //Make sure the class exists
-    if (!$collectionHandler->has('classes', $classID)) {
+    if (!$this->arangodb_documentHandler->has('classes', $classID)) {
         $res = [
             'status' => "INVALID",
             'msg' => "No class with ID " . $classID . " exists."
         ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+            ->withStatus(401);
+    }
 
-    } //Make sure the student exists
-    else if (!$collectionHandler->has('users', $studentID)) {
+    //Make sure the student exists
+    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
         $res = [
             'status' => "INVALID",
             'msg' => "No student with ID " . $studentID . " exists."
         ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+            ->withStatus(401);
+    }
 
-    } //Make sure the student isn't already enrolled
-    else if ($collectionHandler->getByExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
+    //Make sure the student isn't already enrolled
+    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
         $res = [
             'status' => "DUPLICATE",
             'msg' => "Student " . $studentID . " is already enrolled in class " . $classID
         ];
-    } else {
-        $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
-        $edge = new ArangoDocument();
-        $edge->set('_from', $studentID);
-        $edge->set('_to', $classID);
-        $documentHandler->save('enrolledIn', edge);
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
+            ->withStatus(401);
+    }
+
+    // Create the enrollment
+    $edge = new ArangoDocument();
+    $edge->set('_from', "users/".$studentID);
+    $edge->set('_to', "classes/".$classID);
+    $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
+    if($enrollmentID){
         $res = [
             'status' => "OK",
             'msg' => "Successfully enrolled student " . $studentID . " into class " . $classID
         ];
+        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+    } else {
+        echo "Something went wrong";
+        return;
     }
 
-    $response->write(json_encode($res, JSON_PRETTY_PRINT));
-    return $response;
 });
 
 
