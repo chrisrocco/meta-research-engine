@@ -36,3 +36,6 @@ $container["arangodb_documentHandler"] = function($c){
 $container["arangodb_collectionHandler"] = function($c){
     return new ArangoDBClient\CollectionHandler($c ['arangodb_connection']);
 };
+$container["arngodb_edgeHandler"] = function($c) {
+    return new ArangoDBClient\EdgeHandler ($c ['arangodb_connection']);
+};
