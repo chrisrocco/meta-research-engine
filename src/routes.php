@@ -362,7 +362,12 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
     /* Query the DB */
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn RETURN class',
+            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn
+                            FOR teacher IN INBOUND class._id teaches
+                                LET teachers = (
+                                    RETURN teacher.name
+                                )                                
+                                RETURN MERGE(class, teachers )',
             'bindVars' => [
                 'studentID' => $studentID
             ],
