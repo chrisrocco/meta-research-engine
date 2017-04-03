@@ -479,7 +479,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
         ];
         return $response
             ->write(json_encode($ResponseToken, JSON_PRETTY_PRINT))
-            ->withStatus(401);
+            ->withStatus(403);
     }
 
     $user = $cursor->current()->getAll();
@@ -507,11 +507,12 @@ $app->POST('/users/login', function ($request, $response, $args) {
     $token = $this->JWT->encode($data, $this->get("settings")['JWT_secret']);
 
     $ResponseToken = [
-        "status" => "OK",
         "token" => $token,
         "user" => $userDetails
     ];
-    return $response->write(json_encode($ResponseToken, JSON_PRETTY_PRINT));
+    return $response
+        ->write(json_encode($ResponseToken, JSON_PRETTY_PRINT))
+        ->withStatus(200);
 });
 
 /**
