@@ -38,7 +38,7 @@ $app->get('/secure', function ($request, $response, $args) {
  * Summary: Gets the domain / field structure of the specified research study
  *
  */
-$app->GET("/study/{studyname}/structure", function ($request, $response, $args) {
+$app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
     //Check if the research study exists
@@ -353,7 +353,7 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/student/{ID}/classes', function ($request, $response, $args) {
+$app->GET('/students/{ID}/classes', function ($request, $response, $args) {
     $studentID = $args["ID"];
     /* Make sure student exists */
     if (!$this->arangodb_documentHandler->has('users', $studentID)) {
@@ -363,7 +363,7 @@ $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
     } else { //The student exists
         $statement = new ArangoStatement(
             $this->arangodb_connection, [
-                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) teaches RETURN class',
+                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn RETURN class',
                 'bindVars' => [
                     'studentID' => $studentID
                 ],
@@ -383,7 +383,7 @@ $app->GET('/student/{ID}/classes', function ($request, $response, $args) {
  * Notes:
  * Output-Formats: [application/json]
  */
-$app->GET('/teacher/{ID}/classes', function ($request, $response, $args) {
+$app->GET('/teachers/{ID}/classes', function ($request, $response, $args) {
     $teacherID = $args["ID"];
 
     $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
