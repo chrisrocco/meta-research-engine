@@ -7,7 +7,7 @@ use ArangoDBClient\ConnectionOptions as ArangoConnectionOptions;
 use ArangoDBClient\DocumentHandler as ArangoDocumentHandler;
 use ArangoDBClient\EdgeHandler as ArangoEdgeHandler;
 use ArangoDBClient\Document as ArangoDocument;
-use ArangoDbClient\Edge as ArangoEdge;
+use ArangoDBClient\Edge as ArangoEdge;
 use ArangoDBClient\Exception as ArangoException;
 use ArangoDBClient\Export as ArangoExport;
 use ArangoDBClient\ConnectException as ArangoConnectException;
@@ -342,23 +342,22 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     }
 
     //Make sure the student isn't already enrolled
-    return $response->write($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getAll());
-    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
+    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/".$studentID, '_to' => "classes/".$classID])->getCount() > 0) {
         return $response->write("Student " . $studentID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
 
     // Create the enrollment
-    $edge = new ArangoEdge();
-    $edge->setFrom ("users/".$studentID);
-    $edge->setTo("classes/".$classID);
-    $enrollmentID = $this->arangodb_edgeHandler->save('enrolledIn', $edge);
+    $edge = new ArangoDocument();
+    $edge->set('_from', "users/".$studentID);
+    $edge->set('_to', "classes/".$classID);
+    $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
     if($enrollmentID){
         return $response->write("Successfully enrolled student " . $studentID . " into class " . $classID)
             ->withStatus(200);
     } else {
-        echo "Something went wrong";
-        return;
+        return $response->write("Something went wrong.")
+            ->withStatus(500);
     }
 
 });
