@@ -35,8 +35,8 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
-/**
- * GET study/{studyname}/structure
+/*
+ * GET studies/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
  *
  */
@@ -45,8 +45,8 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 
     //Check if the research study exists
     if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
-        $response->write("No research study with name " . $studyName . " found.")->withStatus(401);
-        return;
+        return $response->write("No research study with name " . $studyName . " found.")
+            ->withStatus(400);
     }
 
     //The study exists, return the structure
@@ -94,6 +94,34 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 
 
     return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+
+});
+
+/**
+ * GET studies/{studyname}/variables
+ * Summary: Gets a list of every field's name
+ */
+$app->GET ("/studies/{studyname}/variables", function ($request, $response, $args) {
+    $studyName = $args['studyname'];
+
+    //Check if the research study exists
+    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+        return $response->write("No research study with name " . $studyName . " found.")
+            ->withStatus(400);
+    }
+
+    //The study exists, run the query
+    $statement = new ArangoStatement($this->arangodb_connection, [
+        'query' => "FOR field IN exFields
+                        SORT field.name
+                        RETURN field.name",
+        '_flat' => true
+    ]);
+
+    $resultSet = $statement->execute()->getAll();
+
+    return $response->write(json_encode($resultSet,JSON_PRETTY_PRINT));
+
 
 });
 
@@ -303,25 +331,18 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
 
     //Make sure the class exists
     if (!$this->arangodb_documentHandler->has('classes', $classID)) {
-        $res = [
-            'status' => "INVALID",
-            'msg' => "No class with ID " . $classID . " exists."
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
-            ->withStatus(401);
+        return $response->write("No class with ID " . $classID . " exists.")
+            ->withStatus(400);
     }
 
     //Make sure the student exists
     if (!$this->arangodb_documentHandler->has('users', $studentID)) {
-        $res = [
-            'status' => "INVALID",
-            'msg' => "No student with ID " . $studentID . " exists."
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT))
-            ->withStatus(401);
+        return $response->write("No student with ID " . $studentID . " exists.")
+            ->withStatus(400);
     }
 
     //Make sure the student isn't already enrolled
+    return $response->write($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getAll());
     if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => $studentID, '_to' => $classID])->getCount() > 0) {
         return $response->write("Student " . $studentID . " is already enrolled in class " . $classID)
             ->withStatus(409);
@@ -329,15 +350,12 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
 
     // Create the enrollment
     $edge = new ArangoEdge();
-    $edge->setFrom ();
-    $edge->set('_to', "classes/".$classID);
-    $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
+    $edge->setFrom ("users/".$studentID);
+    $edge->setTo("classes/".$classID);
+    $enrollmentID = $this->arangodb_edgeHandler->save('enrolledIn', $edge);
     if($enrollmentID){
-        $res = [
-            'status' => "OK",
-            'msg' => "Successfully enrolled student " . $studentID . " into class " . $classID
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+        return $response->write("Successfully enrolled student " . $studentID . " into class " . $classID)
+            ->withStatus(200);
     } else {
         echo "Something went wrong";
         return;
