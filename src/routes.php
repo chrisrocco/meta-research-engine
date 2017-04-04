@@ -35,8 +35,7 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
-/*
- * GET studies/{studyname}/structure
+/* GET studies/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
  *
  */
@@ -293,30 +292,26 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
  */
 $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
-    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
 
     //Make sure the class exists
-    if (!$collectionHandler . has('classes', $classID)) {
-        $res = [
-            'status' => "INVALID",
-            'msg' => "No class with ID " . $classID . " exists"
-        ];
-    } //The class exists, proceed
-    else {
-        $statement = new ArangoStatement(
-            $this->arangodb_connection, [
-                'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolledIn RETURN student._key',
-                'bindVars' => [
-                    'studentID' => $classID
-                ],
-                '_flat' => true
-            ]
-        );
-        $res = $statement->execute()->getAll();
+    if (!$this->arangodb_documentHandler->has('classes', $classID)) {
+        return $response->write("No class with ID ".$classID." exists.")
+            ->withStatus(400);
     }
 
-    $response->write(json_encode($res, JSON_PRETTY_PRINT));
-    return $response;
+    //The class exists, proceed
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolledIn RETURN student._key',
+            'bindVars' => [
+                'classID' => $classID
+            ],
+            '_flat' => true
+        ]
+    );
+    $resultSet = $statement->execute()->getAll();
+
+    return $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
 });
 
 /**
