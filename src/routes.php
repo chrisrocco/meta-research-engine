@@ -526,7 +526,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
     ];
 
     // Building the JWT
-    $tokenId = base64_encode(mcrypt_create_iv(32));
+    $tokenId = base64_encode(random_bytes(64));
     $issuedAt = time();
     $expire = $issuedAt + 60 * 30;            // Adding 60 seconds
     $data = [
