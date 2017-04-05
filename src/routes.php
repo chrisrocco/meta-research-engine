@@ -124,32 +124,53 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
 
 });
 
-/**
- * POST papers
- * Summary: Creates a new paper
+/** POST studies/{studyname}/papers
+ *  Add a new paper to the database
  */
-$app->POST("/papers", function ($request, $response) {
+$app->POST ("/studies/{studyname}/papers", function ($request, $response, $args) {
+    $studyName = $args['studyname'];
     $formData = $request->getParams();
 
+    //Check to make sure that the research study exists
+    if (!$this->arangodb_documentHandler->has("ResearchStudy", $studyName)) {
+        return $response->write("No research study with name ".$studyName." found")
+            ->withStatus(400);
+    }
+
+    //check if we have all form data
+    if (!isset($formData['pmcID']) || !isset($formData['title'])) {
+        return $response->write("Please include 'pmcID' and 'title' parameters in the post request")
+            ->withStatus(400);
+    }
+
+    if ($this->arangodb_documentHandler->has("papers", $formData['pmcID'])) {
+        return $response->write("A paper with pmcID ".$formData['pmcID']." already exists")
+            ->withStatus(409);
+    }
+
+    //Create the paper document
     $paper = new ArangoDocument();
     $paper->set("_key", $formData['pmcID']);
     $paper->set("title", $formData['title']);
-    $ID = $this->arangodb_documentHandler->save("papers", $paper);
+    $paperID = $this->arangodb_documentHandler->save("papers", $paper);
 
-    // get the new assignment and return it
-    if ($ID) {
-        $res = [
-            "status" => "OK",
-            "assignment" => $this->arangodb_documentHandler->get("assignedTo", $ID)->getAll()
-        ];
-    } else {
-        $res = [
-            "status" => "ERROR",
-            "msg" => "Something went wrong... :("
-        ];
+    if (!$paperID) {
+        return $response->write("Something went wrong when saving the paper")
+            ->withStatus(500);
     }
-    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
-});
+
+    //Create the edge from the new paper to the research study
+    $edge = new ArangoDocument();
+    $edge->set ("_from", "papers/".$formData['pmcID']);
+    $edge->set ("_to", "ResearchStudy/".$studyName);
+    $edgeID = $this->arangodb_documentHandler->save("paperOf", $edge);
+
+    if (!$edgeID) {
+        return $response->write("Something went wrong when assigning the paper to the research study");
+    }
+
+    return $response->write("Successfully added paper ".$formData['pmcID']." to research study ".$studyName);
+} );
 
 /**
  * GET assignmentsIDGet
