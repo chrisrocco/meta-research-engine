@@ -217,6 +217,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     /* Update Document */
 
     $encoding = json_decode($formData['encoding'], true);
+
     $assignment = ArangoDocument::createFromArray([
         "done" => $formData['done'],
         "completion" => $formData['completion'],
@@ -226,6 +227,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 //    $assignment->set("done", $formData['done']);
 //    $assignment->set("completion", $formData['completion']);
 //    $assignment->encoding = $encoding;
+
     $result = $this->arangodb_documentHandler->update($assignment);
 
     if ($result) {
