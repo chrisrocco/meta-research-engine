@@ -215,18 +215,17 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         return;
     }
     /* Update Document */
-    $encoding_php_arr = json_decode($formData['encoding'], true);
-    $assignment = [
-        "done" => false,
-        "completion" => 0,
-        "encoding" => $encoding_php_arr
-    ];
-    $assignmentJSON = json_encode($assignment);
+//    $encoding_php_arr = json_decode($formData['encoding'], true);
+//    $assignment = [
+//        "done" => false,
+//        "completion" => 0,
+//        "encoding" => $encoding_php_arr
+//    ];
+//    $assignmentJSON = json_encode($assignment);
 
     $AQL = "INSERT @assignment INTO assignments RETURN NEW";
     $statement = new ArangoStatement($this->arangodb_connection, [
         "query" => $AQL,
-        "sanitize" => true,
         "bindVars" => [
             "assignment" => $formData['encoding']
         ]
