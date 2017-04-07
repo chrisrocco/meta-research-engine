@@ -397,7 +397,7 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     }
 
     //Make sure the student isn't already enrolled
-    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/" . $userID, '_to' => "classes/" . $classID])->getCount() > 0) {
+    if ($this->arangodb_collectionHandler->byExample('enrolled_in', ['_from' => "users/" . $userID, '_to' => "classes/" . $classID])->getCount() > 0) {
         return $response->write("Student " . $userID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
@@ -406,7 +406,7 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $edge = new ArangoDocument();
     $edge->set('_from', "users/" . $userID);
     $edge->set('_to', "classes/" . $classID);
-    $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
+    $enrollmentID = $this->arangodb_documentHandler->save('enrolled_in', $edge);
     if ($enrollmentID) {
         return $response->write("Successfully enrolled student " . $userID . " into class " . $classID)
             ->withStatus(200);
