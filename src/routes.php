@@ -270,44 +270,44 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
 $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $studentID = $args['ID'];
     $pmcID = $request->getParam("pmcID");
-    $paper_record_ID = $this->arangodb_documentHandler->firstExample("papers", [
-        pmcID => $pmcID
-    ]).getAll()["_id"];
-
-    echo $paper_record_ID;
 
     // Make sure student exists
     if (!$this->arangodb_documentHandler->has("users", $studentID)) {
-        echo "No user with that ID";
-        return;
+        return $response
+            ->write("No user with that ID")
+            ->withStatus(400);
     }
     // Make sure paper exists
-    if (!$this->arangodb_documentHandler->has("papers", $paperID)) {
-        echo "No paper with that ID";
-        return;
+    if (!$this->arangodb_documentHandler->has("papers", $pmcID)) {
+        return $response
+            ->write("No paper with that ID")
+            ->withStatus(400);
     }
 
     // Create the assignment
-    $assignmentObject = new ArangoDocument();
-    $assignmentObject->set("done", false);
-    $assignmentObject->set("completion", 0);
-    $assignmentObject->set("encoding", null);
+    $assignmentObject = ArangoDocument::createFromArray([
+        "done" => false,
+        "completion" => 0,
+        "encoding" => null
+    ]);
     $assignment_key = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
 
     // Create the assignment_of edge
-    $assignment_of = new ArangoDocument();
-    $assignment_of->set("_to", $newAssignmentID);
-    $assignment_of->set("_from", "assignments/" . $assignment_key);
+    $assignment_of = ArangoDocument::createFromArray([
+        "_to" => "papers/" . $pmcID,
+        "_from" => "assignments/" . $assignment_key
+    ]);
     $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
 
     // Create the assigned_to edge
-    $assigned_to = new ArangoDocument();
-    $assigned_to->set("_to", "users/" . $studentID);
-    $assigned_to->set("_from", "papers/" . $paperID);
+    $assigned_to = ArangoDocument::createFromArray([
+        "_to" => "users/" . $studentID,
+        "_from" => "assignments/" . $assignment_key
+    ]);
     $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
 
     // get the new assignment and return it
-    if ($assigned_to_result && $objResult && $assignment_of_result ) {
+    if ($assignment_key && $assignment_of_result && $assigned_to_result ) {
         return $response
             ->write("Assignment created successfully");
     } else {
@@ -315,7 +315,6 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             ->write("Something went wrong :(")
             ->withStatus(500);
     }
-    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
 
 /**
