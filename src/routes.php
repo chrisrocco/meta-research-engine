@@ -210,12 +210,12 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     // TODO - validate encoding integrity before insert
     /* Make sure assignment exists */
-    if (!$this->arangodb_documentHandler->has("assigned_to", $args["ID"])) {
+    if (!$this->arangodb_documentHandler->has("assignments", $args["ID"])) {
         echo "That assignment does not exist";
         return;
     }
     /* Update Document */
-    $assignment = $this->arangodb_documentHandler->get("assigned_to", $args["ID"]);
+    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
     $assignment->set("encoding", $formData['encoding']);
@@ -223,6 +223,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 
     if ($result) {
         return $response
+            ->write("Updated Assignment ".$args['ID'])
             ->withStatus(200);
     } else {
         return $response
