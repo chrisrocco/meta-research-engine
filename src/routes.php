@@ -179,15 +179,12 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
  * Output-Formats: [application/json]
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
-    if (!isset($args['ID'])) {
-        return $response->write("Please specify an assignment ID in the URL");
-    }
     $ID = $args['ID'];
-    if (!$this->arangodb_documentHandler->has("assigned_to", $ID)) {
-        echo "No assignment found";
-        return;
+    if (!$this->arangodb_documentHandler->has("assignments", $ID)) {
+        return $response
+            ->write("No assignment found");
     }
-    $assignment = $this->arangodb_documentHandler->get("assigned_to", $ID)->getAll();
+    $assignment = $this->arangodb_documentHandler->get("assignments", $ID)->getAll();
     return $response->write(json_encode($assignment, JSON_PRETTY_PRINT));
 });
 
