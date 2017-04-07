@@ -286,12 +286,11 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                             FOR paper IN OUTBOUND assignment._id assignment_of
                                 FILTER paper._key == @pmcID
-                                RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
+                                RETURN 1',
             'bindVars' => [
                 'userID' => $userID,
                 'pmcID' => $pmcID
-            ],
-            '_flat' => true
+            ]
         ]
     );
     if($statement->execute()->getCount() >= 2){
@@ -319,9 +318,6 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         "_to" => "papers/" . $pmcID,
         "_from" => $assignmentID
     ]);
-    $assignment_of = new ArangoDocument();
-    $assignment_of->set("_to", "papers/".$pmcID);
-    $assignment_of->set("_from", $assignmentID);
     $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
 
     // Create the assigned_to edge
