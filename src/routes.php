@@ -43,7 +43,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
     $studyName = $args['studyname'];
 
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
@@ -104,16 +104,16 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
     $studyName = $args['studyname'];
 
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
 
     //The study exists, run the query
     $statement = new ArangoStatement($this->arangodb_connection, [
-        'query' => "FOR field IN exFields
-                        SORT field.name
-                        RETURN field.name",
+        'query' => "FOR var IN INBOUND CONCAT(\"research_studies\",@studyName ) variable_of
+                        SORT var.name
+                        RETURN var.name",
         '_flat' => true
     ]);
 
