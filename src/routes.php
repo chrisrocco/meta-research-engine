@@ -249,7 +249,7 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
     }
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR paper, assignment IN INBOUND CONCAT("users/", @studentID) assignedTo 
+            'query' => 'FOR paper, assignment IN INBOUND CONCAT("users/", @studentID) assigned_to 
                         RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
             'bindVars' => [
                 'studentID' => $studentID
@@ -289,7 +289,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $assignmentEdge->set("done", false);
     $assignmentEdge->set("completion", 0);
     $assignmentEdge->set("encoding", null);
-    $newAssignmentID = $this->arangodb_documentHandler->save("assignedTo", $assignmentEdge);
+    $newAssignmentID = $this->arangodb_documentHandler->save("assigned_to", $assignmentEdge);
 
     // get the new assignment and return it
     if ($newAssignmentID) {
@@ -323,7 +323,7 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     //The class exists, proceed
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolledIn RETURN student._key',
+            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN student._key',
             'bindVars' => [
                 'classID' => $classID
             ],
@@ -395,7 +395,7 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
     /* Query the DB */
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolledIn
+            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolled_in
                             LET teachers = (
                                 FOR teacher IN INBOUND class._id teaches
                                     RETURN teacher.name
