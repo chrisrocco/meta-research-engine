@@ -111,7 +111,7 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
 
     //The study exists, run the query
     $statement = new ArangoStatement($this->arangodb_connection, [
-        'query' => "FOR var IN INBOUND CONCAT(\"research_studies\",@studyName ) variable_of
+        'query' => "FOR var IN INBOUND CONCAT(\"research_studies/\",@studyName ) variable_of
                         SORT var.name
                         RETURN var.name",
         'bindVars' => [
