@@ -35,9 +35,9 @@ $app->get('/secure', function ($request, $response, $args) {
     return;
 });
 
-/* GET studies/{studyname}/structure
+/*
+ * GET studies/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
- *
  */
 $app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
     $studyName = $args['studyname'];
@@ -50,17 +50,17 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 
     //The study exists, return the structure
     $statement = new ArangoStatement($this->arangodb_connection, [
-        'query' => "FOR domain IN INBOUND CONCAT (\"ResearchStudy/\", @studyName) subDomainOf //For each top-level domain
+        'query' => "FOR domain IN INBOUND CONCAT (\"research_studies/\", @studyName) subdomain_of //For each top-level domain
    
                    //assemble the domain's fields
                     LET fields = (
-                        FOR field IN INBOUND domain fieldOf
+                        FOR field IN INBOUND domain variable_of
                         RETURN field
                     )
                     
                     //assemble the domain's subdomains
                     LET subDomains = (
-                        FOR subDomain IN INBOUND domain subDomainOf
+                        FOR subDomain IN INBOUND domain subdomain_of
                             //assemble the subDomain's fields
                             LET subDomainFields = (
                                 FOR subDomainField IN INBOUND subDomain fieldOf
