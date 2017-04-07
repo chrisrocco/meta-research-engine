@@ -220,7 +220,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
     $assignment->set("encoding", $formData['encoding']);
-    $assignment->encoding = ['fuck', 'this', 'shit'];
+    $assignment->encoding = [ 'black' => 'white' ];
     $result = $this->arangodb_documentHandler->update($assignment);
 
     if ($result) {
