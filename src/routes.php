@@ -399,6 +399,11 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
             ->withStatus(409);
     }
 
+
+
+
+
+
     // Create the enrollment
     $edge = new ArangoDocument();
     $edge->set('_from', "users/" . $userID);
