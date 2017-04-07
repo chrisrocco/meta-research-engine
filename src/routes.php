@@ -216,31 +216,14 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
-    $cursor = $this->arangodb_documentHandler->save(["fuck", "this", "shit"], "temp");
+    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
+    $assignment->set("done", $formData['done']);
+    $assignment->set("completion", $formData['completion']);
+    $assignment->set("encoding", $formData['encoding']);
+    $assignment->encoding = ['fuck', 'this', 'shit'];
+    $result = $this->arangodb_documentHandler->update($assignment);
 
-    /*$ID = $args['ID'];
-    $AQL = "LET doc = DOCUMENT('assignments/$ID')"
-        . " UPDATE doc WITH {"
-        . "     done: @done, "
-        . "     completion: @completion,"
-        . "     encoding: " . $formData['encoding']
-        . " } IN assignments";
-    $statement = new ArangoStatement($this->arangodb_connection, [
-        "query" => $AQL,
-        "bindVars" => [
-            "done" => $formData['done'],
-            "completion" => $formData['completion'],
-        ]
-    ]);
-    $cursor = $statement->execute();*/
-
-//    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
-//    $assignment->set("done", $formData['done']);
-//    $assignment->set("completion", $formData['completion']);
-//    $assignment->set("encoding", $formData['encoding']);
-//    $result = $this->arangodb_documentHandler->update($assignment);
-
-    if ($cursor) {
+    if ($result) {
         return $response
             ->write("Updated Assignment ".$args['ID'])
             ->withStatus(200);
