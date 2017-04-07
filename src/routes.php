@@ -309,7 +309,11 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     // get the new assignment and return it
     if ($assignmentID && $assignment_of_result && $assigned_to_result ) {
         return $response
-            ->write("Assignment created successfully");
+            ->write(json_encode([
+                "msg" => "Assignment created successfully",
+                "userID" => $studentID,
+                "assignmentID" => $assignmentID
+            ], JSON_PRETTY_PRINT));
     } else {
         return $response
             ->write("Something went wrong :(")
