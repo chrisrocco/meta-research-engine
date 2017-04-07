@@ -286,13 +286,17 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                             FOR paper IN OUTBOUND assignment._id assignment_of
                                 FILTER paper._key == @pmcID
-                                RETURN 1',
+                                COLLECT WITH COUNT INTO count
+                                RETURN count',
             'bindVars' => [
                 'userID' => $userID,
                 'pmcID' => $pmcID
-            ]
+            ],
+            '_flat' => true
         ]
     );
+    var_dump($statement->execute()->getAll());
+
     if($statement->execute()->getCount() >= 2){
         return $response
             ->write("Call 205.639.6666 and tell him his POST assignments route is broken.")
