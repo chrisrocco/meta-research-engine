@@ -226,7 +226,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         "query" => $AQL,
         "sanitize" => true,
         "bindVars" => [
-            "assignment" => $assignment
+            "assignment" => json_encode($assignment)
         ]
     ]);
     $cursor = $statement->execute();
