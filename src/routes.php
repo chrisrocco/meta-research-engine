@@ -63,7 +63,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
                         FOR subDomain IN INBOUND domain subdomain_of
                             //assemble the subDomain's fields
                             LET subDomainFields = (
-                                FOR subDomainField IN INBOUND subDomain fieldOf
+                                FOR subDomainField IN INBOUND subDomain subdomain_of
                                 RETURN subDomainField
                             )
                             
@@ -114,6 +114,9 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
         'query' => "FOR var IN INBOUND CONCAT(\"research_studies\",@studyName ) variable_of
                         SORT var.name
                         RETURN var.name",
+        'bindVars' => [
+            'studyName' => $studyName
+        ],
         '_flat' => true
     ]);
 
