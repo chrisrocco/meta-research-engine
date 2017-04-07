@@ -290,27 +290,27 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         "completion" => 0,
         "encoding" => null
     ]);
-    $assignment_key = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
+    $assignmentID = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
 
     // Create the assignment_of edge
     $assignment_of = ArangoDocument::createFromArray([
         "_to" => "papers/" . $pmcID,
-        "_from" => "assignments/" . $assignment_key
+        "_from" => $assignmentID
     ]);
     $assignment_of = new ArangoDocument();
     $assignment_of->set("_to", "papers/".$pmcID);
-    $assignment_of->set("_from", "assignments/" . $assignment_key);
+    $assignment_of->set("_from", $assignmentID);
     $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
 
     // Create the assigned_to edge
     $assigned_to = ArangoDocument::createFromArray([
         "_to" => "users/" . $studentID,
-        "_from" => "assignments/" . $assignment_key
+        "_from" => $assignmentID
     ]);
     $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
 
     // get the new assignment and return it
-    if ($assignment_key && $assignment_of_result && $assigned_to_result ) {
+    if ($assignmentID && $assignment_of_result && $assigned_to_result ) {
         return $response
             ->write("Assignment created successfully");
     } else {
