@@ -221,12 +221,14 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         "completion" => 0,
         "encoding" => $encoding_php_arr
     ];
+    $assignmentJSON = json_encode($assignment);
+
     $AQL = "INSERT @assignment INTO assignments RETURN NEW";
     $statement = new ArangoStatement($this->arangodb_connection, [
         "query" => $AQL,
         "sanitize" => true,
         "bindVars" => [
-            "assignment" => json_encode($assignment)
+            "assignment" => $assignmentJSON
         ]
     ]);
     $cursor = $statement->execute();
