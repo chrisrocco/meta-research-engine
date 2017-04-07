@@ -222,7 +222,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         "encoding" => $encoding_php_arr
     ];
     $AQL = "INSERT @assignment INTO assignments RETURN NEW";
-    $statement = new ArangoStatement([
+    $statement = new ArangoStatement($this->arangodb_connection, [
         "query" => $AQL,
         "sanitize" => true,
         "bindVars" => [
