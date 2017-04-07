@@ -294,14 +294,11 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             '_flat' => true
         ]
     );
-    var_dump($statement->execute()->getAll());
-
     if(count($statement->execute()->getAll()) > 0){
         return $response
             ->write("Duplicate Assignment")
             ->withStatus(400);
     }
-
 
     // Create the assignment
     $assignmentObject = ArangoDocument::createFromArray([
@@ -316,7 +313,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         "_to" => "papers/" . $pmcID,
         "_from" => $assignmentID
     ]);
-    $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
+    $assignment_of_result = $this->arangodb_documentHandler->save("assignment_of", $assignment_of);
 
     // Create the assigned_to edge
     $assigned_to = ArangoDocument::createFromArray([
