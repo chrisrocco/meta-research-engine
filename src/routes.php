@@ -132,7 +132,7 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
     $formData = $request->getParams();
 
     //Check to make sure that the research study exists
-    if (!$this->arangodb_documentHandler->has("ResearchStudy", $studyName)) {
+    if (!$this->arangodb_documentHandler->has("research_studies", $studyName)) {
         return $response->write("No research study with name " . $studyName . " found")
             ->withStatus(400);
     }
@@ -162,14 +162,16 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
     //Create the edge from the new paper to the research study
     $edge = new ArangoDocument();
     $edge->set("_from", "papers/" . $formData['pmcID']);
-    $edge->set("_to", "ResearchStudy/" . $studyName);
-    $edgeID = $this->arangodb_documentHandler->save("paperOf", $edge);
+    $edge->set("_to", "research_studies/" . $studyName);
+    $edgeID = $this->arangodb_documentHandler->save("paper_of", $edge);
 
     if (!$edgeID) {
-        return $response->write("Something went wrong when assigning the paper to the research study");
+        return $response
+            ->write("Something went wrong when assigning the paper to the research study");
     }
 
-    return $response->write("Successfully added paper " . $formData['pmcID'] . " to research study " . $studyName);
+    return $response
+        ->write("Successfully added paper " . $formData['pmcID'] . " to research study " . $studyName);
 });
 
 /**
