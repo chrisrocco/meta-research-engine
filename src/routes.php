@@ -359,7 +359,7 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     //The class exists, proceed
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN student._key',
+            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN student',
             'bindVars' => [
                 'classID' => $classID
             ],
@@ -398,11 +398,6 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
         return $response->write("Student " . $userID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
-
-
-
-
-
 
     // Create the enrollment
     $edge = new ArangoDocument();
