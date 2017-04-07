@@ -216,7 +216,12 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
-    $ID = $args['ID'];
+    $cursor = $this->arangodb_documentHandler->store([
+        "test" => "value",
+        "key" => "value"
+    ], "temp");
+
+    /*$ID = $args['ID'];
     $AQL = "LET doc = DOCUMENT('assignments/$ID')"
         . " UPDATE doc WITH {"
         . "     done: @done, "
@@ -230,7 +235,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
             "completion" => $formData['completion'],
         ]
     ]);
-    $cursor = $statement->execute();
+    $cursor = $statement->execute();*/
 
 //    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
 //    $assignment->set("done", $formData['done']);
