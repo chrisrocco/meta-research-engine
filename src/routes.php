@@ -416,7 +416,6 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
         return $response->write("Something went wrong.")
             ->withStatus(500);
     }
-
 });
 
 /**
