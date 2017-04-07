@@ -297,6 +297,9 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         "_to" => "papers/" . $pmcID,
         "_from" => "assignments/" . $assignment_key
     ]);
+    $assignment_of = new ArangoDocument();
+    $assignment_of->set("_to", "papers/".$pmcID);
+    $assignment_of->set("_from", "assignments/" . $assignment_key);
     $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
 
     // Create the assigned_to edge
