@@ -183,11 +183,11 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
         return $response->write("Please specify an assignment ID in the URL");
     }
     $ID = $args['ID'];
-    if (!$this->arangodb_documentHandler->has("assignedTo", $ID)) {
+    if (!$this->arangodb_documentHandler->has("assigned_to", $ID)) {
         echo "No assignment found";
         return;
     }
-    $assignment = $this->arangodb_documentHandler->get("assignedTo", $ID)->getAll();
+    $assignment = $this->arangodb_documentHandler->get("assigned_to", $ID)->getAll();
     return $response->write(json_encode($assignment, JSON_PRETTY_PRINT));
 });
 
@@ -210,12 +210,12 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     // TODO - validate encoding integrity before insert
     /* Make sure assignment exists */
-    if (!$this->arangodb_documentHandler->has("assignedTo", $args["ID"])) {
+    if (!$this->arangodb_documentHandler->has("assigned_to", $args["ID"])) {
         echo "That assignment does not exist";
         return;
     }
     /* Update Document */
-    $assignment = $this->arangodb_documentHandler->get("assignedTo", $args["ID"]);
+    $assignment = $this->arangodb_documentHandler->get("assigned_to", $args["ID"]);
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
     $assignment->set("encoding", $formData['encoding']);
@@ -269,7 +269,12 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
  */
 $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $studentID = $args['ID'];
-    $paperID = $request->getParam("pmcID");
+    $pmcID = $request->getParam("pmcID");
+    $paper_record_ID = $this->arangodb_documentHandler->firstExample("papers", [
+        pmcID => $pmcID
+    ]).getAll()["_id"];
+
+    echo $paper_record_ID;
 
     // Make sure student exists
     if (!$this->arangodb_documentHandler->has("users", $studentID)) {
@@ -282,21 +287,29 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         return;
     }
 
-    // Create the assignment object
-    $assignmentEdge = new ArangoDocument();
-    $assignmentEdge->set("_to", "users/" . $studentID);
-    $assignmentEdge->set("_from", "papers/" . $paperID);
-    $assignmentEdge->set("done", false);
-    $assignmentEdge->set("completion", 0);
-    $assignmentEdge->set("encoding", null);
-    $newAssignmentID = $this->arangodb_documentHandler->save("assigned_to", $assignmentEdge);
+    // Create the assignment
+    $assignmentObject = new ArangoDocument();
+    $assignmentObject->set("done", false);
+    $assignmentObject->set("completion", 0);
+    $assignmentObject->set("encoding", null);
+    $assignment_key = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
+
+    // Create the assignment_of edge
+    $assignment_of = new ArangoDocument();
+    $assignment_of->set("_to", $newAssignmentID);
+    $assignment_of->set("_from", "assignments/" . $assignment_key);
+    $assignment_of_result = $this->arangodb_documentHandler->save("assigned_to", $assignment_of);
+
+    // Create the assigned_to edge
+    $assigned_to = new ArangoDocument();
+    $assigned_to->set("_to", "users/" . $studentID);
+    $assigned_to->set("_from", "papers/" . $paperID);
+    $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
 
     // get the new assignment and return it
-    if ($newAssignmentID) {
-        $res = [
-            "status" => "OK",
-            "assignment" => $this->arangodb_documentHandler->get("assignedTo", $newAssignmentID)->getAll()
-        ];
+    if ($assigned_to_result && $objResult && $assignment_of_result ) {
+        return $response
+            ->write("Assignment created successfully");
     } else {
         return $response
             ->write("Something went wrong :(")
