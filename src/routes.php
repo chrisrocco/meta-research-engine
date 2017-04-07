@@ -238,28 +238,25 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
-    $studentID = $args["ID"];
+    $userID = $args["ID"];
     // make sure student exists
-    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
-        $res = [
-            'status' => "ERROR",
-            'msg' => "No student with that ID found"
-        ];
-        return $response->write(json_encode($res, JSON_PRETTY_PRINT));
+    if (!$this->arangodb_documentHandler->has('users', $userID)) {
+        return $response->write("No student with that ID found")
+            ->withStatus(400);
     }
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR paper, assignment IN INBOUND CONCAT("users/", @studentID) assigned_to 
-                        RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
+            'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
+                            FOR paper IN OUTBOUND assignment._id assignment_of
+                                RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
             'bindVars' => [
-                'studentID' => $studentID
+                'userID' => $userID
             ],
             '_flat' => true
         ]
     );
     $resultSet = $statement->execute()->getAll();
-    $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
-    return $response;
+    return $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
 });
 
 /**
