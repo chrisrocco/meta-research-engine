@@ -221,14 +221,13 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         . " UPDATE doc WITH {"
         . "     done: @done, "
         . "     completion: @completion,"
-        . "     encoding: @encoding"
+        . "     encoding: " . $formData['encoding']
         . " } IN assignments";
     $statement = new ArangoStatement($this->arangodb_connection, [
         "query" => $AQL,
         "bindVars" => [
             "done" => $formData['done'],
             "completion" => $formData['completion'],
-            "encoding" => $formData['encoding']
         ]
     ]);
     $cursor = $statement->execute();
