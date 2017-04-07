@@ -215,14 +215,30 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         return;
     }
     /* Update Document */
-    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
-    $assignment->set("done", $formData['done']);
-    $assignment->set("completion", $formData['completion']);
-    $assignment->encoding = json_decode($formData['encoding']);
-//    $assignment->set("encoding", $formData['encoding']);
-    $result = $this->arangodb_documentHandler->update($assignment);
+    $encoding_php_arr = json_decode($formData['encoding'], true);
+    $assignment = [
+        "done" => false,
+        "completion" => 0,
+        "encoding" => $encoding_php_arr
+    ];
+    $AQL = "INSERT @assignment INTO assignments RETURN NEW";
+    $statement = new ArangoStatement([
+        "query" => $AQL,
+        "sanitize" => true,
+        "bindVars" => [
+            "assignment" => $assignment
+        ]
+    ]);
+    $cursor = $statement->execute();
+    var_dump($cursor->getAll());
 
-    if ($result) {
+//    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
+//    $assignment->set("done", $formData['done']);
+//    $assignment->set("completion", $formData['completion']);
+//    $assignment->set("encoding", $formData['encoding']);
+//    $result = $this->arangodb_documentHandler->update($assignment);
+
+    if ($cursor) {
         return $response
             ->write("Updated Assignment ".$args['ID'])
             ->withStatus(200);
