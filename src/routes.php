@@ -297,12 +297,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     );
     var_dump($statement->execute()->getAll());
 
-    if($statement->execute()->getCount() >= 2){
-        return $response
-            ->write("Call 205.639.6666 and tell him his POST assignments route is broken.")
-            ->withStatus(400);
-    }
-    if($statement->execute()->getCount() > 0){
+    if($statement->execute()->getAll()[0] > 0){
         return $response
             ->write("Duplicate Assignment")
             ->withStatus(400);
