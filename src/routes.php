@@ -114,9 +114,6 @@ $app->GET("/studies/{studyname}/variables", function ($request, $response, $args
         'query' => "FOR var IN variables
                         SORT var._key
                         RETURN var._key",
-        'bindVars' => [
-            'studyName' => $studyName
-        ],
         '_flat' => true
     ]);
 
