@@ -228,7 +228,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 //    $assignment->set("done", $formData['done']);
 //    $assignment->set("completion", $formData['completion']);
 //    $assignment->encoding = $encoding;
-    $result = $this->arangodb_documentHandler->update("assignments", $assignment);
+    $result = $this->arangodb_documentHandler->update($assignment, "assignments");
 
     if ($result) {
         return $response
