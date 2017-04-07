@@ -216,16 +216,19 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
+    $encoding = json_parse($formData['encoding'], true);
+    var_dump($encoding);
+
     $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
-    $assignment->set("encoding", [
-        'level one' => [
-            'level two' => [
-                'level three' => "Success!"
+    $assignment->encoding = [
+        'one' => [
+            'two' => [
+                'three' => "Success!"
             ]
         ]
-    ]);
+    ];
     $result = $this->arangodb_documentHandler->update($assignment);
 
     if ($result) {
