@@ -228,11 +228,10 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         "query" => $AQL,
         "sanitize" => true,
         "bindVars" => [
-            "assignment" => $assignmentJSON
+            "assignment" => $formData['encoding']
         ]
     ]);
     $cursor = $statement->execute();
-    var_dump($cursor->getAll());
 
 //    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
 //    $assignment->set("done", $formData['done']);
