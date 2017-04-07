@@ -43,7 +43,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
     $studyName = $args['studyname'];
 
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
@@ -63,7 +63,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
                         FOR subDomain IN INBOUND domain subdomain_of
                             //assemble the subDomain's fields
                             LET subDomainFields = (
-                                FOR subDomainField IN INBOUND subDomain fieldOf
+                                FOR subDomainField IN INBOUND subDomain subdomain_of
                                 RETURN subDomainField
                             )
                             
@@ -104,16 +104,19 @@ $app->GET("/studies/{studyname}/variables", function ($request, $response, $args
     $studyName = $args['studyname'];
 
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('ResearchStudy', $studyName)) {
+    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
 
     //The study exists, run the query
     $statement = new ArangoStatement($this->arangodb_connection, [
-        'query' => "FOR field IN exFields
-                        SORT field.name
-                        RETURN field.name",
+        'query' => "FOR var IN variables
+                        SORT var._key
+                        RETURN var._key",
+        'bindVars' => [
+            'studyName' => $studyName
+        ],
         '_flat' => true
     ]);
 
