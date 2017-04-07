@@ -265,11 +265,11 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
  * Notes:
  */
 $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
-    $studentID = $args['ID'];
+    $userID = $args['ID'];
     $pmcID = $request->getParam("pmcID");
 
     // Make sure student exists
-    if (!$this->arangodb_documentHandler->has("users", $studentID)) {
+    if (!$this->arangodb_documentHandler->has("users", $userID)) {
         return $response
             ->write("No user with that ID")
             ->withStatus(400);
@@ -280,6 +280,31 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             ->write("No paper with that ID")
             ->withStatus(400);
     }
+    // Make sure the assignment doesn't exist already
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
+                            FOR paper IN OUTBOUND assignment._id assignment_of
+                                FILTER paper._key == @pmcID
+                                RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
+            'bindVars' => [
+                'userID' => $userID,
+                'pmcID' => $pmcID
+            ],
+            '_flat' => true
+        ]
+    );
+    if($statement->execute()->getCount() >= 2){
+        return $response
+            ->write("Call 205.639.6666 and tell him his POST assignments route is broken.")
+            ->withStatus(400);
+    }
+    if($statement->execute()->getCount() > 0){
+        return $response
+            ->write("Duplicate Assignment")
+            ->withStatus(400);
+    }
+
 
     // Create the assignment
     $assignmentObject = ArangoDocument::createFromArray([
@@ -301,7 +326,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
 
     // Create the assigned_to edge
     $assigned_to = ArangoDocument::createFromArray([
-        "_to" => "users/" . $studentID,
+        "_to" => "users/" . $userID,
         "_from" => $assignmentID
     ]);
     $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
@@ -311,7 +336,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         return $response
             ->write(json_encode([
                 "msg" => "Assignment created successfully",
-                "userID" => $studentID,
+                "userID" => $userID,
                 "assignmentID" => $assignmentID
             ], JSON_PRETTY_PRINT));
     } else {
@@ -359,7 +384,7 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
  */
 $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
-    $studentID = $request->getParam("studentID");
+    $userID = $request->getParam("studentID");
 
     //Make sure the class exists
     if (!$this->arangodb_documentHandler->has('classes', $classID)) {
@@ -368,24 +393,24 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     }
 
     //Make sure the student exists
-    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
-        return $response->write("No student with ID " . $studentID . " exists.")
+    if (!$this->arangodb_documentHandler->has('users', $userID)) {
+        return $response->write("No student with ID " . $userID . " exists.")
             ->withStatus(400);
     }
 
     //Make sure the student isn't already enrolled
-    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/".$studentID, '_to' => "classes/".$classID])->getCount() > 0) {
-        return $response->write("Student " . $studentID . " is already enrolled in class " . $classID)
+    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/".$userID, '_to' => "classes/".$classID])->getCount() > 0) {
+        return $response->write("Student " . $userID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
 
     // Create the enrollment
     $edge = new ArangoDocument();
-    $edge->set('_from', "users/".$studentID);
+    $edge->set('_from', "users/".$userID);
     $edge->set('_to', "classes/".$classID);
     $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
     if($enrollmentID){
-        return $response->write("Successfully enrolled student " . $studentID . " into class " . $classID)
+        return $response->write("Successfully enrolled student " . $userID . " into class " . $classID)
             ->withStatus(200);
     } else {
         return $response->write("Something went wrong.")
@@ -401,9 +426,9 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
-    $studentID = $args["ID"];
+    $userID = $args["ID"];
     /* Make sure student exists */
-    if (!$this->arangodb_documentHandler->has('users', $studentID)) {
+    if (!$this->arangodb_documentHandler->has('users', $userID)) {
         return $response
             ->write("No student with that ID found")
             ->withStatus(400);
@@ -418,7 +443,7 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
                             )
                             RETURN MERGE (class, {teachers : teachers})',
             'bindVars' => [
-                'studentID' => $studentID
+                'studentID' => $userID
             ],
             '_flat' => true
         ]
