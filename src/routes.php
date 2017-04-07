@@ -286,8 +286,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                             FOR paper IN OUTBOUND assignment._id assignment_of
                                 FILTER paper._key == @pmcID
-                                COLLECT WITH COUNT INTO count
-                                RETURN count',
+                                RETURN 1',
             'bindVars' => [
                 'userID' => $userID,
                 'pmcID' => $pmcID
@@ -297,7 +296,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     );
     var_dump($statement->execute()->getAll());
 
-    if($statement->execute()->getAll()[0] > 0){
+    if(count($statement->execute()->getAll()) > 0){
         return $response
             ->write("Duplicate Assignment")
             ->withStatus(400);
