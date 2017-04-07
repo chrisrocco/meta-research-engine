@@ -215,21 +215,21 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         return;
     }
     /* Update Document */
-//    $encoding_php_arr = json_decode($formData['encoding'], true);
-//    $assignment = [
-//        "done" => false,
-//        "completion" => 0,
-//        "encoding" => $encoding_php_arr
-//    ];
-//    $assignmentJSON = json_encode($assignment);
 
     $ID = $args['ID'];
     $AQL = "LET doc = DOCUMENT('assignments/$ID')"
         . " UPDATE doc WITH {"
-        . "     encoding: ".$formData['encoding']
+        . "     done: @done, "
+        . "     completion: @completion,"
+        . "     encoding: @encoding"
         . " } IN assignments";
     $statement = new ArangoStatement($this->arangodb_connection, [
-        "query" => $AQL
+        "query" => $AQL,
+        "bindVars" => [
+            "done" => $formData['done'],
+            "completion" => $formData['completion'],
+            "encoding" => $formData['encoding']
+        ]
     ]);
     $cursor = $statement->execute();
 
