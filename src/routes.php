@@ -100,7 +100,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
  * GET studies/{studyname}/variables
  * Summary: Gets a list of every field's name
  */
-$app->GET ("/studies/{studyname}/variables", function ($request, $response, $args) {
+$app->GET("/studies/{studyname}/variables", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
     //Check if the research study exists
@@ -119,7 +119,7 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
 
     $resultSet = $statement->execute()->getAll();
 
-    return $response->write(json_encode($resultSet,JSON_PRETTY_PRINT));
+    return $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
 
 
 });
@@ -127,13 +127,13 @@ $app->GET ("/studies/{studyname}/variables", function ($request, $response, $arg
 /** POST studies/{studyname}/papers
  *  Add a new paper to the database
  */
-$app->POST ("/studies/{studyname}/papers", function ($request, $response, $args) {
+$app->POST("/studies/{studyname}/papers", function ($request, $response, $args) {
     $studyName = $args['studyname'];
     $formData = $request->getParams();
 
     //Check to make sure that the research study exists
     if (!$this->arangodb_documentHandler->has("ResearchStudy", $studyName)) {
-        return $response->write("No research study with name ".$studyName." found")
+        return $response->write("No research study with name " . $studyName . " found")
             ->withStatus(400);
     }
 
@@ -144,7 +144,7 @@ $app->POST ("/studies/{studyname}/papers", function ($request, $response, $args)
     }
 
     if ($this->arangodb_documentHandler->has("papers", $formData['pmcID'])) {
-        return $response->write("A paper with pmcID ".$formData['pmcID']." already exists")
+        return $response->write("A paper with pmcID " . $formData['pmcID'] . " already exists")
             ->withStatus(409);
     }
 
@@ -161,16 +161,16 @@ $app->POST ("/studies/{studyname}/papers", function ($request, $response, $args)
 
     //Create the edge from the new paper to the research study
     $edge = new ArangoDocument();
-    $edge->set ("_from", "papers/".$formData['pmcID']);
-    $edge->set ("_to", "ResearchStudy/".$studyName);
+    $edge->set("_from", "papers/" . $formData['pmcID']);
+    $edge->set("_to", "ResearchStudy/" . $studyName);
     $edgeID = $this->arangodb_documentHandler->save("paperOf", $edge);
 
     if (!$edgeID) {
         return $response->write("Something went wrong when assigning the paper to the research study");
     }
 
-    return $response->write("Successfully added paper ".$formData['pmcID']." to research study ".$studyName);
-} );
+    return $response->write("Successfully added paper " . $formData['pmcID'] . " to research study " . $studyName);
+});
 
 /**
  * GET assignmentsIDGet
@@ -179,7 +179,7 @@ $app->POST ("/studies/{studyname}/papers", function ($request, $response, $args)
  * Output-Formats: [application/json]
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
-    if (!isset($args['ID']))    {
+    if (!isset($args['ID'])) {
         return $response->write("Please specify an assignment ID in the URL");
     }
     $ID = $args['ID'];
@@ -199,11 +199,11 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $formData = $request->getParams();
     /* Validate request */
-    if(
-        !isset($formData['encoding'])   ||
-        !isset($formData['done'])       ||
+    if (
+        !isset($formData['encoding']) ||
+        !isset($formData['done']) ||
         !isset($formData['completion'])
-    ){
+    ) {
         return $response
             ->write("Bad Request")
             ->withStatus(400);
@@ -226,7 +226,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 
     if ($result) {
         return $response
-            ->write("Updated Assignment ".$args['ID'])
+            ->write("Updated Assignment " . $args['ID'])
             ->withStatus(200);
     } else {
         return $response
@@ -298,7 +298,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             '_flat' => true
         ]
     );
-    if(count($statement->execute()->getAll()) > 0){
+    if (count($statement->execute()->getAll()) > 0) {
         return $response
             ->write("Duplicate Assignment")
             ->withStatus(400);
@@ -327,7 +327,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
 
     // get the new assignment and return it
-    if ($assignmentID && $assignment_of_result && $assigned_to_result ) {
+    if ($assignmentID && $assignment_of_result && $assigned_to_result) {
         return $response
             ->write(json_encode([
                 "msg" => "Assignment created successfully",
@@ -352,7 +352,7 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
 
     //Make sure the class exists
     if (!$this->arangodb_documentHandler->has('classes', $classID)) {
-        return $response->write("No class with ID ".$classID." exists.")
+        return $response->write("No class with ID " . $classID . " exists.")
             ->withStatus(400);
     }
 
@@ -394,17 +394,17 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     }
 
     //Make sure the student isn't already enrolled
-    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/".$userID, '_to' => "classes/".$classID])->getCount() > 0) {
+    if ($this->arangodb_collectionHandler->byExample('enrolledIn', ['_from' => "users/" . $userID, '_to' => "classes/" . $classID])->getCount() > 0) {
         return $response->write("Student " . $userID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
 
     // Create the enrollment
     $edge = new ArangoDocument();
-    $edge->set('_from', "users/".$userID);
-    $edge->set('_to', "classes/".$classID);
+    $edge->set('_from', "users/" . $userID);
+    $edge->set('_to', "classes/" . $classID);
     $enrollmentID = $this->arangodb_documentHandler->save('enrolledIn', $edge);
-    if($enrollmentID){
+    if ($enrollmentID) {
         return $response->write("Successfully enrolled student " . $userID . " into class " . $classID)
             ->withStatus(200);
     } else {
@@ -456,27 +456,25 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
 $app->GET('/teachers/{ID}/classes', function ($request, $response, $args) {
     $teacherID = $args["ID"];
 
-    $docHandler = new ArangoDocumentHandler($this->arangodb_connection);
-    if (!$docHandler->has('users', $teacherID)) {
-        $res = [
-            'status' => "ERROR",
-            'msg' => "No student with that ID found"
-        ];
-    } else { //The student exists
-        $statement = new ArangoStatement(
-            $this->arangodb_connection, [
-                'query' => 'FOR class IN OUTBOUND CONCAT("users/", @teacherID) teaches RETURN class',
-                'bindVars' => [
-                    'teacherID' => $teacherID
-                ],
-                '_flat' => true
-            ]
-        );
-        $res = $statement->execute()->getAll();
+    // Make sure the user exists
+    if (!$this->arangodb_documentHandler->has('users', $teacherID)) {
+        return $response
+            ->write("No user with that ID found")
+            ->withStatus(400);
     }
 
-    $response->write(json_encode($res, JSON_PRETTY_PRINT));
-    return $response;
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'FOR class IN OUTBOUND CONCAT("users/", @teacherID) teaches RETURN class',
+            'bindVars' => [
+                'teacherID' => $teacherID
+            ],
+            '_flat' => true
+        ]
+    );
+    $res = $statement->execute()->getAll();
+
+    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
 });
 
 /**
@@ -596,11 +594,12 @@ $app->POST('/users/register', function ($request, $response, $args) {
     $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
     $formData = $request->getParams();
     // Validate role input
-    if (!isset($formData['name'])    ||
-        !isset($formData['email'])    ||
-        !isset($formData['password'])    ||
-        !isset($formData['role'])    ||
-        !in_array($formData['role'], User::roles)) {
+    if (!isset($formData['name']) ||
+        !isset($formData['email']) ||
+        !isset($formData['password']) ||
+        !isset($formData['role']) ||
+        !in_array($formData['role'], User::roles)
+    ) {
         echo "Missing or Invalid Param(s)";
         return;
     }
