@@ -216,7 +216,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
-    $cursor = $this->arangodb_documentHandler->store(["fuck", "this", "shit"], "temp");
+    $cursor = $this->arangodb_documentHandler->save(["fuck", "this", "shit"], "temp");
 
     /*$ID = $args['ID'];
     $AQL = "LET doc = DOCUMENT('assignments/$ID')"
