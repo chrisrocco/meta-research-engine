@@ -216,7 +216,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
-    $encoding = json_parse($formData['encoding'], true);
+    $encoding = json_decode($formData['encoding'], true);
     var_dump($encoding);
 
     $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
