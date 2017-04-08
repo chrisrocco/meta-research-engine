@@ -63,7 +63,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
     $assignment->encoding = $encoding;
-    $result = $this->arangodb_documentHandler->update($assignment);
+    $result = $this->arangodb_documentHandler->save($assignment);
 
     if ($result) {
         return $response
