@@ -33,7 +33,7 @@ $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
     //The class exists, proceed
     $statement = new ArangoStatement(
         $this->arangodb_connection, [
-            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN student',
+            'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN UNSET (student, "password")',
             'bindVars' => [
                 'classID' => $classID
             ],
