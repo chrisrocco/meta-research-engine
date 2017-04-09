@@ -94,9 +94,12 @@ $app->GET("/studies/{studyname}/variables", function ($request, $response, $args
 
     //The study exists, run the query
     $statement = new ArangoStatement($this->arangodb_connection, [
-        'query' => "FOR var IN variables
+        'query' => 'FOR var IN INBOUND CONCAT("research_studies/", @studyName) variable_of
                         SORT var._key
-                        RETURN var._key",
+                        RETURN var._key',
+        'bindVars' => [
+            'studyName' => $studyName
+        ],
         '_flat' => true
     ]);
 
