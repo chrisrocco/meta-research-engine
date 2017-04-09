@@ -2,6 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../vendor/arangodb-php/autoload.php'; // Because the composer install is broken
 require __DIR__ . '/../models/loader.php';
+require __DIR__ . '/../src/app/ConflictManager.php';
 
 // Instantiate the app
 $settings = require __DIR__ . '/../src/settings.php';
