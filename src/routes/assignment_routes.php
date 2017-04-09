@@ -46,7 +46,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         !isset($formData['completion'])
     ) {
         return $response
-            ->write("Bad Request2")
+            ->write("Bad Request")
             ->withStatus(400);
     }
     // TODO - validate encoding integrity before insert
