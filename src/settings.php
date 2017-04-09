@@ -16,15 +16,15 @@ return [
 
         "arangodb_connection_options" => [
             // database name
-            ArangoDBClient\ConnectionOptions::OPTION_DATABASE => 'bigdata2',
+            ArangoDBClient\ConnectionOptions::OPTION_DATABASE => 'bigdata',
             // server endpoint to connect to
-            ArangoDBClient\ConnectionOptions::OPTION_ENDPOINT => 'tcp://45.55.64.92:8529',
+            ArangoDBClient\ConnectionOptions::OPTION_ENDPOINT => 'tcp://35.184.147.35:8529',
             // authorization type to use (currently supported: 'Basic')
             ArangoDBClient\ConnectionOptions::OPTION_AUTH_TYPE => 'Basic',
             // user for basic authorization
-            ArangoDBClient\ConnectionOptions::OPTION_AUTH_USER => 'root',
+            ArangoDBClient\ConnectionOptions::OPTION_AUTH_USER => 'bigdata-client',
             // password for basic authorization
-            ArangoDBClient\ConnectionOptions::OPTION_AUTH_PASSWD => 'birminghambigdata1',
+            ArangoDBClient\ConnectionOptions::OPTION_AUTH_PASSWD => 'bigdatauab',
             // connection persistence on server. can use either 'Close' (one-time connections) or 'Keep-Alive' (re-used connections)
             ArangoDBClient\ConnectionOptions::OPTION_CONNECTION => 'Keep-Alive',
             // connect timeout in seconds

@@ -46,7 +46,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
         !isset($formData['completion'])
     ) {
         return $response
-            ->write("Bad Request")
+            ->write("Bad Request2")
             ->withStatus(400);
     }
     // TODO - validate encoding integrity before insert
@@ -57,7 +57,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     }
     /* Update Document */
 
-    $encoding = json_decode($formData['encoding'], true);
+    $encoding = json_decode($formData['encoding'], false);
 
     $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
     $assignment->set("done", $formData['done']);
