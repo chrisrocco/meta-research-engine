@@ -6,8 +6,8 @@
  * Date: 4/8/2017
  * Time: 7:47 PM
  */
-class ConflictDetection
-{
+class ConflictDetection {
+
     function newConflict ($encodingA, $encodingB) {
         $conflict = Conflict($encodingA, $encodingB);
 
