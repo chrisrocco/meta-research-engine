@@ -39,7 +39,7 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
             '_flat' => true
         ]
     );
-    $resultSet = $statement->execute()->getAll();
+    $resultSet = $statement->execute()->getAll()[0];
     return $response->write(json_encode($resultSet,  JSON_PRETTY_PRINT));
 });
 
