@@ -25,12 +25,13 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 $app->POST("/conflictscan", function ($request, $response, $args) {
 
     $assignmentKey = $request->getParam("assignmentKey");
+    $conflictManager = new ConflictManager($this->arangodb_connection, "BigDataUAB");
 
     $statement = new ArangoStatement($this->arangodb_connection,
         [
-            "query" => "FOR paper IN OUTBOUND @assignment assignment_of"
-                . " FOR assignment IN INBOUND paper assignment_of"
-                . " RETURN assignment",
+            "query" => 'FOR paper IN OUTBOUND @assignment assignment_of
+                            FOR assignment IN INBOUND paper assignment_of
+                                RETURN assignment',
             "bindVars" => [
                 "assignment" => "assignments/".$assignmentKey
             ],
