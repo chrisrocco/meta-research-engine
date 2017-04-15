@@ -28,8 +28,19 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
         return $response
             ->write("No assignment found");
     }
-    $assignment = $this->arangodb_documentHandler->get("assignments", $ID)->getAll();
-    return $response->write(json_encode($assignment, JSON_PRETTY_PRINT));
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'LET assignment = DOCUMENT( CONCAT ("assignments/", @assignmentID) )
+                        FOR paper IN OUTBOUND assignment._id assignment_of
+                            RETURN MERGE( UNSET (assignment, "_id", "_rev"), {title: paper.title, pmcID: paper._key})',
+            'bindVars' => [
+                'assignmentID' => $ID
+            ],
+            '_flat' => true
+        ]
+    );
+    $resultSet = $statement->execute()->getAll()[0];
+    return $response->write(json_encode($resultSet,  JSON_PRETTY_PRINT));
 });
 
 /**
@@ -145,11 +156,33 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             ->withStatus(400);
     }
 
+    //Generate a blank encoding
+    $encodingStatement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => '
+            LET constants = (
+                FOR field IN INBOUND @studyName models
+                    RETURN {
+                        "field" : field._key,
+                        "content" : {value : ""}
+                    }
+            )
+            RETURN {
+                "constants" : constants,
+               "branches" : [[]]
+            }',
+            'bindVars' => [
+                'studyName' => "research_studies/BigDataUAB" //TODO : change API to require studyName
+            ],
+            '_flat' => true
+        ]
+    );
+
     // Create the assignment
     $assignmentObject = ArangoDocument::createFromArray([
         "done" => false,
         "completion" => 0,
-        "encoding" => null
+        "encoding" => $encodingStatement->execute()->getAll()[0]
     ]);
     $assignmentID = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
 
