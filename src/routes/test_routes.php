@@ -38,9 +38,7 @@ $app->POST("/conflictscan", function ($request, $response, $args) {
             "_flat" => true
         ]);
     $assignments_array = $statement->execute()->getAll();
-//    echo json_encode($assignments_array, JSON_PRETTY_PRINT);
-//    $conflicts = $this->ConflictManager->compare($assignments_array);
-    $this->ConflictManager->test($assignments_array);
-//    return $response
-//        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
+    $conflicts = $conflictManager->generateConflictReport($assignments_array);
+    return $response
+        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
 });
