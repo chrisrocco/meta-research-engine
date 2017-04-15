@@ -156,11 +156,33 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             ->withStatus(400);
     }
 
+    //Generate a blank encoding
+    $encodingStatement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => '
+            LET constants = (
+                FOR field IN INBOUND @studyName models
+                    RETURN {
+                        "field" : field._key,
+                        "content" : {value : ""}
+                    }
+            )
+            RETURN {
+                "constants" : constants,
+               "branches" : [[]]
+            }',
+            'bindVars' => [
+                'studyName' => "research_studies/BigDataUAB" //TODO : change API to require studyName
+            ],
+            '_flat' => true
+        ]
+    );
+
     // Create the assignment
     $assignmentObject = ArangoDocument::createFromArray([
         "done" => false,
         "completion" => 0,
-        "encoding" => null
+        "encoding" => $encodingStatement->execute()->getAll()[0]
     ]);
     $assignmentID = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
 
