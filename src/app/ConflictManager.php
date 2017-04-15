@@ -1,5 +1,81 @@
 <?php
+
+use ArangoDBClient\DocumentHandler as ArangoDocumentHandler;
+use ArangoDBClient\Document as ArangoDocument;
+use ArangoDBClient\Statement as ArangoStatement;
+
 class ConflictManager {
+
+
+    /**
+     * Handles the storing of conflicts in the database
+     * @param $paperID string _id of the paper, acting as the entry point
+     * @return ['msg' => <return message>, 'status' => <html code>]
+     */
+    function updateConflictsByPaperID ($paperID) {
+
+        //Generate conflicts
+        $conflictNeighborsStatement = new ArangoStatement($this->arangodb_connection, [
+            'query' => 'FOR assignment IN INBOUND @paperID assignment_of
+                            RETURN assignment',
+            'bindVars' => [
+                'paperID' => $paperID
+            ],
+            '_flat' => true
+        ]);
+        $conflicts = $this->compare($conflictNeighborsStatement->execute()->getAll());
+
+        //Remove old conflicts
+        $removeOldConflictsStatement = new ArangoStatement($this->arangodb_connection, [
+            'query' => 'FOR conflict IN INBOUND @paperID conflict_of
+                        REMOVE conflict IN conflicts',
+            'bindVars' => [
+                'paperID' => $paperKey
+            ],
+            '_flat' => true
+        ]);
+        $removeOldConflictsStatement->execute();
+
+        //Create the new conflicts and corresponding edges
+        foreach ($conflicts as $conflict) {
+            //Create the conflicts document (the conflict)
+            $conflictID = $this->arangodb_documentHandler->save('conflicts', ArangoDocument::createFromArray($conflict));
+
+            if (!$conflictID) {
+                return [
+                    'msg' => "Could not store conflicts in database",
+                    'status' => 500
+                ];
+            }
+
+            //Create the conflict_of edge
+            $edge = ArangoDocument::createFromArray( [
+                '_from' => $conflictID,
+                '_to' => $paperKey
+            ]);
+            $edgeID = $this->arangodb_documentHandler->save('conflict_of', $edge);
+
+            if (!$edgeID) {
+                return [
+                    'msg' => "Could create edge from conflict to paper",
+                    'status' => 500
+                ];
+            }
+        }
+        return [
+            'msg' => "Successfully updated conflict state for paper" . $paperKey,
+            'status' => 200
+        ];
+    }
+
+    /**
+     * Handles the storing of conflicts in the database. Counterpart to updateConflictsByPaperID
+     * @param $paperID string _id of the paper, acting as the entry point
+     * @return ['msg' => <return message>, 'status' => <html code>]
+     */
+    function updateConflictsByAssignmentKey ($assignmentID) {
+        return $this->updateConflictsByPaperID($this->getPaperID($assignmentID));
+    }
 
     function compare($assignments_array){
         $conflicts = array_merge(
@@ -101,21 +177,41 @@ class ConflictManager {
     /*------------------*/
     /* Helper Functions */
     /*------------------*/
+
+    /**
+     * Given a raw assignment object, gets the scope
+     * @param $fieldName _key of the study-level variable to search for
+     * @param $assignment raw assignment object
+     * @return "constant" | "variable" | null
+     */
     private function getScope($fieldName, $assignment){
-        if(mt_rand(0,1) === 0){
-            return "variable";
+        if (!isset($this->variables)) {
+            echo "src/app/ConflictManager::getScope called before study variables initialized"; //TODO: throw exception
+            return null;
         }
-        return "constant";
+
+        foreach ($assignment['encoding']['constants'] as $variableInstance) {
+            if ($variableInstance['field'] === $fieldName) {
+                return "constant";
+            }
+        }
+        return "variable";
     }
-    private function getInput($fieldName, $assignment){
-        $sample_responses = [
-            "3 weeks",
-            "15 lbs",
-            "5 grams",
-            "74 degrees fareignheight",
-            "Didn't say"
-        ];
-        return $sample_responses[mt_rand(0, count($sample_responses)-1)]; // A random variable
+
+    /**
+     * Gets the variable response from the given branch. Can be 'constants' or any element of 'branches'
+     * Runs in linear time with respect to count($branch)
+     * @param $fieldName Unique key of the study-level variable
+     * @param $branch Array of variable instances
+     * @return 'content' object of the variable instance corresponding to fieldName, null otherwise
+     */
+    private function getInput($fieldName, $branch){
+        foreach ($branch as $variableInstance) {
+            if ($variableInstance['field'] === $fieldName) {
+                return $variableInstance['content'];
+            }
+        }
+        return null;
     }
     private function getBranchCount($assignment){
         return count($assignment['encoding']['branches']);
@@ -127,11 +223,63 @@ class ConflictManager {
         ];
     }
 
+
+    /**
+     * Initializes $this->variables
+     * @param $studyName research_studies/_key
+     */
+    private function setVariables ($studyName) {
+        $variablesStatement = new ArangoStatement ($this->arangodb_connection, [
+            'query' => 'FOR variable IN INBOUND @studyName variable_of
+                            RETURN variable._key',
+            'bindVars' => [
+                'studyName' => "research_studies/".$this->$studyName
+            ],
+            '_flat' => true
+        ]);
+
+        $this->variables = json_decode($variablesStatement->execute()->getAll());
+    }
+
+    /**
+     * Gets the paper for a given assignment
+     * @param $assignmentID string _id of the assignment in question
+     * @return string _id of the paper
+     */
+    private function getPaperID ($assignmentID) {
+        if (!$this->arangodb_documentHandler->has('assignments', $assignmentID)) {
+            echo [
+                'msg' => "Assignment ".$assignmentID." does not exist",
+                'status' => 400
+            ];
+        }
+
+        $paperStatement = new ArangoStatement($this->arangodb_connection, [
+            'query' => 'FOR paper IN INBOUND @assignmentID assignment_of
+                        RETURN paper._id',
+            'bindVars' => [
+                'assignmentID' => "assignments".$assignmentID
+            ],
+            '_flat' => true
+        ]);
+        return $paperStatement->execute()->getAll()[0];
+    }
+
     /*----------------*/
     /* Initialization */
     /*----------------*/
     public $variables;
-    public function __construct() {
-        $this->variables = json_decode("[ \"acclimationDuration\", \"acclimationPeriod\", \"ageAtStart\", \"ageAtWeight\", \"airCirculation\", \"animalLocations\", \"averageFinalWeight\", \"beddingMaterial\", \"breed\", \"cageType\", \"changeFrequency\", \"compoundFrequency\", \"compoundName\", \"constantTemperature\", \"darkHours\", \"daysOnTreatment\", \"dietID\", \"dietType\", \"dietVendor\", \"dietVendorCity\", \"dosage\", \"enrichmentType\", \"errorOfMeasurmentType\", \"errorOfMeasurmentValue\", \"ethicalStatement\", \"exerciseFreq\", \"exerciseType\", \"facilityCityState\", \"facilityCountry\", \"facilityHumidity\", \"facilityName\", \"feedingFrequency\", \"forcedExcecise\", \"geneticManipulationType\", \"lightHours\", \"lightingSchedule\", \"lightStartTime\", \"micePerCage\", \"mouseVendorName\", \"pathogenFreeEnvironment\", \"percentCarbohydrates\", \"percentEnergy\", \"percentFat\", \"percentProtein\", \"routeOfAdministration\", \"sampleSize\", \"sex\", \"surgeryType\", \"temperatureRange\", \"vendorCountry\", \"vendorName\", \"whereReported\" ]", true);
+    private $arangodb_connection;
+    private $arangodb_documentHandler;
+    private $studyName;
+
+
+    public function __construct($db_connection, $studyName) {
+        $this->arangodb_connection = $db_connection;
+        $this->arangodb_documentHandler = new ArangoDocumentHandler($db_connection);
+        $this->studyName = $studyName;
+        $this->setVariables($studyName);
+
+        //$this->variables = json_decode("[ \"acclimationDuration\", \"acclimationPeriod\", \"ageAtStart\", \"ageAtWeight\", \"airCirculation\", \"animalLocations\", \"averageFinalWeight\", \"beddingMaterial\", \"breed\", \"cageType\", \"changeFrequency\", \"compoundFrequency\", \"compoundName\", \"constantTemperature\", \"darkHours\", \"daysOnTreatment\", \"dietID\", \"dietType\", \"dietVendor\", \"dietVendorCity\", \"dosage\", \"enrichmentType\", \"errorOfMeasurmentType\", \"errorOfMeasurmentValue\", \"ethicalStatement\", \"exerciseFreq\", \"exerciseType\", \"facilityCityState\", \"facilityCountry\", \"facilityHumidity\", \"facilityName\", \"feedingFrequency\", \"forcedExcecise\", \"geneticManipulationType\", \"lightHours\", \"lightingSchedule\", \"lightStartTime\", \"micePerCage\", \"mouseVendorName\", \"pathogenFreeEnvironment\", \"percentCarbohydrates\", \"percentEnergy\", \"percentFat\", \"percentProtein\", \"routeOfAdministration\", \"sampleSize\", \"sex\", \"surgeryType\", \"temperatureRange\", \"vendorCountry\", \"vendorName\", \"whereReported\" ]", true);
     }
 }
