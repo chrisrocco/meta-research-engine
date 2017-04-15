@@ -10,6 +10,9 @@ class ConflictManager {
 
         return $conflicts;
     }
+    function test($assignments_array){
+        $this->compareValues($assignments_array);
+    }
 
     /*-------------------------------*/
     /* Conflict Detection Algorithms */
@@ -52,23 +55,47 @@ class ConflictManager {
     private function compareValues($assignments_array){
         $value_conflicts = [];
         /* Start Scan */
-        $inputs = [];
-        foreach($this->variables as $fieldName){                     // For every variable in the database
-            $inputs = [];                                            // A place to store the scope inputs
-            foreach($assignments_array as $assignment){              // For every assignment
-                $input = $this->getInput($fieldName, $assignment);   // Check what they said the field's scope was
-                $inputs[$input][] = $assignment["_key"];               // Record their response into inputs
+        $comparisonSchedule = [];
+        foreach($assignments_array as &$assignment){
+            $myKey = $assignment['_key'];
+//            Schedule constants
+            $comparisonSchedule['constants group'][$myKey] = $assignment['encoding']['constants'];
+//            Schedule branches
+            foreach($assignment['encoding']['branches'] as $key => $value){
+                $comparisonSchedule['branch '.$key][$myKey] = $value;
             }
-            if(count($inputs) > 1) {                                    // If there were multiple responses
-                $value_conflicts[] = $this->newConflict("value", [
-                    "variable" => $fieldName,
-                    "inputs" => $inputs
-                ]);
-            }
-
         }
+
+        echo "Schedule Object \r\n";
+        echo "--------------- \r\n";
+        echo json_encode($comparisonSchedule, JSON_PRETTY_PRINT);
         /* End Scan */
         return $value_conflicts;
+
+        function executeSchedule($schedule){
+            $valueConflicts = [];
+            /* Foreach group */
+            foreach($schedule as $groupName => $group){
+                /* for each question */
+                foreach($this->variables as $variable){
+                    $inputs = []; // records the responses to this question
+
+                    /* For each assignment */
+                    foreach($group as $assignmentKey => $assignment){
+                        /* get this assignments input to the question (variable) */
+                        $input = $this->getInput($variable, $assignment);
+                        $inputs[$variable][$assignmentKey] = $input;
+                    }
+
+                    $valueConflicts[] = $this->newConflict("value", [
+                        "variable" => $variable,
+                        "inputs" => $inputs
+                    ]);
+                }
+            }
+
+            return $valueConflicts;
+        }
     }
 
     /*------------------*/
@@ -93,7 +120,6 @@ class ConflictManager {
     private function getBranchCount($assignment){
         return count($assignment['encoding']['branches']);
     }
-
     private function newConflict($type, $body){
         return [
             "type" => $type,

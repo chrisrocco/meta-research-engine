@@ -23,12 +23,23 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
  * Summary: Gets the domain / field structure of the specified research study
  */
 $app->POST("/conflictscan", function ($request, $response, $args) {
-    $assignments_array = [];
-    foreach($request->getParams() as $key => $value){
-        $assignments_array[] = json_decode($value, true);
-    }
 
-    $conflicts = $this->ConflictManager->compare($assignments_array);
-    return $response
-        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
+    $assignmentKey = $request->getParam("assignmentKey");
+
+    $statement = new ArangoStatement($this->arangodb_connection,
+        [
+            "query" => "FOR paper IN OUTBOUND @assignment assignment_of"
+                . " FOR assignment IN INBOUND paper assignment_of"
+                . " RETURN assignment",
+            "bindVars" => [
+                "assignment" => "assignments/".$assignmentKey
+            ],
+            "_flat" => true
+        ]);
+    $assignments_array = $statement->execute()->getAll();
+//    echo json_encode($assignments_array, JSON_PRETTY_PRINT);
+//    $conflicts = $this->ConflictManager->compare($assignments_array);
+    $this->ConflictManager->test($assignments_array);
+//    return $response
+//        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
 });
