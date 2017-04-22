@@ -6,6 +6,7 @@ require __DIR__ . '/../src/app/ConflictManager.php';
 require __DIR__ . '/../src/app/queries/QueryBank.php';
 
 $settings = require __DIR__ . '/../src/settings.php';
+
 // Open a DB connection
 $connection = new ArangoDBClient\Connection($settings['settings']['arangodb_connection_options']);
 $documentHandler = new ArangoDBClient\DocumentHandler($connection);

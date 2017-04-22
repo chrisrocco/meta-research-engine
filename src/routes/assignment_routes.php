@@ -113,7 +113,6 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
     $userID = $args["ID"];
 
-    global $connection;
     global $documentHandler;
 
     // make sure student exists
@@ -121,18 +120,11 @@ $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
         return $response->write("No student with that ID found")
             ->withStatus(400);
     }
-    $statement = new ArangoStatement(
-        $connection, [
-            'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
-                            FOR paper IN OUTBOUND assignment._id assignment_of
-                                RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
-            'bindVars' => [
-                'userID' => $userID
-            ],
-            '_flat' => true
-        ]
-    );
-    $resultSet = $statement->execute()->getAll();
+
+    $resultSet = QueryBank::execute("getAssignmentsByStudent", [
+        "userID" => $userID
+    ]);
+
     return $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
 });
 
@@ -184,17 +176,17 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $encodingStatement = new ArangoStatement(
         $connection, [
             'query' => '
-            LET constants = (
-                FOR field IN INBOUND @studyName models
-                    RETURN {
-                        "field" : field._key,
-                        "content" : {value : ""}
-                    }
-            )
-            RETURN {
-                "constants" : constants,
-               "branches" : [[]]
-            }',
+                LET constants = (
+                    FOR field IN INBOUND @studyName models
+                        RETURN {
+                            "field" : field._key,
+                            "content" : {value : ""}
+                        }
+                )
+                RETURN {
+                    "constants" : constants,
+                   "branches" : [[]]
+                }',
             'bindVars' => [
                 'studyName' => "research_studies/BigDataUAB" //TODO : change API to require studyName
             ],

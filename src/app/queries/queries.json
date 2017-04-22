@@ -1,3 +1,0 @@
-{
-  "getCollaborators": "FOR paper IN OUTBOUND @assignment assignment_of FOR assignment IN INBOUND paper assignment_of RETURN assignment"
-}

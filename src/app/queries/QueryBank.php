@@ -29,8 +29,7 @@ class QueryBank {
 
     private static function loadQueries(){
         if(!isset(QueryBank::$queries)){
-            $string = file_get_contents("../src/app/queries/queries.json");
-            QueryBank::$queries = json_decode($string, true);
+            QueryBank::$queries = require "../src/app/queries/queries.php";
         }
     }
 }
