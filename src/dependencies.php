@@ -26,10 +26,6 @@ $container['JWT'] = function ($c){
 	return new \Firebase\JWT\JWT;
 };
 
-// Conflict Manager
-$container['ConflictManager'] = function($c){
-    return new ConflictManager();
-};
 
 // ArangoDB connection
 $container["arangodb_connection"] = function($c){

@@ -28,8 +28,19 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
         return $response
             ->write("No assignment found");
     }
-    $assignment = $this->arangodb_documentHandler->get("assignments", $ID)->getAll();
-    return $response->write(json_encode($assignment, JSON_PRETTY_PRINT));
+    $statement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => 'LET assignment = DOCUMENT( CONCAT ("assignments/", @assignmentID) )
+                        FOR paper IN OUTBOUND assignment._id assignment_of
+                            RETURN MERGE( UNSET (assignment, "_id", "_rev"), {title: paper.title, pmcID: paper._key})',
+            'bindVars' => [
+                'assignmentID' => $ID
+            ],
+            '_flat' => true
+        ]
+    );
+    $resultSet = $statement->execute()->getAll()[0];
+    return $response->write(json_encode($resultSet,  JSON_PRETTY_PRINT));
 });
 
 /**
@@ -50,6 +61,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
             ->withStatus(400);
     }
     // TODO - validate encoding integrity before insert
+
     /* Make sure assignment exists */
     if (!$this->arangodb_documentHandler->has("assignments", $args["ID"])) {
         echo "That assignment does not exist";
@@ -65,15 +77,23 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $assignment->encoding = $encoding;
     $result = $this->arangodb_documentHandler->replace($assignment);
 
-    if ($result) {
-        return $response
-            ->write("Updated Assignment " . $args['ID'])
-            ->withStatus(200);
-    } else {
+    if (!$result) {
         return $response
             ->write("Could not update assignment")
             ->withStatus(500);
     }
+
+    $conflictState = $this->ConflictManager->updateConflictsByAssignmentKey($args['ID']);
+
+    if ($conflictState['status'] !== 200) {
+        return $response
+            ->write ($conflictState['msg'])
+            ->withStatus($conflictState['status']);
+    }
+
+    return $response
+        ->write("Updated Assignment " . $args['ID'])
+        ->withStatus(200);
 });
 
 /**
@@ -145,11 +165,33 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
             ->withStatus(400);
     }
 
+    //Generate a blank encoding
+    $encodingStatement = new ArangoStatement(
+        $this->arangodb_connection, [
+            'query' => '
+            LET constants = (
+                FOR field IN INBOUND @studyName models
+                    RETURN {
+                        "field" : field._key,
+                        "content" : {value : ""}
+                    }
+            )
+            RETURN {
+                "constants" : constants,
+               "branches" : [[]]
+            }',
+            'bindVars' => [
+                'studyName' => "research_studies/BigDataUAB" //TODO : change API to require studyName
+            ],
+            '_flat' => true
+        ]
+    );
+
     // Create the assignment
     $assignmentObject = ArangoDocument::createFromArray([
         "done" => false,
         "completion" => 0,
-        "encoding" => null
+        "encoding" => $encodingStatement->execute()->getAll()[0]
     ]);
     $assignmentID = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
 
@@ -182,6 +224,9 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     }
 });
 
+$app->GET ("/papers/{ID}/conflicts", function ($requet, $response, $args) {
+
+});
 
 /** POST studies/{studyname}/papers
  *  Add a new paper to the database
