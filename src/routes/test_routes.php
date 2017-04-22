@@ -43,3 +43,10 @@ $app->POST("/conflictscan", function ($request, $response, $args) {
 //    return $response
 //        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
 });
+
+$app->GET("/queries", function ($req, $res){
+    $queries = new Queries($this->arangodb_connection);
+    $assignments = $queries->getCollaborators([ "assignment" => "assignments/608113" ]);
+
+    echo json_encode($assignments, JSON_PRETTY_PRINT);
+});
