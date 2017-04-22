@@ -26,6 +26,7 @@ $container['JWT'] = function ($c){
 	return new \Firebase\JWT\JWT;
 };
 
+
 // ArangoDB connection
 $container["arangodb_connection"] = function($c){
     return new ArangoDBClient\Connection($c ['settings'] ['arangodb_connection_options']);

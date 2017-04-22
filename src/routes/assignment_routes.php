@@ -61,6 +61,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
             ->withStatus(400);
     }
     // TODO - validate encoding integrity before insert
+
     /* Make sure assignment exists */
     if (!$this->arangodb_documentHandler->has("assignments", $args["ID"])) {
         echo "That assignment does not exist";
@@ -76,15 +77,23 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $assignment->encoding = $encoding;
     $result = $this->arangodb_documentHandler->replace($assignment);
 
-    if ($result) {
-        return $response
-            ->write("Updated Assignment " . $args['ID'])
-            ->withStatus(200);
-    } else {
+    if (!$result) {
         return $response
             ->write("Could not update assignment")
             ->withStatus(500);
     }
+
+    $conflictState = $this->ConflictManager->updateConflictsByAssignmentKey($args['ID']);
+
+    if ($conflictState['status'] !== 200) {
+        return $response
+            ->write ($conflictState['msg'])
+            ->withStatus($conflictState['status']);
+    }
+
+    return $response
+        ->write("Updated Assignment " . $args['ID'])
+        ->withStatus(200);
 });
 
 /**
@@ -215,6 +224,9 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     }
 });
 
+$app->GET ("/papers/{ID}/conflicts", function ($requet, $response, $args) {
+
+});
 
 /** POST studies/{studyname}/papers
  *  Add a new paper to the database
