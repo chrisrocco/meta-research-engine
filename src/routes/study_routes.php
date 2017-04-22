@@ -25,14 +25,17 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 $app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
+    global $documentHandler;
+    global $connection;
+
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
+    if (!$documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
 
     //The study exists, return the structure
-    $statement = new ArangoStatement($this->arangodb_connection, [
+    $statement = new ArangoStatement($connection, [
         'query' => "FOR domain IN INBOUND CONCAT (\"research_studies/\", @studyName) subdomain_of //For each top-level domain
    
                    //assemble the domain's fields
@@ -86,14 +89,17 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 $app->GET("/studies/{studyname}/variables", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
+    global $documentHandler;
+    global $connection;
+
     //Check if the research study exists
-    if (!$this->arangodb_documentHandler->has('research_studies', $studyName)) {
+    if (!$documentHandler->has('research_studies', $studyName)) {
         return $response->write("No research study with name " . $studyName . " found.")
             ->withStatus(400);
     }
 
     //The study exists, run the query
-    $statement = new ArangoStatement($this->arangodb_connection, [
+    $statement = new ArangoStatement($connection, [
         'query' => 'FOR var IN INBOUND CONCAT("research_studies/", @studyName) models
                         SORT var._key
                         RETURN var._key',

@@ -25,18 +25,3 @@ $container ['DB'] = function ($c) {
 $container['JWT'] = function ($c){
 	return new \Firebase\JWT\JWT;
 };
-
-
-// ArangoDB connection
-$container["arangodb_connection"] = function($c){
-    return new ArangoDBClient\Connection($c ['settings'] ['arangodb_connection_options']);
-};
-$container["arangodb_documentHandler"] = function($c){
-    return new ArangoDBClient\DocumentHandler($c ['arangodb_connection']);
-};
-$container["arangodb_collectionHandler"] = function($c){
-    return new ArangoDBClient\CollectionHandler($c ['arangodb_connection']);
-};
-$container["arngodb_edgeHandler"] = function($c) {
-    return new ArangoDBClient\EdgeHandler ($c ['arangodb_connection']);
-};

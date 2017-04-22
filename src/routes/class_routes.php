@@ -22,17 +22,20 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
  * Output-Formats: [application/json]
  */
 $app->GET('/classes/{ID}/students', function ($request, $response, $args) {
+    global $connection;
+    global $documentHandler;
+
     $classID = $args["ID"];
 
     //Make sure the class exists
-    if (!$this->arangodb_documentHandler->has('classes', $classID)) {
+    if (!$documentHandler->has('classes', $classID)) {
         return $response->write("No class with ID " . $classID . " exists.")
             ->withStatus(400);
     }
 
     //The class exists, proceed
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'FOR student IN INBOUND CONCAT("classes/", @classID) enrolled_in RETURN UNSET (student, "password")',
             'bindVars' => [
                 'classID' => $classID
@@ -55,20 +58,23 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $classID = $args["ID"];
     $userID = $request->getParam("studentID");
 
+    global $collectionHandler;
+    global $documentHandler;
+
     //Make sure the class exists
-    if (!$this->arangodb_documentHandler->has('classes', $classID)) {
+    if (!$documentHandler->has('classes', $classID)) {
         return $response->write("No class with ID " . $classID . " exists.")
             ->withStatus(400);
     }
 
     //Make sure the student exists
-    if (!$this->arangodb_documentHandler->has('users', $userID)) {
+    if (!$documentHandler->has('users', $userID)) {
         return $response->write("No student with ID " . $userID . " exists.")
             ->withStatus(400);
     }
 
     //Make sure the student isn't already enrolled
-    if ($this->arangodb_collectionHandler->byExample('enrolled_in', ['_from' => "users/" . $userID, '_to' => "classes/" . $classID])->getCount() > 0) {
+    if ($collectionHandler->byExample('enrolled_in', ['_from' => "users/" . $userID, '_to' => "classes/" . $classID])->getCount() > 0) {
         return $response->write("Student " . $userID . " is already enrolled in class " . $classID)
             ->withStatus(409);
     }
@@ -77,7 +83,7 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
     $edge = new ArangoDocument();
     $edge->set('_from', "users/" . $userID);
     $edge->set('_to', "classes/" . $classID);
-    $enrollmentID = $this->arangodb_documentHandler->save('enrolled_in', $edge);
+    $enrollmentID = $documentHandler->save('enrolled_in', $edge);
     if ($enrollmentID) {
         return $response->write("Successfully enrolled student " . $userID . " into class " . $classID)
             ->withStatus(200);
@@ -97,15 +103,19 @@ $app->POST('/classes/{ID}/students', function ($request, $response, $args) {
  */
 $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
     $userID = $args["ID"];
+
+    global $connection;
+    global $documentHandler;
+
     /* Make sure student exists */
-    if (!$this->arangodb_documentHandler->has('users', $userID)) {
+    if (!$documentHandler->has('users', $userID)) {
         return $response
             ->write("No student with that ID found")
             ->withStatus(400);
     }
     /* Query the DB */
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'FOR class IN OUTBOUND CONCAT("users/", @studentID) enrolled_in
                             LET teachers = (
                                 FOR teacher IN INBOUND class._id teaches
@@ -132,15 +142,19 @@ $app->GET('/students/{ID}/classes', function ($request, $response, $args) {
 $app->GET('/teachers/{ID}/classes', function ($request, $response, $args) {
     $teacherID = $args["ID"];
 
+    global $documentHandler;
+    global $connection;
+    global $collectionHandler;
+
     // Make sure the user exists
-    if (!$this->arangodb_documentHandler->has('users', $teacherID)) {
+    if (!$documentHandler->has('users', $teacherID)) {
         return $response
             ->write("No user with that ID found")
             ->withStatus(400);
     }
 
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'FOR class IN OUTBOUND CONCAT("users/", @teacherID) teaches 
                             LET count = LENGTH (FOR student IN INBOUND class._id enrolled_in RETURN true)
                             RETURN MERGE (UNSET (class, "_id", "_rev"), {studentCount : count})',
@@ -162,13 +176,16 @@ $app->GET('/teachers/{ID}/classes', function ($request, $response, $args) {
  */
 $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
     $teacherID = $args["ID"];
+
+    global $documentHandler;
+
     // make sure teacher exists
-    if (!$this->arangodb_documentHandler->has("users", $teacherID)) {
+    if (!$documentHandler->has("users", $teacherID)) {
         echo "Account does not exist";
         return;
     }
     // make sure they are a teacher
-    $teacher = $this->arangodb_documentHandler->get("users", $teacherID)->getAll();
+    $teacher = $documentHandler->get("users", $teacherID)->getAll();
     if ($teacher['role'] !== "teacher") {
         echo "You're not a teacher! Fuck off, " . $teacher['name'];
         return;
@@ -183,19 +200,19 @@ $app->POST('/teachers/{ID}/classes', function ($request, $response, $args) {
     $className = $request->getParam("name");
     $class = new ArangoDocument();
     $class->set("name", $className);
-    $classID = $this->arangodb_documentHandler->save("classes", $class);
+    $classID = $documentHandler->save("classes", $class);
 
     // Link it to the teacher
     $teachesEdge = new ArangoDocument();
     $teachesEdge->set("_to", $classID);
     $teachesEdge->set("_from", "users/" . $teacherID);
-    $result = $this->arangodb_documentHandler->save("teaches", $teachesEdge);
+    $result = $documentHandler->save("teaches", $teachesEdge);
 
     // Build a response object
     if ($result) {
         $res = [
             "status" => "OK",
-            "teacher" => $this->arangodb_documentHandler->get("users", $teacherID)->getAll(),
+            "teacher" => $documentHandler->get("users", $teacherID)->getAll(),
             "class" => $class->getAll()
         ];
         return $response->write(json_encode($res, JSON_PRETTY_PRINT));

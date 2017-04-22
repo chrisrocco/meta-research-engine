@@ -24,12 +24,16 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
     $ID = $args['ID'];
-    if (!$this->arangodb_documentHandler->has("assignments", $ID)) {
+
+    global $connection;
+    global $documentHandler;
+
+    if (!$documentHandler->has("assignments", $ID)) {
         return $response
             ->write("No assignment found");
     }
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'LET assignment = DOCUMENT( CONCAT ("assignments/", @assignmentID) )
                         FOR paper IN OUTBOUND assignment._id assignment_of
                             RETURN MERGE( UNSET (assignment, "_id", "_rev"), {title: paper.title, pmcID: paper._key})',
@@ -50,6 +54,10 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
  */
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $formData = $request->getParams();
+
+    global $connection;
+    global $documentHandler;
+
     /* Validate request */
     if (
         !isset($formData['encoding']) ||
@@ -63,7 +71,7 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     // TODO - validate encoding integrity before insert
 
     /* Make sure assignment exists */
-    if (!$this->arangodb_documentHandler->has("assignments", $args["ID"])) {
+    if (!$documentHandler->has("assignments", $args["ID"])) {
         echo "That assignment does not exist";
         return;
     }
@@ -71,11 +79,11 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
 
     $encoding = json_decode($formData['encoding'], false);
 
-    $assignment = $this->arangodb_documentHandler->get("assignments", $args["ID"]);
+    $assignment = $documentHandler->get("assignments", $args["ID"]);
     $assignment->set("done", $formData['done']);
     $assignment->set("completion", $formData['completion']);
     $assignment->encoding = $encoding;
-    $result = $this->arangodb_documentHandler->replace($assignment);
+    $result = $documentHandler->replace($assignment);
 
     if (!$result) {
         return $response
@@ -83,13 +91,13 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
             ->withStatus(500);
     }
 
-    $conflictState = $this->ConflictManager->updateConflictsByAssignmentKey($args['ID']);
-
-    if ($conflictState['status'] !== 200) {
-        return $response
-            ->write ($conflictState['msg'])
-            ->withStatus($conflictState['status']);
-    }
+//    $conflictState = $this->ConflictManager->updateConflictsByAssignmentKey($args['ID']);
+//
+//    if ($conflictState['status'] !== 200) {
+//        return $response
+//            ->write ($conflictState['msg'])
+//            ->withStatus($conflictState['status']);
+//    }
 
     return $response
         ->write("Updated Assignment " . $args['ID'])
@@ -104,13 +112,17 @@ $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
  */
 $app->GET('/users/{ID}/assignments', function ($request, $response, $args) {
     $userID = $args["ID"];
+
+    global $connection;
+    global $documentHandler;
+
     // make sure student exists
-    if (!$this->arangodb_documentHandler->has('users', $userID)) {
+    if (!$documentHandler->has('users', $userID)) {
         return $response->write("No student with that ID found")
             ->withStatus(400);
     }
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                             FOR paper IN OUTBOUND assignment._id assignment_of
                                 RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
@@ -133,21 +145,24 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
     $userID = $args['ID'];
     $pmcID = $request->getParam("pmcID");
 
+    global $connection;
+    global $documentHandler;
+
     // Make sure student exists
-    if (!$this->arangodb_documentHandler->has("users", $userID)) {
+    if (!$documentHandler->has("users", $userID)) {
         return $response
             ->write("No user with that ID")
             ->withStatus(400);
     }
     // Make sure paper exists
-    if (!$this->arangodb_documentHandler->has("papers", $pmcID)) {
+    if (!$documentHandler->has("papers", $pmcID)) {
         return $response
             ->write("No paper with that ID")
             ->withStatus(400);
     }
     // Make sure the assignment doesn't exist already
     $statement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                             FOR paper IN OUTBOUND assignment._id assignment_of
                                 FILTER paper._key == @pmcID
@@ -167,7 +182,7 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
 
     //Generate a blank encoding
     $encodingStatement = new ArangoStatement(
-        $this->arangodb_connection, [
+        $connection, [
             'query' => '
             LET constants = (
                 FOR field IN INBOUND @studyName models
@@ -193,21 +208,21 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
         "completion" => 0,
         "encoding" => $encodingStatement->execute()->getAll()[0]
     ]);
-    $assignmentID = $this->arangodb_documentHandler->save("assignments", $assignmentObject);
+    $assignmentID = $documentHandler->save("assignments", $assignmentObject);
 
     // Create the assignment_of edge
     $assignment_of = ArangoDocument::createFromArray([
         "_to" => "papers/" . $pmcID,
         "_from" => $assignmentID
     ]);
-    $assignment_of_result = $this->arangodb_documentHandler->save("assignment_of", $assignment_of);
+    $assignment_of_result = $documentHandler->save("assignment_of", $assignment_of);
 
     // Create the assigned_to edge
     $assigned_to = ArangoDocument::createFromArray([
         "_to" => "users/" . $userID,
         "_from" => $assignmentID
     ]);
-    $assigned_to_result = $this->arangodb_documentHandler->save("assigned_to", $assigned_to);
+    $assigned_to_result = $documentHandler->save("assigned_to", $assigned_to);
 
     // get the new assignment and return it
     if ($assignmentID && $assignment_of_result && $assigned_to_result) {
@@ -235,8 +250,10 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
     $studyName = $args['studyname'];
     $formData = $request->getParams();
 
+    global $documentHandler;
+
     //Check to make sure that the research study exists
-    if (!$this->arangodb_documentHandler->has("research_studies", $studyName)) {
+    if (!$documentHandler->has("research_studies", $studyName)) {
         return $response->write("No research study with name " . $studyName . " found")
             ->withStatus(400);
     }
@@ -247,7 +264,7 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
             ->withStatus(400);
     }
 
-    if ($this->arangodb_documentHandler->has("papers", $formData['pmcID'])) {
+    if ($documentHandler->has("papers", $formData['pmcID'])) {
         return $response->write("A paper with pmcID " . $formData['pmcID'] . " already exists")
             ->withStatus(409);
     }
@@ -256,7 +273,7 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
     $paper = new ArangoDocument();
     $paper->set("_key", $formData['pmcID']);
     $paper->set("title", $formData['title']);
-    $paperID = $this->arangodb_documentHandler->save("papers", $paper);
+    $paperID = $documentHandler->save("papers", $paper);
 
     if (!$paperID) {
         return $response->write("Something went wrong when saving the paper")
@@ -267,7 +284,7 @@ $app->POST("/studies/{studyname}/papers", function ($request, $response, $args) 
     $edge = new ArangoDocument();
     $edge->set("_from", "papers/" . $formData['pmcID']);
     $edge->set("_to", "research_studies/" . $studyName);
-    $edgeID = $this->arangodb_documentHandler->save("paper_of", $edge);
+    $edgeID = $documentHandler->save("paper_of", $edge);
 
     if (!$edgeID) {
         return $response

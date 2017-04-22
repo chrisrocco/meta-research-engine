@@ -23,9 +23,10 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
  * Summary: Gets the domain / field structure of the specified research study
  */
 $app->POST("/conflictscan", function ($request, $response, $args) {
+    global $connection;
 
     $assignmentKey = $request->getParam("assignmentKey");
-    $conflictManager = new ConflictManager($this->arangodb_connection, "BigDataUAB");
+    $conflictManager = new ConflictManager($connection, "BigDataUAB");
 
     $statement = new ArangoStatement($this->arangodb_connection,
         [
@@ -46,8 +47,7 @@ $app->POST("/conflictscan", function ($request, $response, $args) {
 });
 
 $app->GET("/queries", function ($req, $res){
-    $queries = new Queries($this->arangodb_connection);
-    $assignments = $queries->getCollaborators([ "assignment" => "assignments/608113" ]);
+    $assignments = QueryBank::execute("getCollaborators", [ "assignment" => "assignments/608113" ]);
 
     echo json_encode($assignments, JSON_PRETTY_PRINT);
 });

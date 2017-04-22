@@ -25,7 +25,8 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 $app->POST('/users/login', function ($request, $response, $args) {
     $email = $request->getParam("email");
     $password = $request->getParam("password");
-    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
+
+    global $collectionHandler;
     $cursor = $collectionHandler->byExample('users', ['email' => $email, 'password' => $password]);
 
     // Query the user
@@ -79,8 +80,8 @@ $app->POST('/users/login', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->POST('/users/register', function ($request, $response, $args) {
-    $collectionHandler = new ArangoCollectionHandler($this->arangodb_connection);
-    $documentHandler = new ArangoDocumentHandler($this->arangodb_connection);
+    global $collectionHandler;
+    global $documentHandler;
     $formData = $request->getParams();
     // Validate role input
     if (!isset($formData['name']) ||
