@@ -5,6 +5,12 @@ require __DIR__ . '/../models/loader.php';
 require __DIR__ . '/../src/app/ConflictManager.php';
 require __DIR__ . '/../src/app/queries/QueryBank.php';
 
+require __DIR__ . '/../src/app/handlers/AssignmentHandler.php';
+require __DIR__ . '/../src/app/handlers/PaperHandler.php';
+require __DIR__ . '/../src/app/handlers/StudyHandler.php';
+require __DIR__ . '/../src/app/handlers/UserHandler.php';
+
+
 $settings = require __DIR__ . '/../src/settings.php';
 
 // Open a DB connection
@@ -23,7 +29,11 @@ require __DIR__ . '/../src/dependencies.php';
 require __DIR__ . '/../src/middleware.php';
 
 // Register routes
-require __DIR__ . '/../src/routes.php';
+require( __DIR__ . "/../src/routes/user_routes.php");
+require( __DIR__ . "/../src/routes/assignment_routes.php");
+require( __DIR__ . "/../src/routes/class_routes.php");
+require( __DIR__ . "/../src/routes/study_routes.php");
+require( __DIR__ . "/../src/routes/test_routes.php");
 
 // Run app
 $app->run();
