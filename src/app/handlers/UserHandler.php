@@ -23,7 +23,6 @@ class UserHandler {
     }
 
 
-
     public static function register($name, $email, $password, $role){
 
         global $collectionHandler;
