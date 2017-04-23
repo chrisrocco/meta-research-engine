@@ -28,10 +28,11 @@ $app->POST("/conflictscan", function ($request, $response, $args) {
     $assignmentKey = $request->getParam("assignmentKey");
     $conflictManager = new ConflictManager($connection, "BigDataUAB");
 
-    $statement = new ArangoStatement($this->arangodb_connection,
+    $statement = new ArangoStatement($connection,
         [
             "query" => 'FOR paper IN OUTBOUND @assignment assignment_of
                             FOR assignment IN INBOUND paper assignment_of
+                                FILTER assignment.completion != null
                                 RETURN assignment',
             "bindVars" => [
                 "assignment" => "assignments/".$assignmentKey
@@ -39,11 +40,10 @@ $app->POST("/conflictscan", function ($request, $response, $args) {
             "_flat" => true
         ]);
     $assignments_array = $statement->execute()->getAll();
-//    echo json_encode($assignments_array, JSON_PRETTY_PRINT);
-//    $conflicts = $this->ConflictManager->compare($assignments_array);
-    $this->ConflictManager->test($assignments_array);
-//    return $response
-//        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
+
+    $conflicts = $conflictManager->generateConflictReport($assignments_array);
+    return $response
+        ->write(json_encode($conflicts, JSON_PRETTY_PRINT));
 });
 
 $app->GET("/queries", function ($req, $res){

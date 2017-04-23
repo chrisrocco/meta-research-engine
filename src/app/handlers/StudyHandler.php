@@ -8,18 +8,24 @@
  */
 class StudyHandler {
 
+    private $ID;
+
     function __construct($ID) {
-        
+        global $documentHandler;
+        if (!$documentHandler->has('research_studies', $ID)) {
+            throw new Exception('No study with that ID');
+        }
+        $this->ID = $ID;
     }
 
 
 
     function getVariables() {
-
+        return QueryBank::execute("getVariables", ["studyName" => $this->ID]);
     }
 
     function getStructure(){
-
+        return QueryBank::execute("getStudyStructure", [ "studyName" => $this->ID ]);
     }
 
 

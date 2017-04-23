@@ -25,21 +25,10 @@ use ArangoDBClient\UpdatePolicy as ArangoUpdatePolicy;
 $app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
-    global $documentHandler;
-    global $connection;
+    $study = new StudyHandler($studyName);
+    $structure = $study->getStructure();
 
-    //Check if the research study exists
-    if (!$documentHandler->has('research_studies', $studyName)) {
-        return $response->write("No research study with name " . $studyName . " found.")
-            ->withStatus(400);
-    }
-
-    $res = QueryBank::execute("getStudyStructure", [
-        "studyName" => "BigDataUAB"
-    ]);
-
-    return $response->write(json_encode($res, JSON_PRETTY_PRINT));
-
+    return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
 /**
@@ -49,15 +38,8 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 $app->GET("/studies/{studyname}/variables", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
-    global $documentHandler;
+    $study = new StudyHandler($studyName);
+    $variables = $study->getVariables();
 
-    //Check if the research study exists
-    if (!$documentHandler->has('research_studies', $studyName)) {
-        return $response->write("No research study with name " . $studyName . " found.")
-            ->withStatus(400);
-    }
-
-    $resultSet = QueryBank::execute("getVariables", ["studyName" => "BigDataUAB"]);
-
-    return $response->write(json_encode($resultSet, JSON_PRETTY_PRINT));
+    return $response->write(json_encode($variables, JSON_PRETTY_PRINT));
 });

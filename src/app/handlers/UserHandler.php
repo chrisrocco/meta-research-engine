@@ -13,7 +13,6 @@ class UserHandler {
     const ERROR = 2;
     const INVALID = 3;
 
-
     public function sendValidation(){
 
     }
