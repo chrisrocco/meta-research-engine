@@ -13,6 +13,65 @@ class UserHandler {
     const ERROR = 2;
     const INVALID = 3;
 
+    private $ID;
+
+    function __construct($ID) {
+        global $documentHandler;
+
+        if (!$documentHandler->has('users', $ID)) {
+            throw new Exception("No student with that ID found");
+        }
+
+        $this->ID = $ID;
+    }
+
+    public function getAssignments(){
+        return QueryBank::execute("getAssignmentsByStudent", [ "userID" => $this->ID ]);
+    }
+
+    public function createAssignment($pmcID){
+        global $documentHandler;
+
+        // make sure paper exists
+        if (!$documentHandler->has("papers", $pmcID)) {
+            throw new Exception("No paper with that ID");
+        }
+
+        // make sure assignment doesnt exist
+        $existCount = QueryBank::execute("assignmentExistCount", [
+            "userID" => $this->ID,
+            "pmcID" => $pmcID
+        ]);
+        if(count($existCount) > 0){
+            throw new Exception("Duplicate Assignment");
+        }
+
+        // generate blank encoding
+        $blankEncoding = QueryBank::execute("getBlankEncoding", ['studyName' => "research_studies/BigDataUAB"]);
+
+        // Create the assignment
+        $assignmentObject = ArangoDBClient\Document::createFromArray([
+            "done" => false,
+            "completion" => 0,
+            "encoding" => $blankEncoding[0]
+        ]);
+        $assignmentID = $documentHandler->save("assignments", $assignmentObject);
+
+        // Create the assignment_of edge
+        $assignment_of = ArangoDBClient\Document::createFromArray([
+            "_to" => "papers/" . $pmcID,
+            "_from" => $assignmentID
+        ]);
+        $documentHandler->save("assignment_of", $assignment_of);
+
+        // Create the assigned_to edge
+        $assigned_to = ArangoDBClient\Document::createFromArray([
+            "_to" => "users/" . $this->ID,
+            "_from" => $assignmentID
+        ]);
+        $documentHandler->save("assigned_to", $assigned_to);
+    }
+
     public function sendValidation(){
 
     }

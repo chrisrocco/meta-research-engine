@@ -14,16 +14,13 @@ class PaperHandler {
 
 
     function mergeAssignment($assignmentHandler){
-
     }
 
     function getAssignments(){
-
     }
 
 
 
     public static function create($studyName){
-
     }
 }

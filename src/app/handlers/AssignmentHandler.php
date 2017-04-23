@@ -11,15 +11,32 @@ class AssignmentHandler
     private $assignmentObject;
 
     function __construct($ID) {
-        // set assignment object. example:
-//        global $documentHandler;
-//        $this->assignmentObject = $documentHandler->getById("assignments", $ID);
+        global $documentHandler;
+        if (!$documentHandler->has("assignments", $ID)) {
+            throw new Exception("That assignment does not exist");
+        }
+
+        $assignment = QueryBank::execute("getAssignmentByID", [
+            "assignmentID" => $ID
+        ]);
+
+        $this->assignmentObject = $assignment[0];
     }
 
 
 
-    public function update($updatedAssignmentObject){
+    public function update($newData){
+        $encoding = json_decode($newData['encoding'], false);
+        global $documentHandler;
+        $assignment = $documentHandler->get("assignments", $this->assignmentObject['_key']);
+        $assignment->set("done", $newData['done']);
+        $assignment->set("completion", $newData['completion']);
+        $assignment->encoding = $encoding;
+        return $documentHandler->replace($assignment);
+    }
 
+    public function getAssignment(){
+        return $this->assignmentObject;
     }
 
     public function pullRequest(){

@@ -28,6 +28,25 @@ class StudyHandler {
         return QueryBank::execute("getStudyStructure", [ "studyName" => $this->ID ]);
     }
 
+    function addPaper($pmcID, $title){
+        global $documentHandler;
+        if ($documentHandler->has("papers", $pmcID)) {
+            throw new Exception("A paper with pmcID " . $pmcID . " already exists");
+        }
+
+        //Create the paper document
+        $paper = new ArangoDBClient\Document();
+        $paper->set("_key", $pmcID);
+        $paper->set("title", $title);
+        $documentHandler->save("papers", $paper);
+
+        //Create the edge from the new paper to the research study
+        $edge = new ArangoDBClient\Document();
+        $edge->set("_from", "papers/" . $pmcID);
+        $edge->set("_to", "research_studies/" . $this->ID);
+        $documentHandler->save("paper_of", $edge);
+    }
+
 
 
     public static function create($name){

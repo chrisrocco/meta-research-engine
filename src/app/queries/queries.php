@@ -37,5 +37,26 @@ return [
                             })",
     "getAssignmentsByStudent" => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
                                     FOR paper IN OUTBOUND assignment._id assignment_of
-                                        RETURN MERGE(assignment, {title: paper.title, pmcID: paper._key})',
+                                        RETURN MERGE(
+                                            UNSET(assignment, "encoding"),
+                                            {title: paper.title, pmcID: paper._key}
+                                        )',
+    "getBlankEncoding" => 'LET constants = (
+                                FOR field IN INBOUND @studyName models
+                                    RETURN {
+                                        "field" : field._key,
+                                        "content" : {value : ""}
+                                    }
+                            )
+                            RETURN {
+                                "constants" : constants,
+                               "branches" : [[]]
+                            }',
+    "assignmentExistCount" => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
+                                FOR paper IN OUTBOUND assignment._id assignment_of
+                                    FILTER paper._key == @pmcID
+                                    RETURN 1',
+    "getAssignmentByID" => 'LET assignment = DOCUMENT( CONCAT ("assignments/", @assignmentID) )
+                                FOR paper IN OUTBOUND assignment._id assignment_of
+                                    RETURN MERGE( UNSET (assignment, "_id", "_rev"), {title: paper.title, pmcID: paper._key})'
 ];
