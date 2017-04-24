@@ -19,10 +19,6 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
         array (
             'Webmozart\\Assert\\' => 17,
         ),
-        'T' => 
-        array (
-            'Tests\\' => 6,
-        ),
         'S' => 
         array (
             'Symfony\\Component\\Yaml\\' => 23,
@@ -48,6 +44,10 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
             'Firebase\\JWT\\' => 13,
             'FastRoute\\' => 10,
         ),
+        'E' => 
+        array (
+            'Entities\\' => 9,
+        ),
         'D' => 
         array (
             'Doctrine\\Instantiator\\' => 22,
@@ -65,10 +65,6 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
-        ),
-        'Tests\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/tests',
         ),
         'Symfony\\Component\\Yaml\\' => 
         array (
@@ -109,6 +105,10 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
+        ),
+        'Entities\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/lib/entities',
         ),
         'Doctrine\\Instantiator\\' => 
         array (

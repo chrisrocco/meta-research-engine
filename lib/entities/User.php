@@ -1,4 +1,6 @@
 <?php
+namespace Entities;
+use QueryBank;
 
 /**
  * Created by PhpStorm.
@@ -6,7 +8,7 @@
  * Date: 4/22/2017
  * Time: 5:13 PM
  */
-class UserHandler {
+class User {
 
     const SUCCESS = 0;
     const ALREADY_EXISTS = 1;
@@ -88,7 +90,7 @@ class UserHandler {
 
         // Make sure account with email does not already exist
         if ($collectionHandler->byExample('users', [ 'email' => $email ])->getCount() > 0) {
-            return UserHandler::ALREADY_EXISTS;
+            return User::ALREADY_EXISTS;
         }
 
         // Create a new document
@@ -103,9 +105,9 @@ class UserHandler {
         // check that the user was created
         $result = $documentHandler->has('users', $id);
         if ($result == true) {
-            return UserHandler::SUCCESS;
+            return User::SUCCESS;
         } else {
-            return UserHandler::ERROR;
+            return User::ERROR;
         }
     }
 
@@ -114,7 +116,7 @@ class UserHandler {
         global $collectionHandler;
         $cursor = $collectionHandler->byExample('users', ['email' => $email, 'password' => $password]);
 
-        if ($cursor->getCount() == 0) return UserHandler::INVALID;
+        if ($cursor->getCount() == 0) return User::INVALID;
 
         $user = $cursor->current()->getAll();
         $userDetails = [

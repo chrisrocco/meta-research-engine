@@ -1,4 +1,6 @@
 <?php
+namespace Entities;
+use QueryBank;
 
 /**
  * Created by PhpStorm.
@@ -6,7 +8,7 @@
  * Date: 4/22/2017
  * Time: 5:15 PM
  */
-class PaperHandler {
+class Paper {
 
     private $ID;
 

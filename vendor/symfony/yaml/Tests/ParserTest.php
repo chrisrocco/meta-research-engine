@@ -910,10 +910,10 @@ EOF;
     {
         $this->assertEquals(array(
             'services' => array(
-                'app.foo_service' => array(
+                'lib.foo_service' => array(
                     'class' => 'Foo',
                 ),
-                'app/bar_service' => array(
+                'lib/bar_service' => array(
                     'class' => 'Bar',
                 ),
             ),
@@ -922,11 +922,11 @@ EOF;
 services:
 # comment 2
     # comment 3
-    app.foo_service:
+    lib.foo_service:
         class: Foo
 # comment 4
     # comment 5
-    app/bar_service:
+    lib/bar_service:
         class: Bar
 EOF
         ));

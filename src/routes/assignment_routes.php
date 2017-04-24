@@ -1,4 +1,5 @@
 <?php
+use Entities\Assignment as Assignment;
 
 /**
  * GET assignmentsIDGet
@@ -7,8 +8,8 @@
  * Output-Formats: [application/json]
  */
 $app->GET('/assignments/{ID}', function ($request, $response, $args) {
-    $assignmentHandler = new AssignmentHandler($args['ID']);
-    $assignmentObject = $assignmentHandler->getAssignment();
+    $assignment = new Assignment($args['ID']);
+    $assignmentObject = $assignment->getAssignment();
     return $response->write(json_encode($assignmentObject,  JSON_PRETTY_PRINT));
 });
 
@@ -20,7 +21,7 @@ $app->GET('/assignments/{ID}', function ($request, $response, $args) {
 $app->PUT('/assignments/{ID}', function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $assignment = new AssignmentHandler($args['ID']);
+    $assignment = new Assignment($args['ID']);
     $assignment->update($formData);
 
     return $response

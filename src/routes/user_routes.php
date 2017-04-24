@@ -1,4 +1,5 @@
 <?php
+use Entities\User as User;
 
 /**
  * POST usersLoginPost
@@ -9,9 +10,9 @@
 $app->POST('/users/login', function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $token = UserHandler::login($formData['email'], $formData['password']);
+    $token = User::login($formData['email'], $formData['password']);
 
-    if($token === UserHandler::INVALID){
+    if($token === User::INVALID){
         return $response
             ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
             ->withStatus(403);
@@ -32,18 +33,18 @@ $app->POST('/users/register', function ($request, $response, $args) {
 
     $formData = $request->getParams();
 
-    $result_code = UserHandler::register($formData['name'], $formData['email'], $formData['password'], $formData['role']);
+    $result_code = User::register($formData['name'], $formData['email'], $formData['password'], $formData['role']);
 
     switch ($result_code){
-        case UserHandler::SUCCESS :
+        case User::SUCCESS :
             return $response
                 ->write("Account created successfully.")
                 ->withStatus(200);
-        case UserHandler::ERROR :
+        case User::ERROR :
             return $response
                 ->write("Could not create account")
                 ->withStatus(500);
-        case UserHandler::ALREADY_EXISTS :
+        case User::ALREADY_EXISTS :
             return $response
                 ->write("An account with that email already exists")
                 ->withStatus(409);

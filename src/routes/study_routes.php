@@ -1,4 +1,5 @@
 <?php
+use Entities\Study as Study;
 
 /*
  * GET studies/{studyname}/structure
@@ -7,7 +8,7 @@
 $app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
-    $study = new StudyHandler($studyName);
+    $study = new Study($studyName);
     $structure = $study->getStructure();
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
@@ -20,7 +21,7 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
 $app->GET("/studies/{studyname}/variables", function ($request, $response, $args) {
     $studyName = $args['studyname'];
 
-    $study = new StudyHandler($studyName);
+    $study = new Study($studyName);
     $variables = $study->getVariables();
 
     return $response->write(json_encode($variables, JSON_PRETTY_PRINT));

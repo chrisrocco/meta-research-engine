@@ -6,8 +6,8 @@ return [
 
         // Monolog settings
         'logger' => [
-            'name' => 'slim-app',
-            'path' => __DIR__ . '/../logs/app.log',
+            'name' => 'slim-lib',
+            'path' => __DIR__ . '/../logs/lib.log',
             'level' => \Monolog\Logger::DEBUG,
         ],
 

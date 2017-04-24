@@ -18,8 +18,8 @@ class ParseExceptionTest extends TestCase
 {
     public function testGetMessage()
     {
-        $exception = new ParseException('Error message', 42, 'foo: bar', '/var/www/app/config.yml');
-        $message = 'Error message in "/var/www/app/config.yml" at line 42 (near "foo: bar")';
+        $exception = new ParseException('Error message', 42, 'foo: bar', '/var/www/lib/config.yml');
+        $message = 'Error message in "/var/www/lib/config.yml" at line 42 (near "foo: bar")';
 
         $this->assertEquals($message, $exception->getMessage());
     }

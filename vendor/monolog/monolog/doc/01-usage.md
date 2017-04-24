@@ -92,7 +92,7 @@ use Monolog\Handler\FirePHPHandler;
 
 // Create the logger
 $logger = new Logger('my_logger');
-// Now add some handlers
+entities
 $logger->pushHandler(new StreamHandler(__DIR__.'/my_app.log', Logger::DEBUG));
 $logger->pushHandler(new FirePHPHandler());
 
@@ -180,7 +180,7 @@ use Monolog\Handler\FirePHPHandler;
 $stream = new StreamHandler(__DIR__.'/my_app.log', Logger::DEBUG);
 $firephp = new FirePHPHandler();
 
-// Create the main logger of the app
+lib
 $logger = new Logger('my_logger');
 $logger->pushHandler($stream);
 $logger->pushHandler($firephp);

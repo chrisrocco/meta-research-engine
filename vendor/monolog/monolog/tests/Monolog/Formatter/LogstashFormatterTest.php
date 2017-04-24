@@ -145,7 +145,7 @@ class LogstashFormatterTest extends \PHPUnit_Framework_TestCase
 
     public function testFormatWithApplicationName()
     {
-        $formatter = new LogstashFormatter('app', 'test');
+        $formatter = new LogstashFormatter('lib', 'test');
         $record = array(
             'level' => Logger::ERROR,
             'level_name' => 'ERROR',
@@ -159,7 +159,7 @@ class LogstashFormatterTest extends \PHPUnit_Framework_TestCase
         $message = json_decode($formatter->format($record), true);
 
         $this->assertArrayHasKey('@type', $message);
-        $this->assertEquals('app', $message['@type']);
+        $this->assertEquals('lib', $message['@type']);
     }
 
     /**
@@ -277,7 +277,7 @@ class LogstashFormatterTest extends \PHPUnit_Framework_TestCase
 
     public function testFormatWithApplicationNameV1()
     {
-        $formatter = new LogstashFormatter('app', 'test', null, 'ctxt_', LogstashFormatter::V1);
+        $formatter = new LogstashFormatter('lib', 'test', null, 'ctxt_', LogstashFormatter::V1);
         $record = array(
             'level' => Logger::ERROR,
             'level_name' => 'ERROR',
@@ -291,7 +291,7 @@ class LogstashFormatterTest extends \PHPUnit_Framework_TestCase
         $message = json_decode($formatter->format($record), true);
 
         $this->assertArrayHasKey('type', $message);
-        $this->assertEquals('app', $message['type']);
+        $this->assertEquals('lib', $message['type']);
     }
 
     public function testFormatWithLatin9Data()

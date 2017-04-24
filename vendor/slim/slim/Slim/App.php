@@ -68,7 +68,7 @@ class App
     /**
      * Create new application
      *
-     * @param ContainerInterface|array $container Either a ContainerInterface or an associative array of app settings
+     * @param ContainerInterface|array $container Either a ContainerInterface or an associative array of lib settings
      * @throws InvalidArgumentException when no container is provided that implements ContainerInterface
      */
     public function __construct($container = [])
@@ -83,7 +83,7 @@ class App
     }
 
     /**
-     * Enable access to the DI container by consumers of $app
+     * Enable access to the DI container by consumers of $lib
      *
      * @return ContainerInterface
      */
@@ -95,7 +95,7 @@ class App
     /**
      * Add middleware
      *
-     * This method prepends new middleware to the app's middleware stack.
+     * This method prepends new middleware to the lib's middleware stack.
      *
      * @param  callable|string    $callable The callback routine
      *
