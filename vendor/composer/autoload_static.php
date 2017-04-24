@@ -19,6 +19,10 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
         array (
             'Webmozart\\Assert\\' => 17,
         ),
+        'U' => 
+        array (
+            'UnitTestFiles\\' => 14,
+        ),
         'S' => 
         array (
             'Symfony\\Component\\Yaml\\' => 23,
@@ -65,6 +69,10 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'UnitTestFiles\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/UnitTestFiles/Test',
         ),
         'Symfony\\Component\\Yaml\\' => 
         array (
@@ -121,6 +129,13 @@ class ComposerStaticInit61f70ca35afb35ba6ae0fea4b014ad9a
     );
 
     public static $prefixesPsr0 = array (
+        'U' => 
+        array (
+            'UnitTestFiles' => 
+            array (
+                0 => __DIR__ . '/../..' . '/',
+            ),
+        ),
         'P' => 
         array (
             'Prophecy\\' => 
