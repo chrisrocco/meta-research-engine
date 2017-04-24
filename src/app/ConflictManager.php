@@ -8,7 +8,6 @@ class ConflictManager {
 
     function generateConflictReport($assignments_array){
         assert($this->variables);
-
         $conflicts = array_merge(
             $this->compareStructures($assignments_array),
             $this->compareScopes($assignments_array),
@@ -139,7 +138,6 @@ class ConflictManager {
     private function recordResponse(&$inputs, $response, $assignmentKey){
         /* If the someone else has already responded this way */
         foreach($inputs as &$input){
-
             if($input['response'] == $response){
                 array_push($input['assignmentKeys'], $assignmentKey);
                 return;

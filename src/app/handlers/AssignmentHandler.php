@@ -8,7 +8,7 @@
  */
 class AssignmentHandler
 {
-    private $assignmentObject;
+    private $ID;
 
     function __construct($ID) {
         global $documentHandler;
@@ -16,11 +16,7 @@ class AssignmentHandler
             throw new Exception("That assignment does not exist");
         }
 
-        $assignment = QueryBank::execute("getAssignmentByID", [
-            "assignmentID" => $ID
-        ]);
-
-        $this->assignmentObject = $assignment[0];
+        $this->ID = $ID;
     }
 
 
@@ -36,7 +32,9 @@ class AssignmentHandler
     }
 
     public function getAssignment(){
-        return $this->assignmentObject;
+        return QueryBank::execute("getAssignmentByID", [
+            "assignmentID" => $this->ID
+        ]);
     }
 
     public function pullRequest(){
