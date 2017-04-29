@@ -1,3 +1,4 @@
 /.idea
 
 !/logs/README.md
+/vendor/
