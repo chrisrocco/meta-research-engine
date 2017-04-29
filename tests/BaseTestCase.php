@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DB\DB as DB;
+use DB\DB;
 use Slim\App;
 use Slim\Http\Request;
 use Slim\Http\Response;

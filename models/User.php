@@ -1,9 +1,6 @@
 <?php
 namespace Models;
 
-
-
-use DB\DB;
 use Firebase\JWT\JWT;
 
 class User extends Model
