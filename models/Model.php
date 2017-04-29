@@ -12,7 +12,7 @@ use triagens\ArangoDb\Document;
 
 abstract class Model {
 
-    static $collection;     // should be overridden by each child class
+    static $collection;     // uses a default collection name. For example, the Model, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.
     protected $dataObject;
 
     public function get($property){
@@ -67,9 +67,6 @@ abstract class Model {
     }
     public static function getCollection(){
         if( static::$collection ){
-            if(!DB::getCollectionHandler()->has(static::$collection)){
-                DB::getCollectionHandler()->create(static::$collection);
-            }
             return static::$collection;
         }
 
@@ -77,6 +74,11 @@ abstract class Model {
         $rc = new \ReflectionClass(static::class);
         $default_name = strtolower($rc->getShortName()) . "s";
         static::$collection = $default_name;
+        // Dynamically create the collection in the DB
+        $ch = DB::getCollectionHandler();
+        if(!$ch->has(static::$collection)){
+            $ch->create(static::$collection);
+        }
 
         return static::getCollection();
     }

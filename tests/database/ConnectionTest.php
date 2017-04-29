@@ -19,11 +19,4 @@ class ConnectionTest extends BaseTestCase
 
         self::assertTrue(  $connection !== false  );
     }
-
-    public function testDeveleopmentConnection(){
-        DB::setDevMode();
-        $connection = DB::getConnection();
-
-        self::assertTrue(  $connection !== false  );
-    }
 }

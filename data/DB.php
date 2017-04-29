@@ -66,7 +66,7 @@ class DB
         return self::getConnection();
     }
 
-    public static function setDevMode(){
+    public static function enterDevelopmentMode(){
         self::$is_dev_mode = true;
     }
 

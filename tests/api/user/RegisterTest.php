@@ -10,7 +10,7 @@ use Tests\BaseTestCase;
  * Time: 5:05 PM
  */
 
-class LoginTest extends BaseTestCase {
+class RegisterTest extends BaseTestCase {
 
     static $test_data = [
         'first_name'  => 'Chris',
