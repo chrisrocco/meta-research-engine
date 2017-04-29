@@ -38,8 +38,9 @@
     }
   },
   "autoload": {
-    "psr-0": {
-      "UnitTestFiles": ""
+    "psr-4": {
+      "Models\\": "models/",
+      "Database\\": "data/"
     }
   },
   "scripts": {
