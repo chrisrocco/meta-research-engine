@@ -1,7 +1,5 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../vendor/arangodb-php/autoload.php'; // Because the composer install is broken
-
 require __DIR__ . '/../lib/ConflictManager.php';    // These need to go
 require __DIR__ . '/../lib/QueryBank.php';
 
