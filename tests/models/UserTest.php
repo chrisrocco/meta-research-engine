@@ -15,24 +15,41 @@ use Tests\BaseTestCase;
 class UserTest extends BaseTestCase
 {
     static $testUserData = [
-        'name'  => 'Bob Jones',
+        'first_name'  => 'Chris',
+        'last_name'  => 'Rocco',
         'email' =>  'chris.rocco7@gmail.com',
         'password'  =>  'password'
     ];
 
 
-    public function testCreate(){
-        $result = User::createOrUpdate(self::$testUserData);
+    public function testNewRegister(){
+        $result = User::register(
+            self::$testUserData['first_name'],
+            self::$testUserData['last_name'],
+            rand(0, 9999) . self::$testUserData['email'],
+            self::$testUserData['password']
+        );
 
-        self::assertTrue( $result !== false );
-
-        return $result;
+        self::assertInternalType("string", $result);
     }
 
-    public function testFind(){
-        $userModel = User::find($this->testCreate());
+    public function testExistingRegister(){
+        $result = User::register(
+            self::$testUserData['first_name'],
+            self::$testUserData['last_name'],
+            self::$testUserData['email'],
+            self::$testUserData['password']
+        );
 
-        self::assertTrue( $userModel->_key() !== false );
+        self::assertEquals(User::EXISTS, $result);
     }
 
+    public function testGoodLogin(){
+        $response = User::login(
+            self::$testUserData['email'],
+            self::$testUserData['password']
+        );
+
+        self::assertContains('token', json_encode($response));
+    }
 }

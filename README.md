@@ -1,9 +1,15 @@
-The Big Data program was designed by UAB's department of Energetics to inroduce highschool students to big data and the role it plays in the university's reasearch.
+# Scientific Paper Encoding Software
 
-After downloading:
-$ composer.phar update
-$ cd vendor && git clone https://github.com/arangodb/arangodb-php.git
+After downloading, run: \
+<code>$ composer update</code>
 
-Make sure you fill out the settings.php file in /src/ before attempting to connect to an instance of ArangoDB
+You will have to create <code>src/settings.php</code> before attempting to connect to an instance of ArangoDB
 
-Instructions on setting up Slim : https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-slim-framework-on-ubuntu-14-04
+You may test your database connection with : \
+<code>$ composer test-connection</code>
+
+Run the server : \
+<code>$ composer start</code>
+
+Run all test cases : \
+<code>$ composer test</code>

@@ -15,30 +15,40 @@ abstract class Model {
     static $collection;     // should be overridden by each child class
     protected $dataObject;
 
-    function __construct($data) {
-        $this->dataObject = $data;
-
-        $ch = DB::getCollectionHandler();
-        if(!$ch->has(static::getCollection())){
-            $ch->create(static::getCollection());
-        }
+    public function get($property){
+        return $this->dataObject[$property];
+    }
+    public function set($property, $value){
+        $this->dataObject[$property] = $value;
     }
 
     /*------*/
     /* CRUD */
     /*------*/
-    public function save(){
-        return static::store($this->dataObject);
-    }
-
     public static function find( $_key ){
         $dh = DB::getDocumentHandler();
 
         $doc = $dh->getById( static::getCollection(), $_key );
         $data = $doc->getAll();
 
-        $class = static::getClass();
-        return new $class($data);
+        return static::construct($data);
+    }
+
+    /**
+     * @param $data
+     * @return Model[]
+     */
+    public static function findByExample($data){
+        $ch = DB::getCollectionHandler();
+        $cursor = $ch->byExample(static::getCollection(), $data);
+
+        $data_set = [];
+        while($cursor->valid()){
+            $doc = $cursor->current();
+            $data_set[] = self::construct($doc->getAll());
+            $cursor->next();
+        }
+        return $data_set;
     }
 
     /**
@@ -52,13 +62,14 @@ abstract class Model {
     }
 
 
-
-
     public static function getClass(){
         return static::class;
     }
     public static function getCollection(){
         if( static::$collection ){
+            if(!DB::getCollectionHandler()->has(static::$collection)){
+                DB::getCollectionHandler()->create(static::$collection);
+            }
             return static::$collection;
         }
 
@@ -68,6 +79,10 @@ abstract class Model {
         static::$collection = $default_name;
 
         return static::getCollection();
+    }
+    protected static function construct($data){
+        $class = static::getClass();
+        return new $class($data);
     }
 
     function __call($name, $arguments) {
