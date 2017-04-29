@@ -11,6 +11,13 @@ class User extends Model
     const EXISTS = 20;
     const INVALID = 25;
 
+    /**
+     * @param $first_name
+     * @param $last_name
+     * @param $email
+     * @param $password
+     * @return int|mixed
+     */
     public static function register($first_name, $last_name, $email, $password){
         $exist_arr = User::findByExample([ 'email' =>  $email ]);
         if( count($exist_arr) > 0 ){
@@ -26,6 +33,11 @@ class User extends Model
         ]);
     }
 
+    /**
+     * @param $email
+     * @param $password
+     * @return array|int A JWT authentication token
+     */
     public static function login($email, $password){
         $exist_arr = User::findByExample([
             'email' =>  $email,

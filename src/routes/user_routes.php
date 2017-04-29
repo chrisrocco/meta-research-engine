@@ -1,5 +1,5 @@
 <?php
-use Entities\User as User;
+use Models\User as User;
 
 /**
  * POST usersLoginPost
@@ -15,7 +15,7 @@ $app->POST('/users/login', function ($request, $response, $args) {
     if($token === User::INVALID){
         return $response
             ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
-            ->withStatus(403);
+            ->withStatus(401);
     }
 
     return $response
@@ -33,20 +33,22 @@ $app->POST('/users/register', function ($request, $response, $args) {
 
     $formData = $request->getParams();
 
-    $result_code = User::register($formData['name'], $formData['email'], $formData['password'], $formData['role']);
+    $result = User::register(
+        $formData['first_name'],
+        $formData['last_name'],
+        $formData['email'],
+        $formData['password']
+    );
 
-    switch ($result_code){
-        case User::SUCCESS :
-            return $response
-                ->write("Account created successfully.")
-                ->withStatus(200);
-        case User::ERROR :
-            return $response
-                ->write("Could not create account")
-                ->withStatus(500);
-        case User::ALREADY_EXISTS :
-            return $response
-                ->write("An account with that email already exists")
-                ->withStatus(409);
+    if(is_string($result)){     // returned a user _key
+        return $response
+            ->write("Account created successfully.")
+            ->withStatus(200);
+    }
+
+    if($result == User::EXISTS){
+        return $response
+            ->write("An account with that email already exists")
+            ->withStatus(409);
     }
 });

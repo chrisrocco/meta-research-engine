@@ -12,7 +12,7 @@ namespace Tests\Models;
 use Models\User;
 use Tests\BaseTestCase;
 
-class UserTest extends BaseTestCase
+class RegisterTest extends BaseTestCase
 {
     static $testUserData = [
         'first_name'  => 'Chris',
@@ -44,12 +44,4 @@ class UserTest extends BaseTestCase
         self::assertEquals(User::EXISTS, $result);
     }
 
-    public function testGoodLogin(){
-        $response = User::login(
-            self::$testUserData['email'],
-            self::$testUserData['password']
-        );
-
-        self::assertContains('token', json_encode($response));
-    }
 }
