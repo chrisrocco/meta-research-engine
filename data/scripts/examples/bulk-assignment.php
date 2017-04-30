@@ -44,4 +44,3 @@ foreach ( $papers as $paper ){
 
     print "Created assignment \n";
 }
-

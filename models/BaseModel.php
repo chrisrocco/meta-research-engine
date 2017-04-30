@@ -35,8 +35,6 @@ abstract class BaseModel {
     /*--------------------- CRUD ---------------------*/
     /*------------------------------------------------*/
 
-
-
     /**
      * Fetches a document from the database, wraps it in a model, and returns it.
      * @param $_key
@@ -111,6 +109,9 @@ abstract class BaseModel {
         $model = new $class;
         $model->arango_document = $arango_document;
         return $model;
+    }
+    protected static function addMetaData( &$data ){
+        $data["date_created"] = date("c");
     }
 
 

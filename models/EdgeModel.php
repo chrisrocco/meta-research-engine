@@ -25,6 +25,9 @@ class EdgeModel extends BaseModel
      */
     public static function create( $to, $from, $data)
     {
+
+        self::addMetaData( $data );
+
         $edge_doc = Edge::createFromArray( $data );
         $key = DB::createEdge( static::getCollectionName(), $from, $to, $edge_doc );
 //        $doc = DB::retrieve( static::getCollectionName(), $key );

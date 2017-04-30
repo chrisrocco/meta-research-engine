@@ -21,6 +21,9 @@ class VertexModel extends BaseModel {
      * @return BaseModel
      */
     public static function create( $data ){
+
+        self::addMetaData( $data );
+
         $document = Document::createFromArray( $data );
         $key = DB::create( static::getCollectionName(), $document );
 //        $document = DB::retrieve( static::getCollectionName(), $key );    // Performance optimization
