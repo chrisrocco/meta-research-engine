@@ -69,7 +69,7 @@ class User extends Model
             'data' => $userDetails
         ];
 
-        global $settings;
+        $settings = require __DIR__ . '/../src/settings.php';
         $token = JWT::encode($data, $settings['settings']['JWT_secret']);
 
         return [

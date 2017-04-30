@@ -103,9 +103,9 @@ class DB
 
         $settings = require __DIR__ . '/../src/settings.php';
         if(self::$is_dev_mode){
-            $connection = new Connection($settings['arangodb_development_connection_options']);
+            $connection = new Connection($settings['settings']['arangodb_development_connection_options']);
         } else {
-            $connection = new Connection($settings['arangodb_connection_options']);
+            $connection = new Connection($settings['settings']['arangodb_connection_options']);
         }
         self::$connection = $connection;
 

@@ -1,6 +1,8 @@
 <?php
 
 namespace Tests\API;
+use DB\DB;
+use Models\User;
 use Tests\BaseTestCase;
 
 /**
@@ -12,13 +14,33 @@ use Tests\BaseTestCase;
 
 class SecurityTest extends BaseTestCase {
 
-    // try to access secure route
     public function testSecuredRoute(){
         $response = $this->runApp("GET", '/secure');
         self::assertEquals(401, $response->getStatusCode());
     }
 
-    // get an auth token
+    public function testAuthenticate(){
+        $cursor = DB::getAll('users');
+        if( $cursor->getCount() === 0){
+            echo 'We need at least one user to run this test';
+            return;
+        }
+        $doc = $cursor->current();
+        $good_email = $doc->get('email');
+        $good_password = $doc->get('password');
 
-    // try again
+        $response = $this->runApp('POST', '/users/login', [
+            'email'     =>  $good_email,
+            'password'  =>  $good_password
+        ]);
+
+        $body = (string)$response->getBody();
+        $token = json_decode($body, true)['token'];
+
+        $next_response = $this->runApp('GET', '/secure', null, [
+            [ 'Authorization', 'Bearer ' . $token ]
+        ]);
+
+        self::assertEquals(200, $next_response->getStatusCode());
+    }
 }

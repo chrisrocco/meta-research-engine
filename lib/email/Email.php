@@ -53,7 +53,7 @@ class Email {
 
     function __construct($to_email, $to_name){
         $settings = require __DIR__ . '/../../src/settings.php';
-        $smtp_settings = $settings['smtp'];
+        $smtp_settings = $settings['settings']['smtp'];
 
         $mail = new \PHPMailer();
 
