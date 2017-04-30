@@ -8,6 +8,9 @@
 
 require __DIR__ . '/../../../vendor/autoload.php';
 
+use \triagens\ArangoDb;
+
+
 \DB\DB::enterDevelopmentMode();
 
 // Make some users
@@ -44,3 +47,19 @@ foreach ( $papers as $paper ){
 
     print "Created assignment \n";
 }
+
+// Make a graph
+
+$double_encoded_graph = new ArangoDb\Graph('assignments_PHP');
+
+$assignment = new ArangoDb\EdgeDefinition();
+$assignment->setRelation( \Models\Assignment::$collection );
+$assignment->addToCollection( \Models\User::$collection );
+$assignment->addFromCollection( \Models\Paper::$collection );
+
+$double_encoded_graph->addEdgeDefinition($assignment);
+
+$gh = new ArangoDb\GraphHandler( \DB\DB::getConnection() );
+$gh->createGraph($double_encoded_graph);
+
+print "created graph " . $double_encoded_graph->getInternalId() . "\n";
