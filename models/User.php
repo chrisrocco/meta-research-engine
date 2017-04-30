@@ -3,7 +3,7 @@ namespace Models;
 
 use Firebase\JWT\JWT;
 
-class User extends Model
+class User extends VertexModel
 {
     const EXISTS = 20;
     const INVALID = 25;

@@ -10,7 +10,7 @@ namespace Tests\Models;
 
 
 use DB\DB;
-use Models\Model;
+use Models\BaseModel;
 use Models\User;
 use Tests\BaseTestCase;
 

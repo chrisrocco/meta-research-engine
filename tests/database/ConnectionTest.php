@@ -2,7 +2,7 @@
 namespace Tests\Database;
 
 use DB\DB;
-use Models\Model;
+use Models\BaseModel;
 use Tests\BaseTestCase;
 use triagens\ArangoDb\Connection;
 

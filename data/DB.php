@@ -8,10 +8,12 @@
 
 namespace DB;
 
+use Models\EdgeModel;
 use triagens\ArangoDb\CollectionHandler;
 use triagens\ArangoDb\Connection;
 use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\DocumentHandler;
+use triagens\ArangoDb\EdgeHandler;
 
 class DB
 {
@@ -20,7 +22,9 @@ class DB
     /*----------------------------------------------------*/
     public static function create( $col, $doc){
         $dh = self::getDocumentHandler();
-        return $dh->save( $col, $doc );
+        return $dh->save( $col, $doc, [
+                'createCollection'  =>  true
+            ]);
     }
     public static function retrieve( $col, $_key ){
         $dh = self::getDocumentHandler();
@@ -37,21 +41,20 @@ class DB
         $dh = self::getDocumentHandler();
         $dh->remove( $doc );
     }
+    public static function createEdge( $col, $from, $to, $doc){
+        $eh = self::getEdgeHandler();
+        return $eh->saveEdge( $col, $from, $to, $doc, [
+            'createCollection'  =>  true
+        ]);
+    }
 
-
-
-
+    /*----------------------------------------------------*/
+    /*----------------------- Query -----------------------*/
+    /*----------------------------------------------------*/
     public static function getAll( $col ){
         $ch = self::getCollectionHandler();
         return $ch->all( $col );
     }
-
-
-    /**
-     * Given an example, returns a set of Models
-     * @param $data
-     * @return Cursor
-     */
     public static function getByExample( $col, $example ){
         $ch = self::getCollectionHandler();
         return $ch->byExample( $col, $example);
@@ -59,9 +62,12 @@ class DB
 
 
 
-
+    /*----------------------------------------------------*/
+    /*--------------------- Accessors -----------------------*/
+    /*----------------------------------------------------*/
     private static $connection;
     private static $document_handler;
+    private static $edge_handler;
     private static $collection_handler;
 
     /**
@@ -76,6 +82,20 @@ class DB
         self::$document_handler = $dh;
 
         return self::getDocumentHandler();
+    }
+
+    /**
+     * @return EdgeHandler
+     */
+    protected static function getEdgeHandler(){
+        if(self::$edge_handler){
+            return self::$edge_handler;
+        }
+
+        $eh = new EdgeHandler(self::getConnection());
+        self::$edge_handler = $eh;
+
+        return self::getEdgeHandler();
     }
 
     /**
@@ -112,11 +132,11 @@ class DB
     }
 
 
-
-
-
+    /*----------------------------------------------------*/
+    /*--------------------- Debugging -----------------------*/
+    /*----------------------------------------------------*/
     public static function enterDevelopmentMode(){
         self::$is_dev_mode = true;
     }
-    private static $is_dev_mode;
+    protected static $is_dev_mode;
 }

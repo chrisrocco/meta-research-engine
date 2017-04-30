@@ -8,13 +8,20 @@
 
 namespace Models;
 use DB\DB;
-use phpDocumentor\Reflection\Types\Array_;
 use triagens\ArangoDb\Document;
 
-abstract class Model {
+abstract class BaseModel {
+
+    /**
+     * @var Document
+     */
+    protected $arango_document;
 
     public function key(){
         return $this->arango_document->getInternalKey();
+    }
+    public function id(){
+        return $this->arango_document->getInternalId();
     }
     public function get($property){
         return $this->arango_document->get($property);
@@ -28,17 +35,7 @@ abstract class Model {
     /*--------------------- CRUD ---------------------*/
     /*------------------------------------------------*/
 
-    /**
-     * Creates a new record in the database, wraps it in a model, and returns it.
-     * @param $data
-     * @return Model
-     */
-    public static function create( $data ){
-        $document = Document::createFromArray( $data );
-        $key = DB::create( static::getCollectionName(), $document );
-        $document = DB::retrieve( static::getCollectionName(), $key );
-        return static::createFromDocument($document);
-    }
+
 
     /**
      * Fetches a document from the database, wraps it in a model, and returns it.
@@ -77,7 +74,7 @@ abstract class Model {
     /**
      * Query by example.
      * @param $example array            [ 'email' => 'chris.rocco7@gmail.com' ]
-     * @return Model[]
+     * @return BaseModel[]
      */
     public static function getByExample( $example ){
         $cursor = DB::getByExample( static::getCollectionName(), $example );
@@ -117,10 +114,6 @@ abstract class Model {
     }
 
 
-    /**
-     * @var Document
-     */
-    protected $arango_document;
-    static $collection;     // uses a default collection name. For example, the Model, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.
+    static $collection;     // uses a default collection name. For example, the BaseModel, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.
 
 }
