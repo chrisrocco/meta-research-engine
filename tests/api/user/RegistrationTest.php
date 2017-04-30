@@ -11,7 +11,7 @@ use Tests\BaseTestCase;
  * Time: 5:05 PM
  */
 
-class RegisterTest extends BaseTestCase {
+class RegistrationTest extends BaseTestCase {
 
     public function testNewRegister(){
         $randomEmail = rand(0, 9999) . '@gmail.com';
