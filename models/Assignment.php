@@ -9,6 +9,8 @@
 namespace Models;
 
 
+use Models\Core\EdgeModel;
+
 class Assignment extends EdgeModel
 {
     static $collection = 'assignments';

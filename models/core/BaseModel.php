@@ -6,7 +6,7 @@
  * Time: 12:41 PM
  */
 
-namespace Models;
+namespace Models\Core;
 use DB\DB;
 use triagens\ArangoDb\Document;
 

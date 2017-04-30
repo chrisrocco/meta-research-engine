@@ -12,7 +12,7 @@ namespace Tests\Models\User;
 use Models\User;
 use Tests\BaseTestCase;
 
-class RegisterTest extends BaseTestCase
+class UserTest extends BaseTestCase
 {
 
     public function testNewRegister(){
@@ -55,5 +55,27 @@ class RegisterTest extends BaseTestCase
         $fresh_user->validate( $new_hash );
 
         self::assertEquals(true, $fresh_user->get('active'));
+    }
+
+    /**
+     * @depends testNewRegister
+     * @param $good_user User
+     */
+    public function testGoodLogin( $good_user ){
+        $response = User::login(
+            $good_user->get('email'),
+            $good_user->get('password')
+        );
+
+        self::assertContains('token', json_encode($response));
+    }
+
+    public function testBadLogin(){
+        $response = User::login(
+            'fake email',
+            'fake password'
+        );
+
+        self::assertEquals(User::INVALID, $response);
     }
 }

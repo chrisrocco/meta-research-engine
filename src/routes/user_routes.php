@@ -12,15 +12,16 @@ $app->POST('/users/login', function ($request, $response, $args) {
 
     $token = User::login($formData['email'], $formData['password']);
 
-    if($token === User::INVALID){
-        return $response
-            ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
-            ->withStatus(401);
+    if( is_int($token) ){
+        if($token == User::INVALID){
+            return $response
+                ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
+                ->withStatus(401);
+        }
     }
 
     return $response
-        ->write(json_encode($token, JSON_PRETTY_PRINT))
-        ->withStatus(200);
+        ->write(json_encode($token, JSON_PRETTY_PRINT));
 });
 
 /**

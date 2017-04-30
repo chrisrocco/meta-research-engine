@@ -6,7 +6,7 @@
  * Time: 11:53 PM
  */
 
-namespace Models;
+namespace Models\Core;
 
 
 use DB\DB;

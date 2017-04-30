@@ -11,7 +11,7 @@ use Tests\BaseTestCase;
  * Time: 5:05 PM
  */
 
-class RegistrationTest extends BaseTestCase {
+class UserTest extends BaseTestCase {
 
     public function testNewRegister(){
         $randomEmail = rand(0, 9999) . '@gmail.com';
@@ -65,5 +65,32 @@ class RegistrationTest extends BaseTestCase {
 
         $user = User::retrieve( $user->key() );
         self::assertEquals(true, $user->get('active') );
+    }
+
+    /**
+     * @depends testNewRegister
+     * @param $just_registered_email string
+     */
+    public function testLogin( $just_registered_email ){
+        $user_set = User::getByExample( [ 'email'   =>  $just_registered_email ]);
+        self::assertTrue( count($user_set) > 0 );
+        $just_registered = $user_set[0];
+
+        $response = $this->runApp("POST", "/users/login", [
+            'email'     =>  $just_registered->get('email'),
+            'password'  =>  $just_registered->get('password')
+        ]);
+
+        self::assertEquals(200, $response->getStatusCode());
+        self::assertContains('token', (string)$response->getBody());
+    }
+
+    public function testBadLogin(){
+        $response = $this->runApp("POST", "/users/login", [
+            'email'         =>  'fake@gmail.com',
+            'password'      =>  'not a password'
+        ]);
+
+        self::assertEquals(401, $response->getStatusCode());
     }
 }

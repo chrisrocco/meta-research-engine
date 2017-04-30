@@ -3,8 +3,12 @@ namespace Models;
 
 use Firebase\JWT\JWT;
 
+use Models\Core\VertexModel;
+
 class User extends VertexModel
 {
+    static $collection = "users";
+
     const EXISTS = 20;
     const INVALID = 25;
 
