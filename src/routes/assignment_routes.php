@@ -54,12 +54,3 @@ $app->POST('/users/{ID}/assignments', function ($request, $response, $args) {
 
     $response->write("Created Assignment");
 });
-
-/** POST studies/{studyname}/papers
- *  Add a new paper to the database
- */
-$app->POST("/studies/{studyname}/papers", function ($request, $response, $args) {
-    $formData = $request->getParams();
-    $study = new StudyHandler($args['studyname']);
-    $study->addPaper($formData['pmcID'], $formData['title']);
-});

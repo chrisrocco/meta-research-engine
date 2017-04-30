@@ -3,6 +3,6 @@
 
 $app->add(new \Slim\Middleware\JwtAuthentication([
 	"path" => ["/"],
-    "passthrough" => ["/users/"],
+    "passthrough" => ["/users/", "/"],
     "secret" => $app->getContainer()->get("settings")['JWT_secret'],
 ]));

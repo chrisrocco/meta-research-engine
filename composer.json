@@ -43,7 +43,8 @@
       "Models\\Core\\": "models/core",
       "Models\\": "models/",
       "DB\\": "data/",
-      "Email\\": "lib/email/"
+      "Email\\": "lib/email/",
+      "SlimRequestHandler\\": "lib/api"
     }
   },
   "scripts": {
