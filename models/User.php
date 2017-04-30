@@ -16,18 +16,23 @@ class User extends Model
      * @return int|mixed
      */
     public static function register($first_name, $last_name, $email, $password){
-        $exist_arr = User::findByExample([ 'email' =>  $email ]);
+        $exist_arr = User::getByExample([ 'email' =>  $email ]);
         if( count($exist_arr) > 0 ){
             return User::EXISTS;
         }
 
-        return User::createOrUpdate([
+        $user = User::create([
             'first_name'    =>  $first_name,
             'last_name'     =>  $last_name,
             'email'         =>  $email,
             'password'      =>  $password,
-            'active'        =>  false
+            'active'        =>  false,
+            'hash_code'     =>  null
         ]);
+
+        $user->rehash();
+
+        return $user;
     }
 
     /**
@@ -36,7 +41,7 @@ class User extends Model
      * @return array|int A JWT authentication token
      */
     public static function login($email, $password){
-        $exist_arr = User::findByExample([
+        $exist_arr = User::getByExample([
             'email' =>  $email,
             'password'  =>  $password
             ]);
@@ -73,4 +78,23 @@ class User extends Model
         ];
     }
 
+
+
+    public function validate($hash_code){
+        if(!$this->checkHash($hash_code)) return false;
+
+        $this->update('active', true);
+
+        return true;
+    }
+    function rehash(){
+        $hash_code = bin2hex(random_bytes(22));
+
+        $this->update('hash_code', $hash_code);
+
+        return $hash_code;
+    }
+    function checkHash($hash_code){
+        return ( $this->get('hash_code')  === $hash_code );
+    }
 }

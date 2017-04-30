@@ -6,7 +6,7 @@
  * Time: 2:01 PM
  */
 
-namespace Tests\Models;
+namespace Tests\Models\User;
 
 
 use Models\User;
@@ -14,34 +14,46 @@ use Tests\BaseTestCase;
 
 class RegisterTest extends BaseTestCase
 {
-    static $testUserData = [
-        'first_name'  => 'Chris',
-        'last_name'  => 'Rocco',
-        'email' =>  'chris.rocco7@gmail.com',
-        'password'  =>  'password'
-    ];
-
 
     public function testNewRegister(){
-        $result = User::register(
-            self::$testUserData['first_name'],
-            self::$testUserData['last_name'],
-            rand(0, 9999) . self::$testUserData['email'],
-            self::$testUserData['password']
-        );
+        $random_email = rand(0, 9999) . '@gmail.com';
 
-        self::assertInternalType("string", $result);
+        $user = User::register(
+            'Random',
+            'Register',
+            $random_email,
+            'password'
+        );
+        self::assertInstanceOf(User::class, $user);
+
+        return $user;
     }
 
-    public function testExistingRegister(){
+    /**
+     * @param $existingUser User
+     * @depends testNewRegister
+     */
+    public function testExistingRegister( $existingUser ){
         $result = User::register(
-            self::$testUserData['first_name'],
-            self::$testUserData['last_name'],
-            self::$testUserData['email'],
-            self::$testUserData['password']
+            $existingUser->get('first_name'),
+            $existingUser->get('last_name'),
+            $existingUser->get('email'),
+            $existingUser->get('password')
         );
 
         self::assertEquals(User::EXISTS, $result);
     }
 
+    /**
+     * @param $existingUser User
+     * @depends testNewRegister
+     */
+    public function testValidate( $fresh_user ){
+        self::assertEquals(false, $fresh_user->get('active'));
+
+        $new_hash = $fresh_user->rehash();
+        $fresh_user->validate( $new_hash );
+
+        self::assertEquals(true, $fresh_user->get('active'));
+    }
 }

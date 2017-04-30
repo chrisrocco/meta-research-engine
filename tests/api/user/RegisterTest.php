@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\API;
+use Models\User;
 use Tests\BaseTestCase;
 
 /**
@@ -12,31 +13,57 @@ use Tests\BaseTestCase;
 
 class RegisterTest extends BaseTestCase {
 
-    static $test_data = [
-        'first_name'  => 'Chris',
-        'last_name'  => 'Rocco',
-        'email' =>  'chris.rocco7@gmail.com',
-        'password'  =>  'password'
-    ];
-
-
     public function testNewRegister(){
+        $randomEmail = rand(0, 9999) . '@gmail.com';
         $response = $this->runApp('POST', '/users/register', [
-            'first_name'    =>  self::$test_data['first_name'],
-            'last_name'     =>  self::$test_data['last_name'],
-            'email'         =>  rand(0, 9999) . '@gmail.com',
-            'password'      =>  self::$test_data['password'],
+            'first_name'    =>  "Unique",
+            'last_name'     =>  "Email",
+            'email'         =>  $randomEmail,
+            'password'      =>  "password",
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
+
+        return $randomEmail;
     }
 
-    public function testExistingRegister(){
+    /**
+     * @param $existing_email
+     * @depends testNewRegister
+     */
+    public function testExistingRegister( $existing_email ){
 
-        $response = $this->runApp('POST', '/users/register',
-            self::$test_data
-        );
+        $response = $this->runApp('POST', '/users/register', [
+            'first_name'  => 'Chris',
+            'last_name'  => 'Rocco',
+            'email' =>  $existing_email,
+            'password'  =>  'password'
+        ]);
 
         self::assertEquals(409, $response->getStatusCode());
+    }
+
+    /**
+     * Takes a newly registered user, and makes sure their account is NOT active.
+     * Sends a request to /users/validate with the users _key and hash
+     * Fetches the users again to make sure their account has been activated
+     * @param $just_registered
+     * @depends testNewRegister
+     */
+    public function testValidate( $just_registered ){
+        $user_set = User::getByExample( [ 'email'   =>  $just_registered ]);
+        self::assertTrue( count($user_set) > 0 );
+        $user = $user_set[0];
+        self::assertFalse(  $user->get('active')    );
+
+        $response = $this->runApp('GET', '/users/validate', [
+            '_key'        =>  $user->key(),
+            'hash_code' =>  $user->get('hash_code')
+        ]);
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        $user = User::retrieve( $user->key() );
+        self::assertEquals(true, $user->get('active') );
     }
 }

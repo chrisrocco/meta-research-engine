@@ -40,15 +40,41 @@ $app->POST('/users/register', function ($request, $response, $args) {
         $formData['password']
     );
 
-    if(is_string($result)){     // returned a user _key
+    if($result instanceof User ){
         return $response
             ->write("Account created successfully.")
             ->withStatus(200);
     }
 
-    if($result == User::EXISTS){
+    if($result === User::EXISTS){
         return $response
             ->write("An account with that email already exists")
             ->withStatus(409);
     }
+
+});
+
+/**
+ * POST usersValidateGet
+ * Summary: Registers user
+ * Notes:
+ * Output-Formats: [application/json]
+ */
+$app->GET('/users/validate', function ($request, $response, $args) {
+
+    $formData = $request->getParams();
+
+    $user = User::retrieve( $formData['_key'] );
+    $result = $user->validate( $formData['hash_code'] );
+
+    if($result){
+        return $response
+            ->write("Account has been validated. You may now login.")
+            ->withStatus(200);
+    }
+
+    return $response
+        ->write("Invalid hash")
+        ->withStatus(400);
+
 });

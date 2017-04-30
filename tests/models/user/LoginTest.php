@@ -6,7 +6,7 @@
  * Time: 2:01 PM
  */
 
-namespace Tests\Models;
+namespace Tests\Models\User;
 
 
 use Models\User;
