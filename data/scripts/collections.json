@@ -1,0 +1,12 @@
+{
+  "users":          "vertex",
+  "papers":         "vertex",
+  "studies":        "vertex",
+  "assignments":    "vertex",
+  "variables":      "vertex",
+  "domains":        "vertex",
+  "assigned_to":    "edge",
+  "assignment_of":  "edge",
+  "paper_of":       "edge",
+  "variable_of":    "edge"
+}

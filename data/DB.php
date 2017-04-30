@@ -8,7 +8,6 @@
 
 namespace DB;
 
-
 use triagens\ArangoDb\CollectionHandler;
 use triagens\ArangoDb\Connection;
 use triagens\ArangoDb\Cursor;
@@ -68,7 +67,7 @@ class DB
     /**
      * @return DocumentHandler
      */
-    private static function getDocumentHandler(){
+    protected static function getDocumentHandler(){
         if(self::$document_handler){
             return self::$document_handler;
         }
@@ -82,7 +81,7 @@ class DB
     /**
      * @return CollectionHandler
      */
-    private static function getCollectionHandler(){
+    protected static function getCollectionHandler(){
         if(self::$collection_handler){
             return self::$collection_handler;
         }
@@ -111,8 +110,6 @@ class DB
 
         return self::getConnection();
     }
-
-
 
 
 
