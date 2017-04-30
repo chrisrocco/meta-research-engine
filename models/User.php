@@ -30,8 +30,6 @@ class User extends Model
             'hash_code'     =>  null
         ]);
 
-        $user->rehash();
-
         return $user;
     }
 
@@ -51,7 +49,7 @@ class User extends Model
 
         $user = $exist_arr[0];
         $userDetails = [
-            "_key" => $user->get("_key"),
+            "_key" => $user->key(),
             "first_name" => $user->get("first_name"),
             "last_name" => $user->get("last_name"),
             "email" => $user->get('email')

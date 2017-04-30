@@ -41,6 +41,17 @@ $app->POST('/users/register', function ($request, $response, $args) {
     );
 
     if($result instanceof User ){
+        $user = $result;
+        $user->rehash();
+
+        $validation_email = \Email\Email::validationEmail(
+            $user->get('email'),
+            $user->get('first_name') . $user->get('last_name'),
+            $user->key(),
+            $user->get('hash_code')
+        );
+        $validation_email->send();
+
         return $response
             ->write("Account created successfully.")
             ->withStatus(200);
