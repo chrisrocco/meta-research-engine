@@ -21,7 +21,7 @@ class EdgeModel extends BaseModel
      * @param $to       string  The full _id of a vertex model
      * @param $from     string  The full _id of a vertex model
      * @param $data     array   PHP array of object attributes
-     * @return EdgeModel
+     * @return mixed
      */
     public static function create( $to, $from, $data)
     {

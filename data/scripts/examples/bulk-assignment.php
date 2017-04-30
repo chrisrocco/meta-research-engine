@@ -34,31 +34,14 @@ for ($i = 0; $i < 20; $i++){
     print 'Created paper ' . $papers[$i]->id() . "\n";
 }
 
-// link them together
+// Make the edges ( Double Encoded )
 foreach ( $papers as $paper ){
     $randomUser = $users[ rand(0, count($users)-1) ];
     $randomUser2 = $users[ rand(0, count($users)-1) ];
 
-    $id1 = \Models\Assignment::create(
-        $randomUser->id(),  $paper->id(),
-        [
-            'done'          =>  false,
-            'completion'    =>  0,
-            'encoding'      =>  null
-        ]
-    )->id();
+    $a1 = \Models\Assignment::assign( $paper, $randomUser )->id();
+    $a2 = \Models\Assignment::assign( $paper, $randomUser2 )->id();
 
-    print "Created assignment $id1 \n";
-
-    $id2 = \Models\Assignment::create(
-        $randomUser2->id(),  $paper->id(),
-        [
-            'done'          =>  false,
-            'completion'    =>  0,
-            'encoding'      =>  null
-        ]
-    )->id();
-
-    print "Created assignment $id2 \n";
+    print "Created assignment \n";
 }
 

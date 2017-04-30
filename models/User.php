@@ -76,8 +76,6 @@ class User extends VertexModel
         ];
     }
 
-
-
     public function validate($hash_code){
         if(!$this->checkHash($hash_code)) return false;
 
@@ -95,4 +93,6 @@ class User extends VertexModel
     function checkHash($hash_code){
         return ( $this->get('hash_code')  === $hash_code );
     }
+
+
 }

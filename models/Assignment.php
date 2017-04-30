@@ -12,4 +12,22 @@ namespace Models;
 class Assignment extends EdgeModel
 {
     static $collection = 'assignments';
+
+    private static $blank = [
+        'done'          =>  false,
+        'completion'    =>  0,
+        'encoding'      =>  []
+    ];
+
+    /**
+     * @param $paper Paper
+     * @param $user  User
+     * @return Assignment
+     */
+    public static function assign( $paper, $user ){
+        return static::create(
+            $user->id(), $paper->id(),
+            static::$blank
+        );
+    }
 }
