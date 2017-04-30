@@ -23,4 +23,14 @@ class Study extends VertexModel {
             $this->id(), $paper->id(), []
         );
     }
+
+
+    /**
+     * @param $domain Domain
+     */
+    function addDomain( $domain ){
+        SubdomainOf::create(
+            $this->id(), $domain->id(), []
+        );
+    }
 }

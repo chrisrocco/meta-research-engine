@@ -60,3 +60,19 @@ $app->POST("/studies", function ($request, $response, $args) {
 
     return $response->write("Created Study");
 });
+
+/**
+ * POST studies/{key}/domains
+ * Summary: Adds a domain to a study
+ *
+ * The domain should have it's subdomains already build
+ */
+$app->POST("/studies/{key}/domains", function ($request, $response, $args) {
+
+    $domain = \Models\Domain::retrieve( $request->getParam("domainKey") );
+    $study = \Models\Study::retrieve( $args['key'] );
+
+    $domain->addDomain( $domain );
+
+    return $response->write("Created Study");
+});
