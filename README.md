@@ -16,3 +16,6 @@ Run the server : \
 
 Run all test cases : \
 <code>$ composer test</code>
+
+Run the ORM examples : \
+<code>$ php data/scripts/examples/_______.php </code>
