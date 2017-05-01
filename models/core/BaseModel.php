@@ -10,6 +10,40 @@ namespace Models\Core;
 use DB\DB;
 use triagens\ArangoDb\Document;
 
+/**
+ * Class BaseModel
+ * @package Models\Core
+ *
+ * Associated with a single collection in the database.
+ * Instances model a single document   in the database.
+ * Uses active record keeping - stays in sync with database
+ *
+ * -----------------------
+ * --------- API ---------
+ * -----------------------
+ *
+ * Properties
+ * [+] -> collection                            // The name of the document collection this class is modeling. Should be overridden.
+ *
+ * Document Manipulation
+ * [+] key()
+ * [+] id()
+ * [+] get(property)
+ * [+] toArray()
+ * [+] update( property, new-value )
+ * [+] delete()
+ *
+ * Collection Queries
+ * [_] retrieve( _key )
+ * [_] getByExample( {obj} )
+ *
+ * Helpers
+ * [:] getClass()                               // Accurate for sub-classes
+ * [:] getCollectionName()                      // Accurate for sub-classes
+ * [:] wrap( document )                         // Used after DB queries
+ * [:] wrapAll( cursor )                        // Used after DB queries
+ * [:] addMetaData( data )                      // Called on object creation
+ */
 abstract class BaseModel {
 
     /**
@@ -100,9 +134,6 @@ abstract class BaseModel {
 
         return static::getCollectionName();
     }
-    protected static function addMetaData( &$data ){
-        $data["date_created"] = date("c");
-    }
 
     static function wrap( $arango_document ){
         $class = static::getClass();
@@ -119,6 +150,10 @@ abstract class BaseModel {
             $cursor->next();
         }
         return $data_set;
+    }
+
+    protected static function addMetaData( &$data ){
+        $data["date_created"] = date("c");
     }
 
     static $collection;     // uses a default collection name. For example, the BaseModel, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.

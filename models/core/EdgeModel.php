@@ -12,6 +12,13 @@ namespace Models\Core;
 use DB\DB;
 use triagens\ArangoDb\Edge;
 
+/**
+ * Class EdgeModel
+ * @package Models\Core
+ *
+ * The only difference from the base model are the special _to and _from properties.
+ * After creation, the Edge is modeled as a regular document ( Edge's super class ). Can still be updated.
+ */
 class EdgeModel extends BaseModel
 {
 

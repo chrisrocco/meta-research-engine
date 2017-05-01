@@ -11,8 +11,11 @@ namespace Models\Core;
 
 use DB\DB;
 use triagens\ArangoDb\Document;
-use triagens\ArangoDb\Edge;
 
+/**
+ * Class VertexModel
+ * @package Models\Core
+ */
 class VertexModel extends BaseModel {
 
     /**
