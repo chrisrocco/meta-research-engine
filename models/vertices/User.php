@@ -1,5 +1,5 @@
 <?php
-namespace Models;
+namespace Models\Vertices;
 
 use Firebase\JWT\JWT;
 
@@ -71,7 +71,7 @@ class User extends VertexModel
             'data' => $userDetails
         ];
 
-        $settings = require __DIR__ . '/../src/settings.php';
+        $settings = require __DIR__ . '/../../src/settings.php';
         $token = JWT::encode($data, $settings['settings']['JWT_secret']);
 
         return [

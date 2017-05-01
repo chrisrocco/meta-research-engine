@@ -6,7 +6,7 @@
  * Time: 11:59 PM
  */
 
-namespace Models;
+namespace Models\Vertices;
 
 
 use DB\QueryBank;

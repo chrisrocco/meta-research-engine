@@ -6,7 +6,7 @@
  * Time: 3:57 PM
  */
 
-namespace Models;
+namespace Models\Edges;
 
 
 use Models\Core\EdgeModel;

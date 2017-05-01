@@ -2,9 +2,7 @@
 namespace Tests\Database;
 
 use DB\DB;
-use Models\BaseModel;
 use Tests\BaseTestCase;
-use triagens\ArangoDb\Connection;
 
 /**
  * Created by PhpStorm.

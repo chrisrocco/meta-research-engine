@@ -1,5 +1,8 @@
 <?php
 
+
+use \Models\Vertices\Study;
+
 /**
  * Created by PhpStorm.
  * User: chris
@@ -16,7 +19,7 @@ class StudyTest extends \Tests\BaseTestCase
 
         self::assertEquals(200, $response->getStatusCode());
 
-        $studies = \Models\Study::getByExample( [ 'name' => $random_name] );
+        $studies = Study::getByExample( [ 'name' => $random_name] );
         $study = $studies[0];
 
         return $study;
@@ -24,7 +27,7 @@ class StudyTest extends \Tests\BaseTestCase
 
     /**
      * @depends testCreateStudy
-     * @param $study_name \Models\Study
+     * @param $study_name Study
      */
     function testAddPaper( $study ){
 

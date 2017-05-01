@@ -52,11 +52,13 @@ class DB
     /*----------------------------------------------------*/
     /*----------------------- Query -----------------------*/
     /*----------------------------------------------------*/
-    public static function query($query_string){
+    public static function query($query_string, $bindVars = [], $flat = false){
         $connection = self::getConnection();
         $statement = new Statement(
             $connection, [
-                'query' => $query_string
+                'query' => $query_string,
+                'bindVars'  => $bindVars,
+                '_flat' => $flat
             ]
         );
         return $statement->execute();

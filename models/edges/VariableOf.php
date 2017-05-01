@@ -6,12 +6,12 @@
  * Time: 3:57 PM
  */
 
-namespace Models;
+namespace Models\Edges;
 
 
 use Models\Core\EdgeModel;
 
-class PaperOf extends EdgeModel
+class VariableOf extends EdgeModel
 {
-    static $collection = "paper_of";
+    static $collection = "variable_of";
 }

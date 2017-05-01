@@ -9,7 +9,7 @@
 namespace Tests\Models\User;
 
 
-use Models\User;
+use Models\Vertices\User;
 use Tests\BaseTestCase;
 
 class UserTest extends BaseTestCase

@@ -41,7 +41,8 @@
   "autoload": {
     "psr-4": {
       "Models\\Core\\": "models/core",
-      "Models\\": "models/",
+      "Models\\Edges\\": "models/edges",
+      "Models\\Vertices\\": "models/vertices",
       "DB\\": "data/",
       "DB\\Queries\\": "data/queries",
       "Email\\": "lib/email/",
@@ -51,6 +52,7 @@
   "scripts": {
     "start": "php -S localhost:8080 -t public public/index.php",
     "test": "phpunit",
-    "test-connection": "phpunit tests/database/ConnectionTest"
+    "test-connection": "phpunit tests/database/ConnectionTest",
+    "test-quick": "phpunit tests/QuickTest.php"
   }
 }

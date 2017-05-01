@@ -2,7 +2,6 @@
 
 namespace Tests\API;
 use DB\DB;
-use Models\User;
 use Tests\BaseTestCase;
 
 /**

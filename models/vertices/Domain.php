@@ -6,11 +6,12 @@
  * Time: 4:05 PM
  */
 
-namespace Models;
+namespace Models\Vertices;
 
 
 use DB\DB;
 use Models\Core\VertexModel;
+use Models\Edges\VariableOf;
 
 class Domain extends VertexModel
 {
@@ -35,11 +36,13 @@ class Domain extends VertexModel
     }
 
     function getVariables(){
-        $id = $this->id();
-        $variable_of = VariableOf::$collection;
-        $query = "FOR var IN INBOUND '$id' $variable_of
+        $query = "FOR var IN INBOUND @root @@to_root
                     RETURN var";
-        $cursor = DB::query( $query );
+        $bindings = [
+            'root'  =>  $this->id(),
+            '@to_root'  =>  VariableOf::$collection
+        ];
+        $cursor = DB::query( $query, $bindings );
         return Variable::wrapAll( $cursor );
     }
 

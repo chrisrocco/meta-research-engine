@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Models;
 
-use \Models\Assignment;
+use \Models\Edges\Assignment;
 use triagens\ArangoDb\Edge;
 
 /**

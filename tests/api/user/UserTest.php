@@ -1,7 +1,7 @@
 <?php
 
 namespace Tests\API;
-use Models\User;
+use Models\Vertices\User;
 use Tests\BaseTestCase;
 
 /**

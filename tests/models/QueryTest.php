@@ -8,7 +8,7 @@
 
 namespace Tests\Models;
 
-use Models\User;
+use Models\Vertices\User;
 use Tests\BaseTestCase;
 
 class QueryTest extends BaseTestCase

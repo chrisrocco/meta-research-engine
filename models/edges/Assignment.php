@@ -6,7 +6,7 @@
  * Time: 12:01 PM
  */
 
-namespace Models;
+namespace Models\Edges;
 
 
 use Models\Core\EdgeModel;
@@ -18,7 +18,7 @@ class Assignment extends EdgeModel
     private static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
-        'encoding'      =>  []
+        'encoding'      =>  null
     ];
 
     /**

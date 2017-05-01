@@ -1,12 +1,16 @@
 <?php
 
+use Models\Vertices\Study;
+use Models\Vertices\Domain;
+use Models\Vertices\Paper;
+
 /*
  * GET studies/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
  */
 $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
     $study_key = $args['key'];
-    $study = \Models\Study::retrieve($study_key);
+    $study = Study::retrieve($study_key);
     $structure = $study->getStructureFlat();
     if(!$structure) return $response->write("No Domains")->withStatus(400);
 
@@ -19,9 +23,7 @@ $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
  */
 $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
     $study_key = $args['key'];
-
-    $study_key = $args['key'];
-    $study = \Models\Study::retrieve($study_key);
+    $study = Study::retrieve($study_key);
     $variables = $study->getVariablesFlat();
     if(!$variables) return $response->write("No Domains")->withStatus(400);
 
@@ -36,9 +38,9 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     $formData = $request->getParams();
     $study_key = $args['key'];
 
-    $study = \Models\Study::retrieve($study_key);
+    $study = Study::retrieve($study_key);
 
-    $paper = \Models\Paper::create([
+    $paper = Paper::create([
         'title'     =>  $formData['title'],
         'pmcID'     =>  $formData['pmcID']
     ]);
@@ -55,7 +57,7 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
 $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $study = \Models\Study::create([
+    $study = Study::create([
         'name'  =>  $formData['name']
     ]);
 
@@ -70,8 +72,8 @@ $app->POST("/studies", function ($request, $response, $args) {
  */
 $app->POST("/studies/{key}/domains", function ($request, $response, $args) {
 
-    $domain = \Models\Domain::retrieve( $request->getParam("domainKey") );
-    $study = \Models\Study::retrieve( $args['key'] );
+    $domain = Domain::retrieve( $request->getParam("domainKey") );
+    $study = Study::retrieve( $args['key'] );
 
     $domain->addDomain( $domain );
 

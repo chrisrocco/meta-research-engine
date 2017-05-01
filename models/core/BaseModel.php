@@ -8,7 +8,6 @@
 
 namespace Models\Core;
 use DB\DB;
-use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\Document;
 
 abstract class BaseModel {
@@ -27,11 +26,11 @@ abstract class BaseModel {
     public function get($property){
         return $this->arango_document->get($property);
     }
-    public function getDocument(){
-        return $this->arango_document;
-    }
     public function toArray(){
         return $this->arango_document->getAll();
+    }
+    public function getDocument(){
+        return $this->arango_document;
     }
 
     /*------------------------------------------------*/
@@ -79,6 +78,7 @@ abstract class BaseModel {
      */
     public static function getByExample( $example ){
         $cursor = DB::getByExample( static::getCollectionName(), $example );
+
         return self::wrapAll( $cursor );
     }
 
@@ -100,20 +100,17 @@ abstract class BaseModel {
 
         return static::getCollectionName();
     }
-    protected static function wrap( $arango_document ){
+    protected static function addMetaData( &$data ){
+        $data["date_created"] = date("c");
+    }
+
+    static function wrap( $arango_document ){
         $class = static::getClass();
         $model = new $class;
         $model->arango_document = $arango_document;
         return $model;
     }
-    protected static function addMetaData( &$data ){
-        $data["date_created"] = date("c");
-    }
-    /**
-     * @param $cursor Cursor
-     * @return array
-     */
-    public static function wrapAll( &$cursor ){
+    static function wrapAll( &$cursor ){
         // wraps a result set consisting of documents into this model's type
         $data_set = [];
         while($cursor->valid()){

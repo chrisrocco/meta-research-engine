@@ -8,5 +8,9 @@
 
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
+        $study = \Models\Vertices\Study::retrieve(2826667);
+        $vars = $study->getVariablesFlat();
+
+        echo json_encode($vars, JSON_PRETTY_PRINT);
     }
 }

@@ -6,12 +6,14 @@
  * Time: 3:49 PM
  */
 
-namespace Models;
+namespace Models\Vertices;
 
 
 use DB\DB;
-use DB\Queries\QueryBank;
 use Models\Core\VertexModel;
+use Models\Edges\PaperOf;
+use Models\Edges\SubdomainOf;
+use Models\Edges\VariableOf;
 
 class Study extends VertexModel {
 
@@ -46,11 +48,15 @@ class Study extends VertexModel {
         return $domains;
     }
     public function getVariablesFlat(){
-        $vars = [];
-        foreach ( $this->getTopLevelDomains() as $top ){
-            $this->recursiveGetVariables( $top, $vars );
-        }
-        return $vars;
+        $AQL = "FOR domain IN 0..3 INBOUND @study_root @@domain_to_domain
+                    FOR var IN INBOUND domain @@var_to_domain
+                        RETURN var";
+        $bindings = [
+            'study_root'    =>  $this->id(),
+            '@domain_to_domain'  =>  SubdomainOf::$collection,
+            '@var_to_domain'     =>  VariableOf::$collection
+        ];
+        return DB::query($AQL, $bindings, true)->getAll();
     }
 
     private function getTopLevelDomains(){
@@ -58,7 +64,6 @@ class Study extends VertexModel {
         $subdomain_of = SubdomainOf::$collection;
         $query = "FOR domain in INBOUND '$id' $subdomain_of
                     RETURN domain";
-
         $cursor = DB::query($query);
         return Domain::wrapAll( $cursor );
     }
@@ -80,16 +85,5 @@ class Study extends VertexModel {
             'variables'     =>  $flat_vars,
             'subdomains'    =>  $subdomains
         ];
-    }
-    private function recursiveGetVariables( $domain, &$output ){
-        foreach ( $domain->getVariables() as $variable ){
-            $output[] = $variable->toArray();
-        }
-
-        foreach ( $domain->getSubdomains() as $sub ){
-            $this->recursiveGetVariables( $sub, $output );
-        }
-
-        return $output;
     }
 }

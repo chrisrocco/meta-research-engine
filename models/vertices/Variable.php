@@ -6,7 +6,7 @@
  * Time: 4:05 PM
  */
 
-namespace Models;
+namespace Models\Vertices;
 
 
 use Models\Core\VertexModel;

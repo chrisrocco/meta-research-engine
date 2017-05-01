@@ -1,5 +1,5 @@
 <?php
-use Models\User as User;
+use Models\Vertices\User as User;
 
 /**
  * POST usersLoginPost

@@ -1,5 +1,7 @@
 <?php
 
+use Models\Vertices\Paper;
+
 /**
  * Created by PhpStorm.
  * User: chris
@@ -13,10 +15,10 @@ class PaperTest extends \Tests\BaseTestCase
             'title' =>  'Test Paper',
             'pmcID' =>  '12345'
         ];
-        $paper = \Models\Paper::create($paper_data);
+        $paper = Paper::create($paper_data);
 
-        $from_DB = \Models\Paper::retrieve( $paper->key() );
+        $from_DB = Paper::retrieve( $paper->key() );
 
-        self::assertInstanceOf(\Models\Paper::class, $from_DB);
+        self::assertInstanceOf(Paper::class, $from_DB);
     }
 }

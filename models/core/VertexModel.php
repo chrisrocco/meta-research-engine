@@ -26,7 +26,6 @@ class VertexModel extends BaseModel {
 
         $document = Document::createFromArray( $data );
         $key = DB::create( static::getCollectionName(), $document );
-//        $document = DB::retrieve( static::getCollectionName(), $key );    // Performance optimization
         $document->setInternalKey($key);
         return static::wrap($document);
     }

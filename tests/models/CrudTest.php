@@ -9,9 +9,7 @@
 namespace Tests\Models;
 
 
-use DB\DB;
-use Models\BaseModel;
-use Models\User;
+use Models\Vertices\User;
 use Tests\BaseTestCase;
 
 class CrudTest extends BaseTestCase {
