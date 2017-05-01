@@ -81,7 +81,6 @@ class AssignmentTest extends \Tests\BaseTestCase
     public function testGetAssignment( $given ){
         $key = $given["assignmentKey"];
         $response = $this->runApp("GET", "/assignments/$key");
-        var_dump((string)$response->getBody());
         self::assertEquals(200, $response->getStatusCode());
     }
 }
