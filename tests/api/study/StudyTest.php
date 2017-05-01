@@ -16,17 +16,17 @@ class StudyTest extends \Tests\BaseTestCase
 
         self::assertEquals(200, $response->getStatusCode());
 
-        return $random_name;
+        $studies = \Models\Study::getByExample( [ 'name' => $random_name] );
+        $study = $studies[0];
+
+        return $study;
     }
 
     /**
      * @depends testCreateStudy
      * @param $study_name \Models\Study
      */
-    function testAddPaper( $study_name ){
-
-        $studies = \Models\Study::getByExample( [ 'name' => $study_name] );
-        $study = $studies[0];
+    function testAddPaper( $study ){
 
         $response = $this->runApp("POST", "/studies/".$study->key()."/papers", [
             "title"     =>  "test paper",
@@ -34,5 +34,26 @@ class StudyTest extends \Tests\BaseTestCase
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateStudy
+     */
+    function testGetStructure( $study ){
+        $key = $study->key();
+        $response = $this->runApp("GET", "/studies/$key/structure");
+
+        self::assertEquals(200 || 400, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateStudy
+     */
+    function testGetVariables( $study ){
+//        $key = "2826667";
+        $key = $study->key();
+        $response = $this->runApp("GET", "/studies/$key/variables");
+
+        self::assertEquals(200 || 400, $response->getStatusCode());
     }
 }

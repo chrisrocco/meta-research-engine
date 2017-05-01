@@ -7,7 +7,9 @@
 $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
     $study_key = $args['key'];
     $study = \Models\Study::retrieve($study_key);
-    $structure = $study->getStructure();
+    $structure = $study->getStructureFlat();
+    if(!$structure) return $response->write("No Domains")->withStatus(400);
+
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
@@ -20,7 +22,8 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 
     $study_key = $args['key'];
     $study = \Models\Study::retrieve($study_key);
-    $variables = $study->getVariableNames();
+    $variables = $study->getVariablesFlat();
+    if(!$variables) return $response->write("No Domains")->withStatus(400);
 
     return $response->write(json_encode($variables, JSON_PRETTY_PRINT));
 });

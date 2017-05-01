@@ -33,4 +33,23 @@ class Domain extends VertexModel
             $this->id(), $variable->id(), []
         );
     }
+
+    function getVariables(){
+        $id = $this->id();
+        $variable_of = VariableOf::$collection;
+        $query = "FOR var IN INBOUND '$id' $variable_of
+                    RETURN var";
+        $cursor = DB::query( $query );
+        return Variable::wrapAll( $cursor );
+    }
+
+    function getSubdomains(){
+        $id = $this->id();
+        $subdomain_of = SubdomainOf::$collection;
+        $query = "FOR domain in INBOUND '$id' $subdomain_of
+                    RETURN domain";
+
+        $cursor = DB::query($query);
+        return Domain::wrapAll( $cursor );
+    }
 }

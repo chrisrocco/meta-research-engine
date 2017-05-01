@@ -10,6 +10,10 @@ require __DIR__ . '/../../../vendor/autoload.php';
 
 \DB\DB::enterDevelopmentMode();
 
+$vars_per_domain = 2;
+$subdomains_per_domain = 3;
+$top_level_domains = 3;
+
 
 // Make a study
 $study = \Models\Study::create([
@@ -17,9 +21,9 @@ $study = \Models\Study::create([
 ]);
 
 // Make some variables
-function randomVars(){
+function randomVars( $how_many ){
     $vars = [];
-    for( $i = 0; $i < rand(3, 10); $i++ ){
+    for( $i = 0; $i < $how_many; $i++ ){
         $var = \Models\Variable::create([
             'name'  =>  'variable ' . rand(1000, 9999)
         ]);
@@ -31,13 +35,26 @@ function randomVars(){
 
 // Make some domains
 $domains = [];
-for( $i = 0; $i < rand(5, 15); $i++ ){
+for( $i = 0; $i < $top_level_domains; $i++ ){
     $domain = \Models\Domain::create([
         'name'  =>  'domain ' . rand( 1000, 9999)
     ]);
     print "created domain " . $domain->id() . "\n";
 
-    foreach (randomVars() as &$var){
+    for( $j = 0; $j < $subdomains_per_domain; $j++ ){
+        // add some subdomains
+        $subdomain = \Models\Domain::create([
+            'name'  =>  'subdomain ' . rand(1, 9999)
+        ]);
+        print "created subdomain " . $subdomain->id() . "\n";
+
+        foreach (randomVars($vars_per_domain) as &$var){
+            $subdomain->addVariable($var);
+        }
+        $domain->addSubdomain( $subdomain );
+    }
+
+    foreach (randomVars($vars_per_domain) as &$var){
         $domain->addVariable($var);
     }
 
@@ -45,9 +62,9 @@ for( $i = 0; $i < rand(5, 15); $i++ ){
 }
 
 // Add the domains to a study
-foreach ($domains as &$domain){
-    $study->addDomain( $domain );
-    print "added domain to study " . $domain->id() . "\n";
+foreach ($domains as &$d){
+    $study->addDomain( $d );
+    print "added domain to study " . $d->id() . "\n";
 }
 
 // Create a graph

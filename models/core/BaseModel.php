@@ -8,6 +8,7 @@
 
 namespace Models\Core;
 use DB\DB;
+use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\Document;
 
 abstract class BaseModel {
@@ -26,9 +27,11 @@ abstract class BaseModel {
     public function get($property){
         return $this->arango_document->get($property);
     }
-
     public function getDocument(){
         return $this->arango_document;
+    }
+    public function toArray(){
+        return $this->arango_document->getAll();
     }
 
     /*------------------------------------------------*/
@@ -45,7 +48,7 @@ abstract class BaseModel {
 
         if( !$doc ) return false;
 
-        return static::createFromDocument($doc);
+        return static::wrap($doc);
     }
 
     /**
@@ -76,14 +79,7 @@ abstract class BaseModel {
      */
     public static function getByExample( $example ){
         $cursor = DB::getByExample( static::getCollectionName(), $example );
-
-        $data_set = [];
-        while($cursor->valid()){
-            $doc = $cursor->current();
-            $data_set[] = self::createFromDocument($doc);
-            $cursor->next();
-        }
-        return $data_set;
+        return self::wrapAll( $cursor );
     }
 
     /*--------------------------------------------------*/
@@ -104,7 +100,7 @@ abstract class BaseModel {
 
         return static::getCollectionName();
     }
-    protected static function createFromDocument( $arango_document ){
+    protected static function wrap( $arango_document ){
         $class = static::getClass();
         $model = new $class;
         $model->arango_document = $arango_document;
@@ -113,7 +109,20 @@ abstract class BaseModel {
     protected static function addMetaData( &$data ){
         $data["date_created"] = date("c");
     }
-
+    /**
+     * @param $cursor Cursor
+     * @return array
+     */
+    public static function wrapAll( &$cursor ){
+        // wraps a result set consisting of documents into this model's type
+        $data_set = [];
+        while($cursor->valid()){
+            $doc = $cursor->current();
+            $data_set[] = self::wrap($doc);
+            $cursor->next();
+        }
+        return $data_set;
+    }
 
     static $collection;     // uses a default collection name. For example, the BaseModel, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.
 

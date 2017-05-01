@@ -14,6 +14,7 @@ use triagens\ArangoDb\Connection;
 use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\DocumentHandler;
 use triagens\ArangoDb\EdgeHandler;
+use triagens\ArangoDb\Statement;
 
 class DB
 {
@@ -51,6 +52,15 @@ class DB
     /*----------------------------------------------------*/
     /*----------------------- Query -----------------------*/
     /*----------------------------------------------------*/
+    public static function query($query_string){
+        $connection = self::getConnection();
+        $statement = new Statement(
+            $connection, [
+                'query' => $query_string
+            ]
+        );
+        return $statement->execute();
+    }
     public static function getAll( $col ){
         $ch = self::getCollectionHandler();
         return $ch->all( $col );

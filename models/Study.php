@@ -9,6 +9,7 @@
 namespace Models;
 
 
+use DB\DB;
 use DB\Queries\QueryBank;
 use Models\Core\VertexModel;
 
@@ -37,18 +38,58 @@ class Study extends VertexModel {
     /**
      * @return array
      */
-    public function getStructure(){
-        return QueryBank::execute("get_study_structure", [
-            "studyName" =>  $this->key()
-        ])->getAll();
+    public function getStructureFlat(){
+        $domains = [];
+        foreach( $this->getTopLevelDomains() as $subdomain ){
+            $domains[] = $this->recursiveGetDomain( $subdomain );
+        }
+        return $domains;
+    }
+    public function getVariablesFlat(){
+        $vars = [];
+        foreach ( $this->getTopLevelDomains() as $top ){
+            $this->recursiveGetVariables( $top, $vars );
+        }
+        return $vars;
     }
 
-    /**
-     * @return array
-     */
-    public function getVariableNames(){
-        return QueryBank::execute("get_study_variables", [
-            "studyName" =>  $this->key()
-        ])->getAll();
+    private function getTopLevelDomains(){
+        $id = $this->id();
+        $subdomain_of = SubdomainOf::$collection;
+        $query = "FOR domain in INBOUND '$id' $subdomain_of
+                    RETURN domain";
+
+        $cursor = DB::query($query);
+        return Domain::wrapAll( $cursor );
+    }
+    private function recursiveGetDomain( $domain ){
+
+        $variables  = $domain->getVariables();
+        $subdomains = [];
+        foreach ( $domain->getSubdomains() as $subdomain) {
+            $subdomains[] = $this->recursiveGetDomain($subdomain);
+        }
+
+        $flat_vars = [];
+        foreach ($variables as $var ){
+            $flat_vars[] = $var->toArray();
+        }
+
+        return [
+            'name'          =>  $domain->get('name'),
+            'variables'     =>  $flat_vars,
+            'subdomains'    =>  $subdomains
+        ];
+    }
+    private function recursiveGetVariables( $domain, &$output ){
+        foreach ( $domain->getVariables() as $variable ){
+            $output[] = $variable->toArray();
+        }
+
+        foreach ( $domain->getSubdomains() as $sub ){
+            $this->recursiveGetVariables( $sub, $output );
+        }
+
+        return $output;
     }
 }
