@@ -8,15 +8,39 @@
 
 namespace DB;
 
-use Models\EdgeModel;
 use triagens\ArangoDb\CollectionHandler;
 use triagens\ArangoDb\Connection;
-use triagens\ArangoDb\ConnectionOptions;
-use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\DocumentHandler;
 use triagens\ArangoDb\EdgeHandler;
 use triagens\ArangoDb\Statement;
 
+/**
+ * Class DB
+ * @package DB
+ *
+ * -----------------------
+ * --------- API ---------
+ * -----------------------
+ *
+ * Properties
+ * [_] -> connection                            Statically properties get set the first time they are requested
+ * [_] -> document_handler
+ * [_] -> collection_handler
+ * [_] -> edge_handler
+ *
+ * CRUD Operations
+ * [_] create( collection, document )
+ * [_] retrieve( collection, _key )
+ * [_] update( document )
+ * [_] delete( document )
+ * [_] createEdge( collection, from_id, to_id, document )
+ *
+ * Query Methods
+ * [_] query( AQL-string, bind-variables, flat-option )
+ * [_] queryModel( AQL-string, bind-variables, model-class )                            // Wraps the resulting documents in a model class
+ * [_] getAll( collection )
+ * [_] getByExample( {} )
+ */
 class DB
 {
     /*----------------------------------------------------*/

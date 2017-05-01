@@ -36,7 +36,6 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-
 /**
  * GET studentsIDAssignmentsGet
  * Summary: Returns a list of assignments to a student

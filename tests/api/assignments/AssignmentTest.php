@@ -7,6 +7,13 @@ use Models\Edges\Assignment;
  * User: chris
  * Date: 5/1/17
  * Time: 1:24 AM
+ *
+ * Follows the life-cycle of an assignment
+ *
+ * 1.) Assignment is created                            |   POST    /assignments
+ * 2.) User gets a list of assignments                  |   GET     /user/{key}/assignments
+ * 3.) Single assignment loaded                         |   GET     /assignments/{ID}
+ * 4.) Assignment is updated                            |   PUT     /assignments/{ID}
  */
 class AssignmentTest extends \Tests\BaseTestCase
 {
