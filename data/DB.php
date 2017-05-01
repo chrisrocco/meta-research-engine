@@ -53,7 +53,7 @@ class DB
     /*----------------------------------------------------*/
     /*----------------------- Query -----------------------*/
     /*----------------------------------------------------*/
-    public static function query($query_string, $bindVars = [], $flat = false){
+    public static function query($query_string, $bindVars = [], $flat = true){
         $connection = self::getConnection();
         $statement = new Statement(
             $connection, [
@@ -62,7 +62,12 @@ class DB
                 '_flat' => $flat
             ]
         );
-        return $statement->execute();
+        return $statement->execute()->getAll();
+    }
+    public static function queryModel($query_string, $bindVars = [], $modelClass){
+        $cursor = self::query($query_string, $bindVars);
+        $model = new $modelClass;
+        return $model::wrapAll($cursor);
     }
     public static function getAll( $col ){
         $ch = self::getCollectionHandler();

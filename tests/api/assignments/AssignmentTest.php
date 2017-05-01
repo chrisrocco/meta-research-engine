@@ -1,6 +1,8 @@
 <?php
 namespace Tests\API;
 
+use Models\Edges\Assignment;
+
 /**
  * User: chris
  * Date: 5/1/17
@@ -22,7 +24,6 @@ class AssignmentTest extends \Tests\BaseTestCase
 
 
     public function testCreateAssignment(){
-
         $response = $this->runApp("POST", "/assignments",
             [
                 "userKey"   =>  $this->test_user_key,
@@ -30,5 +31,46 @@ class AssignmentTest extends \Tests\BaseTestCase
             ]);
 
         self::assertEquals(200, $response->getStatusCode());
+
+        return [
+            'userKey'   =>  $this->test_user_key
+        ];
+    }
+
+    /**
+     * @depends testCreateAssignment
+     * @param $given
+     * @return mixed
+     */
+    public function testGetAssignments( $given ){
+        $key = $given['userKey'];
+        $response = $this->runApp("GET", "/users/$key/assignments");
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        $assignments = json_decode((string)$response->getBody(), true);
+        self::assertTrue( count($assignments) > 0 );
+
+        return [
+            "assignmentKey" => $assignments[0]["_key"]
+        ];
+    }
+
+    /**
+     * @depends testGetAssignments
+     * @param $given
+     */
+    public function testUpdateAssignments( $given ){
+        $key = $given["assignmentKey"];
+
+        $response = $this->runApp("PUT", "/assignments/$key",
+            [
+                "completion" => 999
+            ]);
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        $assignment = Assignment::retrieve($key);
+        self::assertEquals(999, $assignment->get("completion"));
     }
 }

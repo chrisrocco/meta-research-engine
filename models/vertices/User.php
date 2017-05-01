@@ -1,9 +1,11 @@
 <?php
 namespace Models\Vertices;
 
+use DB\DB;
 use Firebase\JWT\JWT;
 
 use Models\Core\VertexModel;
+use Models\Edges\Assignment;
 
 class User extends VertexModel
 {
@@ -84,6 +86,20 @@ class User extends VertexModel
             "token" => $token,
             "user" => $userDetails
         ];
+    }
+
+    public function getAssignments( $flat = false ){
+        $AQL = "FOR vertex, edge IN INBOUND @root @@edge_collection
+                    return edge";
+        $bindings = [
+            "root"  =>  $this->id(),
+            "@edge_collection"  =>  Assignment::$collection
+        ];
+
+        if($flat){
+            return DB::query($AQL, $bindings);
+        }
+        return DB::queryModel($AQL, $bindings, Assignment::getClass());
     }
 
     public function validate($hash_code){
