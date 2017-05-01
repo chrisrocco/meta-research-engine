@@ -5,17 +5,17 @@ $settings = [
         'JWT_secret' => 'supersecretkeyyoushouldnotcommitotgithub',
 
         // Database Connection
-        "arangodb_connection_options" => [
+        "database_connection_options" => [
             // database name
-            \triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE => 'bigdata',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE => 'development',
             // server endpoint to connect to
-            \triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT => 'tcp://___:8529',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT => 'tcp://35.184.147.35:8529',
             // authorization type to use (currently supported: 'Basic')
             \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_TYPE => 'Basic',
             // user for basic authorization
-            \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_USER => '___',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_USER => '_username_',
             // password for basic authorization
-            \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_PASSWD => '___',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_PASSWD => '_password_',
             // connection persistence on server. can use either 'Close' (one-time connections) or 'Keep-Alive' (re-used connections)
             \triagens\ArangoDb\ConnectionOptions::OPTION_CONNECTION => 'Keep-Alive',
             // connect timeout in seconds
@@ -27,7 +27,6 @@ $settings = [
             // optionally create new collections when inserting documents
             \triagens\ArangoDb\ConnectionOptions::OPTION_UPDATE_POLICY => \triagens\ArangoDb\UpdatePolicy::LAST,
         ],
-        "arangodb_development_connection_options"   =>  [],
 
         // Slim Project Settings
         'displayErrorDetails' => true, // set to false in production
@@ -44,8 +43,8 @@ $settings = [
         'smtp'  =>  [
             'host'          =>  'smtp.gmail.com',
             'smtp_auth'     =>  true,
-            'username'      =>  '___@gmail.com',
-            'password'      =>  '___();',
+            'username'      =>  '_________@gmail.com',
+            'password'      =>  '______________',
             'smtp_secure'   =>  'tls',
             'port'          =>  587
         ]

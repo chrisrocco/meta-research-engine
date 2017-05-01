@@ -11,6 +11,7 @@ namespace DB;
 use Models\EdgeModel;
 use triagens\ArangoDb\CollectionHandler;
 use triagens\ArangoDb\Connection;
+use triagens\ArangoDb\ConnectionOptions;
 use triagens\ArangoDb\Cursor;
 use triagens\ArangoDb\DocumentHandler;
 use triagens\ArangoDb\EdgeHandler;
@@ -131,22 +132,10 @@ class DB
         }
 
         $settings = require __DIR__ . '/../src/settings.php';
-        if(self::$is_dev_mode){
-            $connection = new Connection($settings['settings']['arangodb_development_connection_options']);
-        } else {
-            $connection = new Connection($settings['settings']['arangodb_connection_options']);
-        }
+        $config = $settings['settings']['database_connection_options'];
+        $connection = new Connection($config);
         self::$connection = $connection;
 
         return self::getConnection();
     }
-
-
-    /*----------------------------------------------------*/
-    /*--------------------- Debugging -----------------------*/
-    /*----------------------------------------------------*/
-    public static function enterDevelopmentMode(){
-        self::$is_dev_mode = true;
-    }
-    protected static $is_dev_mode;
 }

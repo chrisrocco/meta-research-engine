@@ -10,11 +10,6 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 class CollectionBuilder extends \DB\DB {
     static function dropCollections(  ){
-        if(!self::$is_dev_mode){
-            print 'You almost fucked up';
-            return;
-        };
-
         $ch = parent::getCollectionHandler();
         $collections = $ch->getAllCollections([ 'excludeSystem' => true ]);
         foreach ($collections as $name => $type){
@@ -24,7 +19,5 @@ class CollectionBuilder extends \DB\DB {
         }
     }
 }
-
-\DB\DB::enterDevelopmentMode();   // Please don't removed this. Im going to regret writing this script
 
 CollectionBuilder::dropCollections();

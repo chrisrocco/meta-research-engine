@@ -10,13 +10,10 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 $collections = json_decode(file_get_contents(__DIR__ . '/../collections.json'), true);
 
-\DB\DB::enterDevelopmentMode();
+class Setup extends \DB\DB {
 
-
-
-
-class CollectionBuilder extends \DB\DB {
     static function initCollections( $collections_data ){
+
         $ch = parent::getCollectionHandler();
         foreach ($collections_data as $name => $type){
             if($ch->has($name)) continue;
@@ -30,4 +27,4 @@ class CollectionBuilder extends \DB\DB {
     }
 }
 
-CollectionBuilder::initCollections($collections);
+Setup::initCollections($collections);
