@@ -73,4 +73,15 @@ class AssignmentTest extends \Tests\BaseTestCase
         $assignment = Assignment::retrieve($key);
         self::assertEquals(999, $assignment->get("completion"));
     }
+
+    /**
+     * @depends testGetAssignments
+     * @param $given
+     */
+    public function testGetAssignment( $given ){
+        $key = $given["assignmentKey"];
+        $response = $this->runApp("GET", "/assignments/$key");
+        var_dump((string)$response->getBody());
+        self::assertEquals(200, $response->getStatusCode());
+    }
 }

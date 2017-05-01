@@ -3,17 +3,18 @@ use \Models\Vertices\User;
 use Models\Vertices\Paper;
 use Models\Edges\Assignment;
 
-///**
-// * GET assignmentsIDGet
-// * Summary: Returns a single assignment
-// * Notes:
-// * Output-Formats: [application/json]
-// */
-//$app->GET('/assignments/{ID}', function ($request, $response, $args) {
-//    $assignment = new Assignment($args['ID']);
-//    $assignmentObject = $assignment->getAssignment();
-//    return $response->write(json_encode($assignmentObject,  JSON_PRETTY_PRINT));
-//});
+/**
+ * GET assignmentsIDGet
+ * Summary: Returns a single assignment
+ * Notes:
+ * Output-Formats: [application/json]
+ */
+$app->GET('/assignments/{key}', function ($request, $response, $args) {
+
+    $assignment = Assignment::retrieve($args["key"]);
+
+    return $response->write(json_encode($assignment->toArray(),  JSON_PRETTY_PRINT));
+});
 
 /**
  * PUT assignmentsIDPut
