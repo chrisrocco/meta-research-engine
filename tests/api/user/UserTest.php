@@ -5,38 +5,50 @@ use Models\Vertices\User;
 use Tests\BaseTestCase;
 
 /**
- * Created by PhpStorm.
  * User: chris
  * Date: 4/29/17
  * Time: 5:05 PM
+ *
+ *
+ * This test suite follows the lifecycle of a user using the public API.
+ *
+ * 1.) New user registers                               |   POST    /users/register
+ * 2.) User validates his email using the hash_code     |   GET     /users/validate
+ * 3.) User logs in and receives an API token           |   POST    /users/login
+ * 4.) API token is used to access a secure route       |   GET     /secure
  */
 
 class UserTest extends BaseTestCase {
 
     public function testNewRegister(){
         $randomEmail = rand(0, 9999) . '@gmail.com';
+        $password = "password";
+
         $response = $this->runApp('POST', '/users/register', [
             'first_name'    =>  "Unique",
             'last_name'     =>  "Email",
             'email'         =>  $randomEmail,
-            'password'      =>  "password",
+            'password'      =>  $password,
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
 
-        return $randomEmail;
+        return [
+            'email'     =>  $randomEmail,
+            'password'  =>  $password
+        ];
     }
 
     /**
      * @param $existing_email
      * @depends testNewRegister
      */
-    public function testExistingRegister( $existing_email ){
+    public function testExistingRegister( $fresh_creds ){
 
         $response = $this->runApp('POST', '/users/register', [
             'first_name'  => 'Chris',
             'last_name'  => 'Rocco',
-            'email' =>  $existing_email,
+            'email' =>  $fresh_creds['email'],
             'password'  =>  'password'
         ]);
 
@@ -50,8 +62,8 @@ class UserTest extends BaseTestCase {
      * @param $just_registered
      * @depends testNewRegister
      */
-    public function testValidate( $just_registered ){
-        $user_set = User::getByExample( [ 'email'   =>  $just_registered ]);
+    public function testValidate( $fresh_creds ){
+        $user_set = User::getByExample( [ 'email'   =>  $fresh_creds['email'] ]);
         self::assertTrue( count($user_set) > 0 );
         $user = $user_set[0];
         self::assertFalse(  $user->get('active')    );
@@ -71,14 +83,10 @@ class UserTest extends BaseTestCase {
      * @depends testNewRegister
      * @param $just_registered_email string
      */
-    public function testLogin( $just_registered_email ){
-        $user_set = User::getByExample( [ 'email'   =>  $just_registered_email ]);
-        self::assertTrue( count($user_set) > 0 );
-        $just_registered = $user_set[0];
-
+    public function testLogin( $fresh_creds ){
         $response = $this->runApp("POST", "/users/login", [
-            'email'     =>  $just_registered->get('email'),
-            'password'  =>  $just_registered->get('password')
+            'email'     =>  $fresh_creds['email'],
+            'password'  =>  $fresh_creds['password']
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
@@ -92,5 +100,31 @@ class UserTest extends BaseTestCase {
         ]);
 
         self::assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testSecuredRoute(){
+        $response = $this->runApp("GET", '/secure');
+        self::assertEquals(401, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testNewRegister
+     * @param $fresh_creds
+     */
+    public function testAuthenticate( $fresh_creds ){
+
+        $response = $this->runApp('POST', '/users/login', [
+            'email'     =>  $fresh_creds['email'],
+            'password'  =>  $fresh_creds['password']
+        ]);
+
+        $body = (string)$response->getBody();
+        $token = json_decode($body, true)['token'];
+
+        $next_response = $this->runApp('GET', '/secure', null, [
+            [ 'Authorization', 'Bearer ' . $token ]
+        ]);
+
+        self::assertEquals(200, $next_response->getStatusCode());
     }
 }

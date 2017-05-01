@@ -25,11 +25,13 @@ class User extends VertexModel
             return User::EXISTS;
         }
 
+        $passhash = password_hash($password, PASSWORD_DEFAULT);
+
         $user = User::create([
             'first_name'    =>  $first_name,
             'last_name'     =>  $last_name,
             'email'         =>  $email,
-            'password'      =>  $password,
+            'password'      =>  $passhash,
             'active'        =>  false,
             'hash_code'     =>  null
         ]);
@@ -43,15 +45,19 @@ class User extends VertexModel
      * @return array|int A JWT authentication token
      */
     public static function login($email, $password){
-        $exist_arr = User::getByExample([
-            'email' =>  $email,
-            'password'  =>  $password
+        $user_set = User::getByExample([
+                'email' =>  $email
             ]);
-        if( count($exist_arr) === 0 ){
+
+        if( count($user_set) === 0 ){
             return User::INVALID;
         }
 
-        $user = $exist_arr[0];
+        $user = $user_set[0];
+
+        $password_check = password_verify($password, $user->get('password'));
+        if(!$password_check) return User::INVALID;
+
         $userDetails = [
             "_key" => $user->key(),
             "first_name" => $user->get("first_name"),

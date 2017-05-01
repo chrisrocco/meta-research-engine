@@ -12,11 +12,11 @@ namespace Tests\Models\User;
 use Models\Vertices\User;
 use Tests\BaseTestCase;
 
-class UserTest extends BaseTestCase
-{
+class UserTest extends BaseTestCase {
 
     public function testNewRegister(){
         $random_email = rand(0, 9999) . '@gmail.com';
+        $password = 'password';
 
         $user = User::register(
             'Random',
@@ -26,19 +26,22 @@ class UserTest extends BaseTestCase
         );
         self::assertInstanceOf(User::class, $user);
 
-        return $user;
+        return [
+            'email'     =>  $random_email,
+            'password'  =>  $password
+        ];
     }
 
     /**
      * @param $existingUser User
      * @depends testNewRegister
      */
-    public function testExistingRegister( $existingUser ){
+    public function testExistingRegister( $fresh_creds ){
         $result = User::register(
-            $existingUser->get('first_name'),
-            $existingUser->get('last_name'),
-            $existingUser->get('email'),
-            $existingUser->get('password')
+            "name",
+            "name",
+            $fresh_creds['email'],
+            "password"
         );
 
         self::assertEquals(User::EXISTS, $result);
@@ -48,7 +51,11 @@ class UserTest extends BaseTestCase
      * @param $existingUser User
      * @depends testNewRegister
      */
-    public function testValidate( $fresh_user ){
+    public function testValidate( $fresh_creds ){
+        $fresh_user = User::getByExample([
+            'email' =>  $fresh_creds['email']
+        ])[0];
+
         self::assertEquals(false, $fresh_user->get('active'));
 
         $new_hash = $fresh_user->rehash();
@@ -61,10 +68,10 @@ class UserTest extends BaseTestCase
      * @depends testNewRegister
      * @param $good_user User
      */
-    public function testGoodLogin( $good_user ){
+    public function testGoodLogin( $fresh_creds ){
         $response = User::login(
-            $good_user->get('email'),
-            $good_user->get('password')
+            $fresh_creds['email'],
+            $fresh_creds['password']
         );
 
         self::assertContains('token', json_encode($response));

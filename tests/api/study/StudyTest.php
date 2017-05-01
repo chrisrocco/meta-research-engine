@@ -8,6 +8,14 @@ use \Models\Vertices\Study;
  * User: chris
  * Date: 4/30/17
  * Time: 3:33 PM
+ *
+ *
+ * Follows the lifecycle of a study
+ *
+ * 1.) New study is created                         |   POST    /studies
+ * 2.) Paper is added to the study                  |   POST    /studies/{key}/paper
+ * 3.) Structure of the study is fetched            |   GET     /studies/{key}/structure
+ * 3.) Variables of the study are fetched           |   GET     /studies/{key}/variables
  */
 class StudyTest extends \Tests\BaseTestCase
 {
