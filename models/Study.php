@@ -9,6 +9,7 @@
 namespace Models;
 
 
+use DB\Queries\QueryBank;
 use Models\Core\VertexModel;
 
 class Study extends VertexModel {
@@ -24,7 +25,6 @@ class Study extends VertexModel {
         );
     }
 
-
     /**
      * @param $domain Domain
      */
@@ -32,5 +32,23 @@ class Study extends VertexModel {
         SubdomainOf::create(
             $this->id(), $domain->id(), []
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function getStructure(){
+        return QueryBank::execute("get_study_structure", [
+            "studyName" =>  $this->key()
+        ])->getAll();
+    }
+
+    /**
+     * @return array
+     */
+    public function getVariableNames(){
+        return QueryBank::execute("get_study_variables", [
+            "studyName" =>  $this->key()
+        ])->getAll();
     }
 }

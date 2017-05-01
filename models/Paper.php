@@ -9,6 +9,7 @@
 namespace Models;
 
 
+use DB\QueryBank;
 use Models\Core\VertexModel;
 
 class Paper extends VertexModel

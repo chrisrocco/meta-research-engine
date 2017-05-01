@@ -9,6 +9,7 @@
 namespace Models;
 
 
+use DB\DB;
 use Models\Core\VertexModel;
 
 class Domain extends VertexModel

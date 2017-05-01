@@ -1,16 +1,13 @@
 <?php
-use Entities\Study as Study;
 
 /*
  * GET studies/{studyname}/structure
  * Summary: Gets the domain / field structure of the specified research study
  */
-$app->GET("/studies/{studyname}/structure", function ($request, $response, $args) {
-    $studyName = $args['studyname'];
-
-    $study = new Study($studyName);
+$app->GET("/studies/{key}/structure", function ($request, $response, $args) {
+    $study_key = $args['key'];
+    $study = \Models\Study::retrieve($study_key);
     $structure = $study->getStructure();
-
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
@@ -18,11 +15,12 @@ $app->GET("/studies/{studyname}/structure", function ($request, $response, $args
  * GET studies/{studyname}/variables
  * Summary: Gets a list of every field's name
  */
-$app->GET("/studies/{studyname}/variables", function ($request, $response, $args) {
-    $studyName = $args['studyname'];
+$app->GET("/studies/{key}/variables", function ($request, $response, $args) {
+    $study_key = $args['key'];
 
-    $study = new Study($studyName);
-    $variables = $study->getVariables();
+    $study_key = $args['key'];
+    $study = \Models\Study::retrieve($study_key);
+    $variables = $study->getVariableNames();
 
     return $response->write(json_encode($variables, JSON_PRETTY_PRINT));
 });

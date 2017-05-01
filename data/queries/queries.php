@@ -1,37 +1,20 @@
 <?php
-namespace DB;
-
-use triagens\ArangoDb\Statement;
+$queries = [];
 
 /**
- * Created by PhpStorm.
- * User: Chris Rocco
- * Date: 4/10/2017
- * Time: 8:06 PM
+ * @assignment
  */
-class QueryBank {
-    public static function execute($name, $params){
-        $connection = DB::getConnection();
+$queries['get_collaborators'] = "FOR paper IN OUTBOUND @assignment assignment_of FOR assignment IN INBOUND paper assignment_of RETURN assignment";
 
-        $statement = new Statement(
-            $connection, [
-                'query' => QueryBank::$queries[$name],
-                'bindVars' => $params,
-                '_flat' => true
-            ]
-        );
-        return $statement->execute()->getAll();
-    }
+/**
+ * @studyName
+ */
+$queries['get_study_variables'] = "FOR var IN INBOUND CONCAT('research_studies/', @studyName) models SORT var._key RETURN var._key";
 
-    function __call($name, $arguments) {
-        $bindVars = $arguments[0];
-        return QueryBank::execute($name, $bindVars);
-    }
-
-    private static $queries = [
-        "getCollaborators" => "FOR paper IN OUTBOUND @assignment assignment_of FOR assignment IN INBOUND paper assignment_of RETURN assignment",
-        "getVariables" => "FOR var IN INBOUND CONCAT('research_studies/', @studyName) models SORT var._key RETURN var._key",
-        "getStudyStructure" => "FOR domain IN INBOUND CONCAT (\"research_studies/\", @studyName) subdomain_of //For each top-level domain
+/**
+ * @studyName
+ */
+$queries['get_study_structure'] = "FOR domain IN INBOUND CONCAT (\"research_studies/\", @studyName) subdomain_of //For each top-level domain
    
                             //assemble the domain's fields
                             LET fields = (
@@ -63,30 +46,45 @@ class QueryBank {
                             RETURN MERGE(domain, {
                                 \"fields\": fields,
                                 \"subdomains\": subDomains
-                            })",
-        "getAssignmentsByStudent" => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
+                            })";
+
+/**
+ * @userID
+ */
+$queries["get_assignments_by_student"] = "FOR assignment IN INBOUND CONCAT(\"users/\", @userID) assigned_to
                                     FOR paper IN OUTBOUND assignment._id assignment_of
                                         RETURN MERGE(
-                                            UNSET(assignment, "encoding"),
+                                            UNSET(assignment, \"encoding\"),
                                             {title: paper.title, pmcID: paper._key}
-                                        )',
-        "getBlankEncoding" => 'LET constants = (
+                                        )";
+
+/**
+ * @studyName
+ */
+$queries["get_blank_encoding"] = "LET constants = (
                                 FOR field IN INBOUND @studyName models
                                     RETURN {
-                                        "field" : field._key,
-                                        "content" : {value : ""}
+                                        \"field\" : field._key,
+                                        \"content\" : {value : \"\"}
                                     }
                             )
                             RETURN {
-                                "constants" : constants,
-                               "branches" : [[]]
-                            }',
-        "assignmentExistCount" => 'FOR assignment IN INBOUND CONCAT("users/", @userID) assigned_to
+                                \"constants\" : constants,
+                               \"branches\" : [[]]
+                            }";
+/**
+ * @userID
+ * @pmcID
+ */
+$queries["assignment_exist_count"] = "FOR assignment IN INBOUND CONCAT(\"users/\", @userID) assigned_to
                                 FOR paper IN OUTBOUND assignment._id assignment_of
                                     FILTER paper._key == @pmcID
-                                    RETURN 1',
-        "getAssignmentByID" => 'LET assignment = DOCUMENT( CONCAT ("assignments/", @assignmentID) )
+                                    RETURN 1";
+/**
+ * @assignmentID
+ */
+$queries["get_assignment_by_id"] = "LET assignment = DOCUMENT( CONCAT (\"assignments/\", @assignmentID) )
                                 FOR paper IN OUTBOUND assignment._id assignment_of
-                                    RETURN MERGE( UNSET (assignment, "_id", "_rev"), {title: paper.title, pmcID: paper._key})'
-    ];
-}
+                                    RETURN MERGE( UNSET (assignment, \"_id\", \"_rev\"), {title: paper.title, pmcID: paper._key})";
+
+return $queries;

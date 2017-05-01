@@ -35,5 +35,4 @@ class StudyTest extends \Tests\BaseTestCase
 
         self::assertEquals(200, $response->getStatusCode());
     }
-
 }

@@ -73,7 +73,7 @@ class DB
     /**
      * @return DocumentHandler
      */
-    protected static function getDocumentHandler(){
+    static function getDocumentHandler(){
         if(self::$document_handler){
             return self::$document_handler;
         }
@@ -87,7 +87,7 @@ class DB
     /**
      * @return EdgeHandler
      */
-    protected static function getEdgeHandler(){
+    static function getEdgeHandler(){
         if(self::$edge_handler){
             return self::$edge_handler;
         }
@@ -101,7 +101,7 @@ class DB
     /**
      * @return CollectionHandler
      */
-    protected static function getCollectionHandler(){
+    static function getCollectionHandler(){
         if(self::$collection_handler){
             return self::$collection_handler;
         }
@@ -115,7 +115,7 @@ class DB
     /**
      * @return Connection
      */
-    public static function getConnection(){
+    static function getConnection(){
         if(self::$connection){
             return self::$connection;
         }
