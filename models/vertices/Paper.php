@@ -9,10 +9,10 @@
 namespace Models\Vertices;
 
 
-use DB\QueryBank;
 use Models\Core\VertexModel;
 
-class Paper extends VertexModel
-{
+class Paper extends VertexModel {
     static $collection = 'papers';
+
+
 }

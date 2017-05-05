@@ -9,6 +9,5 @@
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
 
-
     }
 }
