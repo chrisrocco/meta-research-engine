@@ -9,7 +9,6 @@
  *
  * Each paper is double encoded to two random students
  */
-
 require __DIR__ . '/../../../vendor/autoload.php';
 
 use \triagens\ArangoDb;
@@ -53,17 +52,21 @@ foreach ( $papers as $paper ){
 }
 
 // Make a graph
-
 $double_encoded_graph = new ArangoDb\Graph('assignments_PHP');
-
 $assignment = new ArangoDb\EdgeDefinition();
 $assignment->setRelation( Assignment::$collection );
 $assignment->addToCollection( User::$collection );
 $assignment->addFromCollection( Paper::$collection );
-
 $double_encoded_graph->addEdgeDefinition($assignment);
-
 $gh = new ArangoDb\GraphHandler( \DB\DB::getConnection() );
-$gh->createGraph($double_encoded_graph);
+
+try {
+    $gh->createGraph($double_encoded_graph);
+    print "created graph " . $gh->getInternalId() . "\n";
+} catch ( Exception $e ){
+    if( $e->getCode() === 1925 ){
+        print "Graph already exists \n";
+    }
+}
 
 print "created graph " . $double_encoded_graph->getInternalId() . "\n";
