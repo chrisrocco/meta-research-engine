@@ -6,5 +6,6 @@
   "variables":      "vertex",
   "domains":        "vertex",
   "paper_of":       "edge",
-  "variable_of":    "edge"
+  "variable_of":    "edge",
+  "subdomain_of":   "edge"
 }

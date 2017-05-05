@@ -23,7 +23,7 @@ use triagens\ArangoDb\Document;
  * -----------------------
  *
  * Properties
- * [+] -> collection                            // The name of the document collection this class is modeling. Should be overridden.
+ * [+] -> collection                            // Collection name. Should be overridden by sub-classes.
  *
  * Document Manipulation
  * [+] key()
