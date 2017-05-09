@@ -1,73 +1,79 @@
 <?php
 /**
- * User: chris
- * Date: 5/1/17
- * Time: 11:46 AM
+ * Created by PhpStorm.
+ * User: Caleb Falcione
+ * Date: 5/9/2017
+ * Time: 2:43 PM
  */
 
 namespace Papers;
 
 
 class Encoding {
-
-    public $data = [
-        /**
-         * branch_key   =>  [
-         *      variable_key    =>  [
-         *          Response
-         *          Response
-         *      ]
-         *      variable_key    =>  [
-         *          Response
-         *          Response
-         *      ]
-         * ]
-         * branch_key   =>  [
-         *      variable_key    =>  [
-         *          Response
-         *          Response
-         *      ]
-         *      variable_key    =>  [
-         *          Response
-         *          Response
-         *      ]
-         * ]
-         */
-    ];
+    private $id;
+    private $branches;
+    private $constants;
 
     /**
-     * Encoding constructor.
-     * @param $responses    Response[]      array of response objects can make up an encoding
+     * @return StructureResponse
      */
-    function __construct( $responses ) {
-
+    public function getStructureResponse() {
+        return new StructureResponse(count($this->branches), [$this->id]);
     }
 
     /**
-     * @param $response Response
+     * @return ScopeResponse[]
      */
-    public function recordResponse( $response ){
+    public function getScopeResponses () {
+        $resultArr = [];
 
+        //Assemble scopes from constants
+        foreach ($this->constants as $valueResponse) {
+            if (!is_a($valueResponse, ValueResponse::class)) {
+                continue;
+            }
+            array_push($resultArr, new ScopeResponse($valueResponse->getVariableID(), "constant", [$this->id]));
+        }
+
+        //Assemble scopes from branches
+        //NOTE: we could have used $this->branches[0] and assumed identical variables in each branch,
+        //      but this is more general
+        foreach ($this->branches as $branch) {
+            foreach ($branch as $valueResponse) {
+                array_push($resultArr, new ScopeResponse($valueResponse->getVariableID(), "variable", [$this->id]));
+            }
+        }
+        //Strip out the redundant ScopeResponses and return
+        return array_unique($resultArr);
     }
 
     /**
-     * @param $encoding Encoding    another encoding
-     * @return Encoding             the new encoding
+     * @return ValueResponse[]
      */
-    public function merge( $encoding ){
-        return new Encoding();
+    public function getValueResponses () {
+        //Initialize the result array
+        $resultArr = array_merge($this->constants, []); //I was unsure if $resultArr = $this->constants would only be a reference
+        //Add each of the branches to the result array
+        foreach ($this->branches as $branch) {
+            $resultArr = array_merge($resultArr, $branch);
+        }
+        return $resultArr;
     }
 
+    public function __construct($encoding, $id) {
+        try {
+            $this->id = $id;
+            //Construct constants
+            $this->constants = ValueResponse::batchConstruct($encoding['constants'], $id, "constant", -1);
 
-    /**
-     * @param $user_submission  mixed           The user-submitted data from the front-end
-     * @return Response[]                       The array of responses extracted from the submission
-     */
-    public static function parse( $user_submission ){
-        $responses = [];
+            //Construct branches
+            $this->branches = [];
+            for ($i = 0; $i < count($encoding['branches']); $i++) {
+                $this->branches[$i] = ValueResponse::batchConstruct($encoding['branches'][$i], $id, "variable", $i);
+            }
 
-        $responses[] = new Response();
-
-        return $responses;
+        } catch (Exception $e) {
+            //TODO
+        }
     }
 }
