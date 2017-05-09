@@ -5,18 +5,20 @@
  * Date: 4/30/17
  * Time: 4:17 PM
  */
-
 require __DIR__ . '/../../../vendor/autoload.php';
 
-\DB\DB::enterDevelopmentMode();
+use \Models\Vertices\Study;
+use \Models\Vertices\Variable;
+use \Models\Vertices\Domain;
+use \Models\Edges\SubdomainOf;
+use \Models\Edges\VariableOf;
 
 $vars_per_domain = 2;
 $subdomains_per_domain = 3;
 $top_level_domains = 3;
 
-
 // Make a study
-$study = \Models\Study::create([
+$study = Study::create([
     'name'  =>  'study ' . rand(0, 1000)
 ]);
 
@@ -24,7 +26,7 @@ $study = \Models\Study::create([
 function randomVars( $how_many ){
     $vars = [];
     for( $i = 0; $i < $how_many; $i++ ){
-        $var = \Models\Variable::create([
+        $var = Variable::create([
             'name'  =>  'variable ' . rand(1000, 9999)
         ]);
         array_push($vars, $var);
@@ -36,14 +38,13 @@ function randomVars( $how_many ){
 // Make some domains
 $domains = [];
 for( $i = 0; $i < $top_level_domains; $i++ ){
-    $domain = \Models\Domain::create([
+    $domain = Domain::create([
         'name'  =>  'domain ' . rand( 1000, 9999)
     ]);
     print "created domain " . $domain->id() . "\n";
-
     for( $j = 0; $j < $subdomains_per_domain; $j++ ){
         // add some subdomains
-        $subdomain = \Models\Domain::create([
+        $subdomain = Domain::create([
             'name'  =>  'subdomain ' . rand(1, 9999)
         ]);
         print "created subdomain " . $subdomain->id() . "\n";
@@ -53,11 +54,9 @@ for( $i = 0; $i < $top_level_domains; $i++ ){
         }
         $domain->addSubdomain( $subdomain );
     }
-
     foreach (randomVars($vars_per_domain) as &$var){
         $domain->addVariable($var);
     }
-
     $domains[] = $domain;
 }
 
@@ -69,21 +68,24 @@ foreach ($domains as &$d){
 
 // Create a graph
 $graph = new \triagens\ArangoDb\Graph("study_structures_PHP");
-
 $variable_of = new \triagens\ArangoDb\EdgeDefinition();
-$variable_of->setRelation(\Models\VariableOf::$collection);
-$variable_of->addFromCollection(\Models\Variable::$collection);
-$variable_of->addToCollection(\Models\Domain::$collection);
-
+$variable_of->setRelation(VariableOf::$collection);
+$variable_of->addFromCollection(Variable::$collection);
+$variable_of->addToCollection(Domain::$collection);
 $subdomain_of = new \triagens\ArangoDb\EdgeDefinition();
-$subdomain_of->setRelation(\Models\SubdomainOf::$collection);
-$subdomain_of->addFromCollection(\Models\Domain::$collection);
-$subdomain_of->addToCollection(\Models\Domain::$collection);
-$subdomain_of->addToCollection(\Models\Study::$collection);
-
+$subdomain_of->setRelation(SubdomainOf::$collection);
+$subdomain_of->addFromCollection(Domain::$collection);
+$subdomain_of->addToCollection(Domain::$collection);
+$subdomain_of->addToCollection(Study::$collection);
 $graph->addEdgeDefinition($variable_of);
 $graph->addEdgeDefinition($subdomain_of);
-
 $gh = new \triagens\ArangoDb\GraphHandler( \DB\DB::getConnection() );
-$gh->createGraph($graph);
-print "created graph " . $graph->getInternalId() . "\n";
+
+try {
+    $gh->createGraph($graph);
+    print "created graph " . $graph->getInternalId() . "\n";
+} catch ( Exception $e ){
+    if( $e->getCode() === 1925 ){
+        print "Graph already exists \n";
+    }
+}

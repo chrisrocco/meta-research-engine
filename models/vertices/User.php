@@ -97,7 +97,7 @@ class User extends VertexModel
         ];
 
         if($flat){
-            return DB::query($AQL, $bindings);
+            return DB::query($AQL, $bindings)->getAll();
         }
         return DB::queryModel($AQL, $bindings, Assignment::getClass());
     }

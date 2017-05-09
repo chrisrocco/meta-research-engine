@@ -12,6 +12,7 @@ namespace Models\Vertices;
 use DB\DB;
 use Models\Core\VertexModel;
 use Models\Edges\VariableOf;
+use Models\Edges\SubdomainOf;
 
 class Domain extends VertexModel
 {

@@ -1,8 +1,6 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-\DB\DB::enterDevelopmentMode();
-
 $settings = require __DIR__ . '/../src/settings.php';
 
 // Instantiate the Slim App
