@@ -9,8 +9,7 @@
 namespace Papers;
 
 
-abstract class Response
-{
+abstract class Response{
 
     public function getContent() {
         return $this->content;
@@ -21,6 +20,7 @@ abstract class Response
     }
 
     public abstract function getType();
+    public abstract function toArray();
 
     public function addUser ($userKey) {
         array_push($this->users, $userKey);

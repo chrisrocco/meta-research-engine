@@ -9,8 +9,7 @@
 namespace Papers;
 
 
-class StructureResponse extends Response
-{
+class StructureResponse extends Response{
     public function getType() {
         return "structure";
     }

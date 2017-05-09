@@ -9,8 +9,7 @@
 namespace Papers;
 
 
-class MasterEncoding
-{
+class MasterEncoding {
     /**
      * @param $assignment Assignment
      */
@@ -42,7 +41,7 @@ class MasterEncoding
     }
 
     /**
-     * @param $master Response[]
+     * @param $masterArr Response[]
      * @param $remote Response
      */
     private function mergeResponse (&$masterArr, $remote) {
