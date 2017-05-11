@@ -31,7 +31,7 @@ class EncodingTest  extends BaseTestCase {
     }
 
     public function testMasterEncodingMerge () {
-        $masterEncoding = new Papers\MasterEncoding($this->examplePaperPMCID);
+        $masterEncoding = new Papers\MasterEncoding($this->examplePaperPMCID, []);
         foreach ($this->assignments as $assignment) {
             $masterEncoding->merge($assignment);
         }

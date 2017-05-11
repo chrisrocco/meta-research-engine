@@ -14,9 +14,6 @@ class Encoding implements \JsonSerializable {
     private $branches;
     private $constants;
 
-    public function merge ($otherEncoding) {
-
-    }
 
     /**
      * @return StructureResponse

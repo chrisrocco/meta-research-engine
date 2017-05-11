@@ -33,11 +33,24 @@ class MasterEncoding implements \JsonSerializable {
 //            $this->mergeResponse($this->scopeResponses, $scopeResponse);
 //        }
 
-        $remoteValueResponses = $encoding->getValueResponses();
-        foreach ($remoteValueResponses as $valueResponse) {
-            $this->mergeResponse($this->valueResponses, $valueResponse);
-        }
+//        $remoteValueResponses = $encoding->getValueResponses();
+//        foreach ($remoteValueResponses as $valueResponse) {
+//            $this->mergeResponse($this->valueResponses, $valueResponse);
+//        }
 
+        $valueResponses = $encoding->getValueResponses();
+        foreach ($valueResponses as $remoteResponse) {
+            $branch = $remoteResponse->getBranchIndex();
+            $varID = (string)$remoteResponse->getVariableID();
+            if (!isset($this->records[$branch])) {
+                $this->records[$branch] = [$varID => []];
+            }
+            if (!isset($this->records[$branch][$varID]) ) {
+                $this->records[$branch][$varID] = [];
+            }
+            $masterResponses = &$this->records[$branch][$varID];
+            $this->mergeResponse($masterResponses, $remoteResponse);
+        }
     }
 
     /**
@@ -65,28 +78,28 @@ class MasterEncoding implements \JsonSerializable {
 
 
     private $paperID;
-    private $structureResponses;
-    private $scopeResponses;
-    private $valueResponses;
+    private $records;
 
-    public function __construct($paperID){
+    public function __construct($paperID, $records){
         $this->paperID = $paperID;
-        $this->structureResponses = [];
-        $this->scopeResponses = [];
-        $this->valueResponses = [];
+        $this->records = [];
     }
 
-    //A workaround in order to serialize private properties
+    //In order to selectively serialize properties
     public function jsonSerialize() {
-        $records = [];
-        foreach ($this->valueResponses as $valueResponse) {
-//            $records[$valueResponse->getBranchIndex()][(string) $valueResponse->getVariableID()][] = $valueResponse;
-            $records[] = [
-                'varID' => $valueResponse->getVariableID(),
-                'location' => $valueResponse->getBranchIndex(),
-                'responses' => $valueResponse
-            ];
+        //Option 1
+//        return $this->records;
+        //Option 3
+        $output = [];
+        foreach ($this->records as $branch => $varRecords) {
+            foreach ($varRecords as $varID => $record) {
+                $output[] = [
+                    'varID' => $varID,
+                    'location' => $branch,
+                    'responses' => $record
+                ];
+            }
         }
-        return $records;
+        return $output;
     }
 }
