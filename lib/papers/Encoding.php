@@ -9,10 +9,14 @@
 namespace Papers;
 
 
-class Encoding {
+class Encoding implements \JsonSerializable {
     private $id;
     private $branches;
     private $constants;
+
+    public function merge ($otherEncoding) {
+
+    }
 
     /**
      * @return StructureResponse
@@ -64,16 +68,21 @@ class Encoding {
         try {
             $this->id = $id;
             //Construct constants
-            $this->constants = ValueResponse::batchConstruct($encoding['constants'], $id, "constant", -1);
+            $this->constants = ValueResponse::batchConstruct($encoding->constants, $id, "constant", -1);
 
             //Construct branches
             $this->branches = [];
-            for ($i = 0; $i < count($encoding['branches']); $i++) {
-                $this->branches[$i] = ValueResponse::batchConstruct($encoding['branches'][$i], $id, "variable", $i);
+            for ($i = 0; $i < count($encoding->branches); $i++) {
+                $this->branches[$i] = ValueResponse::batchConstruct($encoding->branches[$i], $id, "variable", $i);
             }
 
         } catch (Exception $e) {
             //TODO
         }
+    }
+
+    //A workaround in order to serialize private properties
+    public function jsonSerialize() {
+        return get_object_vars($this);
     }
 }

@@ -16,7 +16,7 @@ class ScopeResponse extends Response {
 
     public function __construct($variableID, $scope, $users) {
         $content = [
-            'field' => $variableID,
+            'varID' => $variableID,
             'scope' => $scope
         ];
         parent::__construct($content, $users);

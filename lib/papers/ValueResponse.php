@@ -15,36 +15,39 @@ class ValueResponse extends Response {
     }
 
     public function getVariableID () {
-        return $this->variableID;
+        return $this->varID;
     }
-
     public function getScope() {
-        return $this->scope;
+        switch ($this->branch) {
+            case -1 :
+                return "constant";
+                break;
+            default :
+                return "variable";
+                break;
+        }
     }
 
-    public function getBranchNum () {
-        return $this->branchNum;
+    public function getBranchIndex () {
+        return $this->branch + 1;
     }
 
-
-    private $variableID;
-    private $scope;
-    private $branchNum;
+    private $varID;
+    private $branch; //its number
 
     public function __construct($content, $variableID, $scope, $branchNum = -1, $users = [])
     {
         parent::__construct($content, $users);
-        $this->variableID = $variableID;
-        $this->scope = $scope;
-        $this->branchNum = $branchNum;
+        $this->varID = $variableID;
+        $this->branch = $branchNum;
     }
 
     public static function batchConstruct ($variableInstances, $userID, $scope, $branchNum = -1) {
         $resultArr = [];
         foreach ($variableInstances as $variableInstance) {
             array_push($resultArr, new ValueResponse(
-                $variableInstance['content'],
-                $variableInstance['field'],
+                $variableInstance->content,
+                $variableInstance->field,
                 $scope,
                 $branchNum,
                 [$userID]));

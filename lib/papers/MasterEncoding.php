@@ -9,7 +9,7 @@
 namespace Papers;
 
 
-class MasterEncoding {
+class MasterEncoding implements \JsonSerializable {
     /**
      * @param $assignment Assignment
      */
@@ -25,16 +25,16 @@ class MasterEncoding {
 
         $encoding = $assignment->getEncoding();
 
-        $structureResponse = $encoding->getStructureResponse();
-        $this->mergeResponse($this->structureResponses, $structureResponse);
+//        $structureResponse = $encoding->getStructureResponse();
+//        $this->mergeResponse($this->structureResponses, $structureResponse);
 
-        $scopeResponses = $encoding->getScopeResponses();
-        foreach ($scopeResponses as $scopeResponse) {
-            $this->mergeResponse($this->scopeResponses, $scopeResponse);
-        }
+//        $scopeResponses = $encoding->getScopeResponses();
+//        foreach ($scopeResponses as $scopeResponse) {
+//            $this->mergeResponse($this->scopeResponses, $scopeResponse);
+//        }
 
-        $valueResponses = $encoding->getValueResponses();
-        foreach ($valueResponses as $valueResponse) {
+        $remoteValueResponses = $encoding->getValueResponses();
+        foreach ($remoteValueResponses as $valueResponse) {
             $this->mergeResponse($this->valueResponses, $valueResponse);
         }
 
@@ -47,11 +47,15 @@ class MasterEncoding {
     private function mergeResponse (&$masterArr, $remote) {
         $remoteID = $remote->getUsers()[0];
         foreach ($masterArr as $master) {
+            //if our response is the same as a previously-recorded response
             if ($master->getContent() === $remote->getContent()) {
+                //if our response doesn't already have us listed
                 if (!$master->hasUser($remoteID)) {
+                    //add us to the response
                     $master->addUser($remoteID);
                 }
-                //Successfully merged
+                //Otherwise our response already includes us, so everything is good.
+                //at this point, we are certainly successfully merged, so we can return
                 return;
             }
         }
@@ -70,5 +74,19 @@ class MasterEncoding {
         $this->structureResponses = [];
         $this->scopeResponses = [];
         $this->valueResponses = [];
+    }
+
+    //A workaround in order to serialize private properties
+    public function jsonSerialize() {
+        $records = [];
+        foreach ($this->valueResponses as $valueResponse) {
+//            $records[$valueResponse->getBranchIndex()][(string) $valueResponse->getVariableID()][] = $valueResponse;
+            $records[] = [
+                'varID' => $valueResponse->getVariableID(),
+                'location' => $valueResponse->getBranchIndex(),
+                'responses' => $valueResponse
+            ];
+        }
+        return $records;
     }
 }

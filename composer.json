@@ -43,6 +43,7 @@
       "Models\\Core\\": "models/core",
       "Models\\Edges\\": "models/edges",
       "Models\\Vertices\\": "models/vertices",
+      "Papers\\" : "lib/papers",
       "DB\\": "data/",
       "DB\\Queries\\": "data/queries",
       "Email\\": "lib/email/",

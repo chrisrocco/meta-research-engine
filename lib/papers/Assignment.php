@@ -9,7 +9,7 @@
 namespace Papers;
 
 
-class Assignment
+class Assignment implements \JsonSerializable
 {
 
     public function getID() {
@@ -39,14 +39,22 @@ class Assignment
     private $completion;
 
     public function __construct($assignment){
+        if (is_string($assignment)) {
+            $assignment = json_decode($assignment);
+        }
         try {
-            $this->id = $assignment['_key'];
-            $this->encoding = new Encoding($assignment['encoding'], $this->id);
-            $this->date_created = $assignment['date_created'];
-            $this->status = $assignment['status'];
-            $this->completion = $assignment['completion'];
+            $this->id = $assignment->_key;
+            $this->encoding = new Encoding($assignment->encoding, $this->id);
+            $this->date_created = $assignment->date_created;
+            $this->status = $assignment->status;
+            $this->completion = $assignment->completion;
         } catch (Exception $e) {
             //TODO
         }
+    }
+
+    //A workaround in order to serialize private properties
+    public function jsonSerialize() {
+        return get_object_vars($this);
     }
 }

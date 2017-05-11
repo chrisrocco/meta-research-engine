@@ -9,10 +9,10 @@
 namespace Papers;
 
 
-abstract class Response{
+abstract class Response implements \JsonSerializable {
 
     public function getContent() {
-        return $this->content;
+        return $this->data;
     }
 
     public function getUsers() {
@@ -20,7 +20,6 @@ abstract class Response{
     }
 
     public abstract function getType();
-    public abstract function toArray();
 
     public function addUser ($userKey) {
         array_push($this->users, $userKey);
@@ -30,12 +29,21 @@ abstract class Response{
         return in_array($userKey, $this->users);
     }
 
-    private $content;
-    private $users;
+    protected $data;
+    protected $users;
 
-    public function __construct($content, $users = [])
+    public function __construct($data, $users = [])
     {
-        $this->content = $content;
+        $this->data = $data;
         $this->users = $users;
+    }
+
+    //A workaround in order to serialize private properties
+    public function jsonSerialize() {
+        return get_object_vars($this);
+    }
+
+    public function __toString() {
+        return json_encode($this);
     }
 }
