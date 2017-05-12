@@ -6,7 +6,7 @@
  * Time: 7:21 PM
  */
 
-namespace Papers;
+namespace Encodings;
 
 
 class StructureResponse extends Response{

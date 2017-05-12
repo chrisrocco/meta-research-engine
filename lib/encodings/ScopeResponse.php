@@ -6,7 +6,7 @@
  * Time: 8:09 PM
  */
 
-namespace Papers;
+namespace Encodings;
 
 
 class ScopeResponse extends Response {

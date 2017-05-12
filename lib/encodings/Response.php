@@ -6,7 +6,7 @@
  * Time: 6:52 PM
  */
 
-namespace Papers;
+namespace Encodings;
 
 
 abstract class Response implements \JsonSerializable {

@@ -8,9 +8,8 @@ namespace Tests;
  * Time: 6:37 PM
  */
 
-use Papers;
-use Papers\MasterEncoding as MasterEncoding;
-use Papers\Assignment as Assignment;
+use Encodings\MasterEncoding as MasterEncoding;
+use Encodings\Assignment as Assignment;
 
 class EncodingTest  extends BaseTestCase {
 
@@ -26,7 +25,7 @@ class EncodingTest  extends BaseTestCase {
     public function testAssignmentCreate() {
         //by extension, also tests the constructors for Encoding and ValueResponse
         foreach ($this->assignments as $assignment) {
-            $assignment = new Papers\Assignment($assignment);
+            $assignment = new Assignment($assignment);
             $jsonOutput = json_encode($assignment);
             parent::assertNotTrue(is_bool($jsonOutput));
 //            echo $jsonOutput;

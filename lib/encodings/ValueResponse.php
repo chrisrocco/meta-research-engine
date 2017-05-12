@@ -6,7 +6,7 @@
  * Time: 8:11 PM
  */
 
-namespace Papers;
+namespace Encodings;
 
 
 class ValueResponse extends Response {

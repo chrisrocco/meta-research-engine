@@ -6,7 +6,7 @@
  * Time: 2:43 PM
  */
 
-namespace Papers;
+namespace Encodings;
 
 
 class Encoding implements \JsonSerializable {
