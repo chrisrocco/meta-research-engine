@@ -65,12 +65,12 @@ class Encoding implements \JsonSerializable {
         try {
             $this->id = $id;
             //Construct constants
-            $this->constants = ValueResponse::batchConstruct($encoding->constants, $id, "constant", -1);
+            $this->constants = ValueResponse::batchConstruct($encoding->constants, $id, -1);
 
             //Construct branches
             $this->branches = [];
             for ($i = 0; $i < count($encoding->branches); $i++) {
-                $this->branches[$i] = ValueResponse::batchConstruct($encoding->branches[$i], $id, "variable", $i);
+                $this->branches[$i] = ValueResponse::batchConstruct($encoding->branches[$i], $id, $i);
             }
 
         } catch (Exception $e) {

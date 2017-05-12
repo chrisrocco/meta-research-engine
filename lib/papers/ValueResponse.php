@@ -35,20 +35,22 @@ class ValueResponse extends Response {
     private $varID;
     private $branch; //its number
 
-    public function __construct($content, $variableID, $scope, $branchNum = -1, $users = [])
+    public function __construct($content, $variableID, $branchNum = -1, $users = [])
     {
+        if (!is_int($branchNum)) {
+            //TODO: throw exception
+        }
         parent::__construct($content, $users);
         $this->varID = $variableID;
         $this->branch = $branchNum;
     }
 
-    public static function batchConstruct ($variableInstances, $userID, $scope, $branchNum = -1) {
+    public static function batchConstruct ($variableInstances, $userID, $branchNum = -1) {
         $resultArr = [];
         foreach ($variableInstances as $variableInstance) {
             array_push($resultArr, new ValueResponse(
                 $variableInstance->content,
                 $variableInstance->field,
-                $scope,
                 $branchNum,
                 [$userID]));
         }

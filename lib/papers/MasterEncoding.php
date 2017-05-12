@@ -24,20 +24,6 @@ class MasterEncoding implements \JsonSerializable {
         }
 
         $encoding = $assignment->getEncoding();
-
-//        $structureResponse = $encoding->getStructureResponse();
-//        $this->mergeResponse($this->structureResponses, $structureResponse);
-
-//        $scopeResponses = $encoding->getScopeResponses();
-//        foreach ($scopeResponses as $scopeResponse) {
-//            $this->mergeResponse($this->scopeResponses, $scopeResponse);
-//        }
-
-//        $remoteValueResponses = $encoding->getValueResponses();
-//        foreach ($remoteValueResponses as $valueResponse) {
-//            $this->mergeResponse($this->valueResponses, $valueResponse);
-//        }
-
         $valueResponses = $encoding->getValueResponses();
         foreach ($valueResponses as $remoteResponse) {
             $branch = $remoteResponse->getBranchIndex();
@@ -61,7 +47,7 @@ class MasterEncoding implements \JsonSerializable {
         $remoteID = $remote->getUsers()[0];
         foreach ($masterArr as $master) {
             //if our response is the same as a previously-recorded response
-            if ($master->getContent() === $remote->getContent()) {
+            if ($master->getContent() == $remote->getContent()) {
                 //if our response doesn't already have us listed
                 if (!$master->hasUser($remoteID)) {
                     //add us to the response
@@ -76,13 +62,23 @@ class MasterEncoding implements \JsonSerializable {
         array_push($masterArr, $remote);
     }
 
+    private static function initRecords ($recordsArr) {
+        $records = [];
+        foreach ($recordsArr as $record) {
+            foreach ($record->responses as $response) {
+                $records[$record->location][$record->varID][] = new ValueResponse($response->data, $record->varID, $record->location, $response->users);
+            }
+        }
+        return $records;
+    }
 
-    private $paperID;
     private $records;
 
-    public function __construct($paperID, $records){
-        $this->paperID = $paperID;
-        $this->records = [];
+    public function __construct($records = []){
+        if (is_string($records)) {
+            $records = json_decode($records);
+        }
+        $this->records = static::initRecords($records);
     }
 
     //In order to selectively serialize properties
