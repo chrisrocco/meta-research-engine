@@ -38,7 +38,7 @@ class Email {
 
         $html_email_template = file_get_contents (__DIR__ . '/templates/validate_email.html');
 
-        $html_email_template = str_replace('{server_host}', $_SERVER['SERVER_ADDR'], $html_email_template);
+        $html_email_template = str_replace('{server_host}', "37.184.147.35", $html_email_template);
         $html_email_template = str_replace('{hash_code}', $hash_code, $html_email_template);
         $html_email_template = str_replace('{ID}', $user_id, $html_email_template);
 
