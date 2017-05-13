@@ -87,10 +87,11 @@ $app->GET('/users/validate', function ($request, $response, $args) {
     if($result){
 
         /* Create an assignment */
-        $randomPaperModel = \DB\DB::queryModel("FOR paper in papers
+        $papers = \DB\DB::queryModel("FOR paper in papers
                                SORT RAND()
                                LIMIT 1
                                RETURN paper", [], \Models\Vertices\Paper::class);
+        $randomPaperModel = $papers[0];
 
         \Models\Edges\Assignment::assign( $randomPaperModel, $user );
 
