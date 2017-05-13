@@ -46,6 +46,8 @@ class Assignment extends EdgeModel
         $assignment = static::$blank;
         $assignment['encoding'] = $newEncoding;
 
+        var_dump( $assignment );
+
         return static::create(
             $user->id(), $paper->id(),
             $assignment

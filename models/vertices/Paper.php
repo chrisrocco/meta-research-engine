@@ -26,7 +26,6 @@ class Paper extends VertexModel {
         ];
         $arr = DB::queryModel($AQL, $bindings, Study::class);
         $study = $arr[0];
-        var_dump( $study );
         return $study;
     }
 }
