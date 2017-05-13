@@ -18,6 +18,11 @@ $app->POST('/users/login', function ($request, $response, $args) {
                 ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
                 ->withStatus(401);
         }
+        if ($token == User::INACTIVE) {
+            return $response
+                ->write("That account is inactive. Please check your email for a validation link")
+                ->withStatus(401);
+        }
     }
 
     return $response
