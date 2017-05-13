@@ -8,8 +8,9 @@ You will have to create <code>src/settings.php</code> before attempting to conne
 You may test your database connection with : \
 <code>$ composer test-connection</code>
 
-Initialize the database collections:    \
-<code>$ php data/scripts/init_collections.php</code>
+Initialize or truncate the database collections:    \
+<code>$ composer db-init</code>
+<code>$ composer db-truncate</code>
 
 Run the server : \
 <code>$ composer start</code>

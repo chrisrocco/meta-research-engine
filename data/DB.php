@@ -86,7 +86,7 @@ class DB
                 '_flat' => $flat
             ]
         );
-        return $statement->execute()->getAll();
+        return $statement->execute();
     }
     public static function queryModel($query_string, $bindVars = [], $modelClass){
         $cursor = self::query($query_string, $bindVars);
