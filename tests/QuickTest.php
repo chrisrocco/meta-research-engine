@@ -8,13 +8,9 @@
 
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
-        $papers = \DB\DB::queryModel("FOR paper in papers
-                               SORT RAND()
-                               LIMIT 1
-                               RETURN paper", [], \Models\Vertices\Paper::class);
-        $randomPaperModel = $papers[0];
+        $paper = \Models\Vertices\Paper::retrieve(4255376);
+        $user = \Models\Vertices\User::retrieve(4323770);
 
-
-        var_dump( $randomPaperModel );
+        \Models\Edges\Assignment::assign( $paper, $user );
     }
 }

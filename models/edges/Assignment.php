@@ -18,7 +18,7 @@ class Assignment extends EdgeModel
     private static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
-        'encoding'      =>  null
+        'encoding'      =>  []
     ];
 
     /**
@@ -27,9 +27,28 @@ class Assignment extends EdgeModel
      * @return Assignment
      */
     public static function assign( $paper, $user ){
+        $paperStudy = $paper->getStudy();
+        $studyVariablesArray = $paperStudy->getVariablesFlat();
+
+        if( $paperStudy == null ) throw new \Exception("No study associated with that paper");
+
+        $newEncoding = [
+            "constants" => [],
+            "branches" => [[]]
+        ];
+        foreach ( $studyVariablesArray as $variable ){
+            $newEncoding['constants'][] = [
+                "field" =>  $variable['_key'],
+                "content" => []
+            ];
+        }
+
+        $assignment = static::$blank;
+        $assignment['encoding'] = $newEncoding;
+
         return static::create(
             $user->id(), $paper->id(),
-            static::$blank
+            $assignment
         );
     }
 }
