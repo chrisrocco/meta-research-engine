@@ -59,6 +59,18 @@ class Study extends VertexModel {
         return DB::query($AQL, $bindings, true)->getAll();
     }
 
+    public function getNextPaper(){
+        $AQL = "FOR paper in INBOUND @study @@paper_to_study
+                    SORT RAND()
+                    LIMIT 1
+                    RETURN paper";
+        $bindings = [
+            'study'     =>  $this->id(),
+            '@paper_to_study'   =>  PaperOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Paper::class);
+    }
+
     private function getTopLevelDomains(){
         $id = $this->id();
         $subdomain_of = SubdomainOf::$collection;

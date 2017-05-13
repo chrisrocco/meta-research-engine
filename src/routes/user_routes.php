@@ -85,6 +85,15 @@ $app->GET('/users/validate', function ($request, $response, $args) {
     $result = $user->validate( $formData['hash_code'] );
 
     if($result){
+
+        /* Create an assignment */
+        $randomPaperModel = \DB\DB::queryModel("FOR paper in papers
+                               SORT RAND()
+                               LIMIT 1
+                               RETURN paper", [], \Models\Vertices\Paper::class);
+
+        \Models\Edges\Assignment::assign( $randomPaperModel, $user );
+
         return $response
             ->write("Account has been validated. You may now login.")
             ->withStatus(200);

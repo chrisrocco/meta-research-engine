@@ -8,6 +8,9 @@
 
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
+        $studyModel = \Models\Vertices\Study::retrieve( 4249305 );
+        $paperModel = $studyModel->getNextPaper()[0];
 
+        var_dump( $paperModel );
     }
 }
