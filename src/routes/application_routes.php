@@ -18,11 +18,18 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $key = $queryParams['key'];
 
-    $assignmentData = \Models\Edges\Assignment::retrieve( $key );
-    $questionsList = null;
-    $structure = null;
+    $assignment = \Models\Edges\Assignment::retrieve( $key );
+//    $study = $assignment->getStudy();
+//    $questionsList = $study->getVariablesFlat();
+//    $structure = $study->getStructureFlat();
 
-    $response->write('How about implementing loadAssignmentGet as a GET method ?');
+    $data = [
+        "assignment" => $assignment->toArray(),
+//        "questions" =>  $questionsList,
+//        "structure" =>  $structure
+    ];
+
+    $response->write(json_encode($data, JSON_PRETTY_PRINT));
     return $response;
 });
 
