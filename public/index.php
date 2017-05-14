@@ -17,6 +17,7 @@ require( __DIR__ . "/../src/routes/user_routes.php");
 require( __DIR__ . "/../src/routes/assignment_routes.php");
 require( __DIR__ . "/../src/routes/study_routes.php");
 require( __DIR__ . "/../src/routes/test_routes.php");
+require( __DIR__ . "/../src/routes/application_routes.php");
 
 // Run App
 $app->run();
