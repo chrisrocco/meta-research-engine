@@ -19,14 +19,14 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
     $key = $queryParams['key'];
 
     $assignment = \Models\Edges\Assignment::retrieve( $key );
-//    $study = $assignment->getStudy();
-//    $questionsList = $study->getVariablesFlat();
-//    $structure = $study->getStructureFlat();
+    $study = $assignment->getProject();
+    $questionsList = $study->getVariablesFlat();
+    $structure = $study->getStructureFlat();
 
     $data = [
         "assignment" => $assignment->toArray(),
-//        "questions" =>  $questionsList,
-//        "structure" =>  $structure
+        "questions" =>  $questionsList,
+        "structure" =>  $structure
     ];
 
     $response->write(json_encode($data, JSON_PRETTY_PRINT));
