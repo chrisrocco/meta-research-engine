@@ -9,7 +9,11 @@
 namespace Models\Edges;
 
 
+use DB\DB;
 use Models\Core\EdgeModel;
+use Models\Vertices\Paper;
+use Models\Vertices\Study;
+use Models\Vertices\User;
 
 class Assignment extends EdgeModel
 {
@@ -27,30 +31,20 @@ class Assignment extends EdgeModel
      * @return Assignment
      */
     public static function assign( $paper, $user ){
-        $paperStudy = $paper->getStudy();
-        $studyVariablesArray = $paperStudy->getVariablesFlat();
-
-        if( $paperStudy == null ) throw new \Exception("No study associated with that paper");
-
-        $newEncoding = [
-            "constants" => [],
-            "branches" => [[]]
-        ];
-        foreach ( $studyVariablesArray as $variable ){
-            $newEncoding['constants'][] = [
-                "field" =>  $variable['_key'],
-                "content" => []
-            ];
-        }
-
-        $assignment = static::$blank;
-        $assignment['encoding'] = $newEncoding;
-
-        var_dump( $assignment );
-
         return static::create(
             $user->id(), $paper->id(),
-            $assignment
+            static::$blank
         );
+    }
+
+    // Project == Study
+    public function getProject(){
+        $AQL = "FOR project IN OUTBOUND @paperKey @@paper_to_study
+                    RETURN project";
+        $bindings = [
+            'paperKey'  =>  $this->get( '_from' ),
+            '@paper_to_study'   =>  PaperOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Study::class)[0];
     }
 }
