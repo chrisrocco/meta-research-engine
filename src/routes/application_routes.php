@@ -49,3 +49,21 @@ $app->GET('/loadAssignmentsDashboard', function($request, $response, $args) {
     $response->write('How about implementing loadAssignmentsDashboardGet as a GET method ?');
     return $response;
 });
+
+$app->GET('/loadProjects', function($request, $response, $args) {
+    $queryParams = $request->getQueryParams();
+
+    $cursor = \DB\DB::getAll( \Models\Vertices\Study::$collection );
+    $documents = $cursor->getAll();
+    $flat = [];
+    foreach ( $documents as $doc ){
+        $flat[] = $doc->getAll();
+    }
+
+    $data = [
+        'projects' => $flat
+    ];
+
+    $response->write(json_encode( $data, JSON_PRETTY_PRINT ));
+    return $response;
+});

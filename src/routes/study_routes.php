@@ -58,7 +58,8 @@ $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();
 
     $study = Study::create([
-        'name'  =>  $formData['name']
+        'name'  =>  $formData['name'],
+        'description'   =>  $formData['description']
     ]);
 
     return $response->write("Created Study");
