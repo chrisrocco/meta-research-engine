@@ -30,6 +30,19 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
     return $response->write(json_encode($variables, JSON_PRETTY_PRINT));
 });
 
+$app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
+    
+
+
+    $response->write();
+});
+
+$app->POST ('studies/{key}/members', function ($request, $response, $args) {
+
+
+    $response->write();
+});
+
 /**
  * POST studies/{studyname}/papers
  * Summary: Adds a paper to a study
