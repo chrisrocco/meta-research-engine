@@ -5,7 +5,7 @@
         </testsuite>
         <testsuite name="IntegrationTests">
             <file>tests/integration/BaseIntegrationTest.php</file>
-            <file>tests/integration/StudyStructureTest.php</file>
+            <file>tests/integration/StudyDomainVariablePaperUserAssignment.php</file>
         </testsuite>
     </testsuites>
 </phpunit>
