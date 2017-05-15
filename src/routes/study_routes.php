@@ -64,7 +64,7 @@ $app->POST("/studies", function ($request, $response, $args) {
 
     return $response->write(
         json_encode([
-            "studyKey" => $study->key()
+            "projectKey" => $study->key()
         ])
     );
 });
