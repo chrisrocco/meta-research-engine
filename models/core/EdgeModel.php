@@ -34,9 +34,9 @@ class EdgeModel extends BaseModel
 
         $edge_doc = Edge::createFromArray( $data );
         $key = DB::createEdge( static::getCollectionName(), $from, $to, $edge_doc );
-//        $doc = DB::retrieve( static::getCollectionName(), $key );
-        $edge_doc->setInternalKey($key);
-        return static::wrap( $edge_doc );
+        $doc = DB::retrieve( static::getCollectionName(), $key );
+//        $edge_doc->setInternalKey($key);
+        return static::wrap( $doc );
     }
 
     public function setTo( $to ){

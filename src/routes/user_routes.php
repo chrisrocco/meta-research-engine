@@ -15,7 +15,16 @@ $app->POST('/users/login', function ($request, $response, $args) {
     if( is_int($token) ){
         if($token == User::INVALID){
             return $response
-                ->write(json_encode("No account with that email and password in the database", JSON_PRETTY_PRINT))
+                ->write(json_encode([
+                    "reason"    =>  "invalid"
+                ]))
+                ->withStatus(401);
+        }
+        if ($token == User::INACTIVE) {
+            return $response
+                ->write(json_encode([
+                        "reason"    =>  "inactive"
+                    ]))
                 ->withStatus(401);
         }
     }

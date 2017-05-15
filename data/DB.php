@@ -8,6 +8,7 @@
 
 namespace DB;
 
+use Models\Core\BaseModel;
 use triagens\ArangoDb\CollectionHandler;
 use triagens\ArangoDb\Connection;
 use triagens\ArangoDb\DocumentHandler;
@@ -88,8 +89,15 @@ class DB
         );
         return $statement->execute();
     }
+
+    /**
+     * @param $query_string
+     * @param array $bindVars
+     * @param $modelClass BaseModel::class The class of the model type
+     * @return BaseModel[]
+     */
     public static function queryModel($query_string, $bindVars = [], $modelClass){
-        $cursor = self::query($query_string, $bindVars);
+        $cursor = self::query($query_string, $bindVars, false);
         $model = new $modelClass;
         return $model::wrapAll($cursor);
     }
@@ -105,7 +113,7 @@ class DB
     /*----------------------------------------------------*/
     /*--------------------- Accessors -----------------------*/
     /*----------------------------------------------------*/
-    private static $connection;
+    static $connection;
     private static $document_handler;
     private static $edge_handler;
     private static $collection_handler;

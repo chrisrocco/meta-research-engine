@@ -13,6 +13,7 @@ class User extends VertexModel
 
     const EXISTS = 20;
     const INVALID = 25;
+    const INACTIVE = 69;
 
     /**
      * @param $first_name
@@ -59,6 +60,10 @@ class User extends VertexModel
 
         $password_check = password_verify($password, $user->get('password'));
         if(!$password_check) return User::INVALID;
+
+        if (!$user->get('active')) {
+            return User::INACTIVE;
+        }
 
         $userDetails = [
             "_key" => $user->key(),

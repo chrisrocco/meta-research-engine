@@ -8,6 +8,9 @@
 
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
+        $paper = \Models\Vertices\Paper::retrieve(4332781);
+        $user = \Models\Vertices\User::retrieve(4323770);
 
+        \Models\Edges\Assignment::assign( $paper, $user );
     }
 }

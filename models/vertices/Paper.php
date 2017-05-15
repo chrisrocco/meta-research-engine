@@ -13,6 +13,4 @@ use Models\Core\VertexModel;
 
 class Paper extends VertexModel {
     static $collection = 'papers';
-
-
 }
