@@ -25,11 +25,9 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParams();
 
     $assignment = Assignment::retrieve( $args['key'] );
-    foreach ($formData as $key => $value){
-        if($assignment->get($key) !== null){
-            $assignment->update($key, $value);
-        }
-    }
+    $assignment->update('done', $formData['done']);
+    $assignment->update('completion', $formData['completion']);
+    $assignment->update('encoding', $formData['encoding']);
 
     return $response
         ->write("Updated Assignment " . $args['key'])

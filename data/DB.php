@@ -113,7 +113,7 @@ class DB
     /*----------------------------------------------------*/
     /*--------------------- Accessors -----------------------*/
     /*----------------------------------------------------*/
-    private static $connection;
+    static $connection;
     private static $document_handler;
     private static $edge_handler;
     private static $collection_handler;

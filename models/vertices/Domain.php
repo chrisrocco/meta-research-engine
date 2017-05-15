@@ -37,23 +37,22 @@ class Domain extends VertexModel
     }
 
     function getVariables(){
-        $query = "FOR var IN INBOUND @root @@to_root
+        $AQL = "FOR var IN INBOUND @root @@to_root
                     RETURN var";
         $bindings = [
             'root'  =>  $this->id(),
             '@to_root'  =>  VariableOf::$collection
         ];
-        $cursor = DB::query( $query, $bindings );
-        return Variable::wrapAll( $cursor );
+        return DB::queryModel( $AQL, $bindings, Variable::class );
     }
 
     function getSubdomains(){
-        $id = $this->id();
-        $subdomain_of = SubdomainOf::$collection;
-        $query = "FOR domain in INBOUND '$id' $subdomain_of
+        $AQL = "FOR domain in INBOUND @root @@domain_to_domain
                     RETURN domain";
-
-        $cursor = DB::query($query);
-        return Domain::wrapAll( $cursor );
+        $bindings = [
+            "root" => $this->id(),
+            "@domain_to_domain" => SubdomainOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Domain::class);
     }
 }

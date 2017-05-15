@@ -34,8 +34,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/",
-      "Entities\\": "lib/entities/"
+      "Tests\\": "tests/"
     }
   },
   "autoload": {

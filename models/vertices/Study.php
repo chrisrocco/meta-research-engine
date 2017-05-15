@@ -72,12 +72,13 @@ class Study extends VertexModel {
     }
 
     private function getTopLevelDomains(){
-        $id = $this->id();
-        $subdomain_of = SubdomainOf::$collection;
-        $query = "FOR domain in INBOUND '$id' $subdomain_of
+        $AQL = "FOR domain in INBOUND @root @@domain_to_domain
                     RETURN domain";
-        $cursor = DB::query($query);
-        return Domain::wrapAll( $cursor );
+        $bindings = [
+            "root" => $this->id(),
+            "@domain_to_domain" => SubdomainOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Domain::class);
     }
     private function recursiveGetDomain( $domain ){
 
@@ -92,10 +93,12 @@ class Study extends VertexModel {
             $flat_vars[] = $var->toArray();
         }
 
-        return [
-            'name'          =>  $domain->get('name'),
+        $d = $domain->toArray();
+        $v = [
             'variables'     =>  $flat_vars,
             'subdomains'    =>  $subdomains
         ];
+
+        return array_merge( $d, $v );
     }
 }
