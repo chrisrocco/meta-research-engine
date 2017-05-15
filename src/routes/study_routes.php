@@ -62,7 +62,11 @@ $app->POST("/studies", function ($request, $response, $args) {
         'description'   =>  $formData['description']
     ]);
 
-    return $response->write("Created Study");
+    return $response->write(
+        json_encode([
+            "studyKey" => $study->key()
+        ])
+    );
 });
 
 /**
