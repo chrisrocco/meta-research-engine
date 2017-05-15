@@ -47,7 +47,7 @@ $app->add(function($request, $response, $next) {
     $response = $next($request, $response);
 
 
-    return $response->withHeader("Access-Control-Allow-Methods", implode(",", $methods));
+    return $response->withHeader("Access-Control-Allow-Methods", 'GET, POST, PUT, DELETE, OPTIONS');
 });
 /* End CORS Support */
 
