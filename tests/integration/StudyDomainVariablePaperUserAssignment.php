@@ -89,6 +89,8 @@ class StudyDomainVariablePaperUserAssignment extends BaseIntegrationTest {
             $domains[] = $domain;
         }
 
+        self::assertTrue( true );
+
         // Add the domains to a study
         foreach ($domains as &$d) {
             $this->study->addDomain($d);

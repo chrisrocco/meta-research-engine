@@ -22,7 +22,8 @@ class StudyTest extends \Tests\BaseTestCase
     function testCreateStudy(){
         $random_name = "study " . rand(0, 9999);
         $response = $this->runApp("POST", "/studies", [
-            'name'  =>  $random_name
+            'name'  =>  $random_name,
+            'description'   =>  "A test study"
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
@@ -66,5 +67,14 @@ class StudyTest extends \Tests\BaseTestCase
         $response = $this->runApp("GET", "/studies/$key/variables");
 
         self::assertEquals(200 || 400, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateStudy
+     */
+    function testGetProjects( $study ){
+        $response = $this->runApp("GET", "/loadProjects");
+
+        echo ( (string)$response->getBody() );
     }
 }
