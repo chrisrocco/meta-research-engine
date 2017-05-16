@@ -22,7 +22,10 @@ class Assignment extends EdgeModel
     public static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
-        'encoding'      =>  null
+        'encoding'      =>  [
+            'constants' => [],
+            'branches' => [[]]
+        ]
     ];
 
     /**
