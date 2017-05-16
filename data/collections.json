@@ -7,5 +7,6 @@
   "domains":        "vertex",
   "paper_of":       "edge",
   "variable_of":    "edge",
-  "subdomain_of":   "edge"
+  "subdomain_of":   "edge",
+  "enrolled_in":        "edge"
 }

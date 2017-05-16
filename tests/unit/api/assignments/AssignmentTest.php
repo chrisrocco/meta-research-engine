@@ -70,10 +70,7 @@ class AssignmentTest extends \Tests\BaseTestCase
     public function testUpdateAssignments( $given ){
         $key = $given["assignmentKey"];
 
-        $response = $this->runApp("PUT", "/assignments/$key",
-            [
-                "completion" => 999
-            ]);
+        $response = $this->runApp("PUT", "/assignments/$key",Assignment::$blank);
 
         self::assertEquals(200, $response->getStatusCode());
 

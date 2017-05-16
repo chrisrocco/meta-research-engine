@@ -19,7 +19,7 @@ class Assignment extends EdgeModel
 {
     static $collection = 'assignments';
 
-    private static $blank = [
+    public static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
         'encoding'      =>  null
