@@ -58,7 +58,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         );
     }
 
-    var_dump( $structure );
+    var_dump( $request->getParams() );
     $obj = json_decode( $structure );
 
     $serializedStructure->update('structure', $obj);
