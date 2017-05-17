@@ -38,10 +38,14 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $projectKey = $queryParams['studyKey'];
     $project = \Models\Vertices\Project\Project::retrieve($projectKey);
     $structure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
-    $data = [
-        'structure' => $structure->get('structure'),
-        'projectName' => $project->get('name')
-    ];
+
+    $data = [];
+    if( $structure ){
+        $data['structure'] = $structure->get('structure');
+    } else {
+        $data['structure'] = false;
+    }
+    $data['projectName'] = $project->get('name');
     return $response->write(json_encode($data, JSON_PRETTY_PRINT));
 });
 
