@@ -27,13 +27,24 @@ class Paper extends VertexModel {
                 //We have a new record
                 $this->addRecord($remoteRecord);
             } else {
-                $this->updateRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0]));
+                $this->updateRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0], $this->isConflicted));
             }
         }
+
+        //figure out the conflicted flag
+        $isConflicted = false;
+        foreach ($this->masterEncoding as $record) {
+            if (count($record['responses']) > 1) {
+                $isConflicted = true;
+                break;
+            }
+        }
+
         $this->update('masterEncoding', $this->masterEncoding);
+        $this->update('isConflicted', $isConflicted);
     }
 
-    public $masterEncoding = [];
+    private $masterEncoding = [];
 
     public function getConflicts () {
 
@@ -117,7 +128,7 @@ class Paper extends VertexModel {
      * @param $masterArr array of responses to the same question in the same location
      * @param $remote record to merge
      */
-    private static function mergeRecord (&$masterRecord, $remoteResponse) {
+    private static function mergeRecord (&$masterRecord, $remoteResponse, &$isConflicted) {
         $masterResponses = $masterRecord['responses'];
         $remoteUserID = $remoteResponse['users'][0];
 
@@ -128,6 +139,11 @@ class Paper extends VertexModel {
                 if ($masterResponse['data'] != $remoteResponse['data']) {
                     //remove us from the response
                     $masterResponse = self::response_removeUser ($masterResponse, $remoteUserID);
+                    //If we just created an empty record
+                    if (count($masterResponse['users']) === 0) {
+                        //remove that record
+                        unset($masterResponses[$i]);
+                    }
                 } else { //our response is the same
                     //return
                     $masterRecord['responses'] = $masterResponses;
@@ -144,6 +160,7 @@ class Paper extends VertexModel {
         }
         //We have a new response
         $masterResponses[] = $remoteResponse;
+        $isConflicted = true;
         //We're good
         $masterRecord['responses'] = $masterResponses;
         return $masterRecord;

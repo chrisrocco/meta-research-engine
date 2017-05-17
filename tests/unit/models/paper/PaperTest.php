@@ -32,15 +32,17 @@ class PaperTest extends \Tests\BaseTestCase
         $assignments = json_decode( file_get_contents(__DIR__ . "/../../../data/assignments.json") , true);
         foreach ($assignments as $i => $assignment) {
             echo "\nMerging user ".$assignment['_key'];
-            $oldMasterEncoding = $paper->masterEncoding;
+            $oldMasterEncoding = $paper->get('masterEncoding');
             $paper->merge($assignment);
-            echo $paper->masterEncoding == $oldMasterEncoding ? " - without change" : " - with change";
+            echo $paper->get('masterEncoding') == $oldMasterEncoding ? " - without change" : " - with change";
+//            if ($i === 0 ) {break;}
         }
         $assignment = $assignments[ count($assignments) - 1 ];
+//        $assignment = $assignments[0];
         echo "\nMerging user ".$assignment['_key'];
-        $oldMasterEncoding = $paper->masterEncoding;
+        $oldMasterEncoding = $paper->get('masterEncoding');
         $paper->merge($assignment);
-        echo $paper->masterEncoding == $oldMasterEncoding ? " - without change" : " - with change";
+        echo $paper->get('masterEncoding') == $oldMasterEncoding ? " - without change" : " - with change";
 //        echo PHP_EOL.json_encode($paper->get('masterEncoding'));
     }
 }
