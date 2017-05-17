@@ -2,6 +2,7 @@
 
 use Models\Vertices\Study;
 use Models\Vertices\Domain;
+use Models\Vertices\Variable;
 use Models\Vertices\Paper;
 use Models\Vertices\User;
 
@@ -36,9 +37,10 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     $studyKey = $args['key'];
-    $structure = $formData['structure'];
+    $structure = json_decode( $formData['structure'], true);
 
     //TODO: check that the user of the token is an admin for the study
+
     //TODO: actually change the structure of the study
     $study = Study::retrieve($studyKey);
     if (!$study) {
@@ -47,22 +49,49 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
             ->withStatus(404);
     }
 
-    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+    $tempDomIDMap = []; // temporary domain id => Domain
 
-    if (!$serializedStructure) {
-        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
-            [
-                '_key' => $studyKey,
-                'structure' => $structure
-            ]
-        );
+    //Remove the study's old structure
+    $study->removeStructure(6);
+
+    //Create each of the new domains
+    foreach ($structure['domains'] as $newDom) {
+        $domain = Domain::create([
+            'name' => $newDom['name'],
+            'description' => $newDom['description'],
+            'tooltip' => $newDom['tooltip'],
+            'icon' => $newDom['icon']
+        ]);
+        $tempDomIDMap[$newDom['id']] = $domain;
+    }
+    //Connect the domain_to_domain edges
+    foreach ($structure['domains'] as $newDom) {
+        if ($newDom['parent'] === "#") {
+            $study->addDomain( $tempDomIDMap[$newDom['id']] );
+        }
+        else {
+            $tempDomIDMap[$newDom['parent']]->addSubdomain( $tempDomIDMap[$newDom['id']] );
+        }
     }
 
-    $obj = json_decode( $structure );
+//    var_dump($tempDomIDMap);
 
-    $serializedStructure->update('structure', $obj);
+    //Create the new questions and connect them to parent domains
+    foreach ($structure['questions'] as $newQuestion) {
+        $tempParent = $newQuestion['parent'];
+        unset($newQuestion['id'], $newQuestion['parent'], $newQuestion['$$hashKey']);
+        $question = Variable::create( $newQuestion );
+        $tempDomIDMap[$tempParent]->addVariable($question);
+    }
+
+    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+    if (!$serializedStructure) {
+        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $studyKey]);
+    }
+    $serializedStructure->update('structure', $structure );
+
     return $response
-        ->write("Successfully hackishly updated project structure")
+        ->write("Successfully updated project structure")
         ->withStatus(200);
 });
 
@@ -170,7 +199,7 @@ $app->POST("/studies", function ($request, $response, $args) {
  * POST studies/{key}/domains
  * Summary: Adds a domain to a study
  *
- * The domain should have it's subdomains already build
+ * The domain should have its subdomains already built
  */
 $app->POST("/studies/{key}/domains", function ($request, $response, $args) {
 

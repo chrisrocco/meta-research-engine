@@ -61,6 +61,38 @@ class Study extends VertexModel {
     }
 
     /**
+     * Wipes this Study's structure
+     * @param $searchDepth int the depth of the graph traversal
+     */
+    public function removeStructure ($searchDepth = 6) {
+        DB::query(
+            'FOR domain IN 1..@depth INBOUND @study_ID @@subdomain_of
+                    FOR question, questionEdge IN INBOUND domain._id @@variable_of
+                    REMOVE question IN @@variables OPTIONS { ignoreErrors: true }
+                    REMOVE questionEdge IN @@variable_of OPTIONS { ignoreErrors: true }',
+            [
+                'depth' => $searchDepth,
+                'study_ID' => $this->id(),
+                '@subdomain_of' => SubdomainOf::$collection,
+                '@variable_of' => VariableOf::$collection,
+                '@variables' => Variable::$collection
+            ]
+        );
+
+        DB::query(
+            'FOR domain, subdomainEdge IN 1..@depth INBOUND @study_ID @@subdomain_of
+                    REMOVE domain IN @@domains OPTIONS {ignoreErrors : true}
+                    REMOVE subdomainEdge IN @@subdomain_of OPTIONS {ignoreErrors : true}',
+            [
+                'depth' => $searchDepth,
+                'study_ID' => $this->id(),
+                '@subdomain_of' => SubdomainOf::$collection,
+                '@domains' => Domain::$collection
+            ]
+        );
+    }
+
+    /**
      * @return array
      */
     public function getStructureFlat(){
