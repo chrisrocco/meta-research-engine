@@ -19,14 +19,21 @@ class Paper extends VertexModel {
      * @param $assignment Assignment
      */
     public function merge ($assignment) {
-        $masterEncoding = $this->get('masterEncoding');
-        $valueResponses = self::getValueResponses($assignment);
-        foreach ($valueResponses as $remote) {
-            self::mergeResponse($masterEncoding, $remote);
+        $this->masterEncoding = $this->get('masterEncoding');
+        $valueResponses = self::getValueRecords($assignment);
+        foreach ($valueResponses as $remoteRecord) {
+            $masterRecord = $this->getRecordByLocation($remoteRecord['question'], $remoteRecord['location']);
+            if (!$masterRecord) {
+                //We have a new record
+                $this->addRecord($remoteRecord);
+            } else {
+                $this->updateRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0]));
+            }
         }
-//        echo "\n".json_encode($masterEncoding, JSON_PRETTY_PRINT);
-        $this->update('masterEncoding', $masterEncoding);
+        $this->update('masterEncoding', $this->masterEncoding);
     }
+
+    public $masterEncoding = [];
 
     public function getConflicts () {
 
@@ -44,16 +51,33 @@ class Paper extends VertexModel {
 
     }
 
-    public function getQuestionLocation ($questionKey, $location) {
-        $result = [];
-        foreach ($this->get('masterEncoding') as $response) {
-            if ($response['question'] === $questionKey
-                && $response['location'] === $location
+    private function getRecordByLocation ($questionKey, $location) {
+        for ($i = 0; $i < count($this->masterEncoding); $i++) {
+            if ($this->masterEncoding[$i]['question'] === $questionKey
+                && $this->masterEncoding[$i]['location'] === $location
             ) {
-                $result[] = $response;
+                $record = &$this->masterEncoding[$i];
+                return $record;
             }
         }
-        return $result;
+        return false;
+    }
+
+    private function updateRecord ($record) {
+        for ($i = 0; $i < count($this->masterEncoding); $i++) {
+            if ($this->masterEncoding[$i]['question'] === $record['question']
+                && $this->masterEncoding[$i]['location'] === $record['location']
+            ) {
+//                echo "\n\t".json_encode($record);
+                $this->masterEncoding[$i]['responses'] = $record['responses'];
+                return;
+            }
+        }
+        $this->addRecord($record);
+    }
+
+    private function addRecord ($record) {
+        $this->masterEncoding [] = $record;
     }
 
     private function getUsers () {
@@ -63,7 +87,7 @@ class Paper extends VertexModel {
     /**
      * @param $assignment Assignment
      */
-    private static function getValueResponses ($assignment) {
+    private static function getValueRecords ($assignment) {
         $assID = -1;
         $encoding = [];
         if (!is_a($assignment, Assignment::class)) {
@@ -78,11 +102,11 @@ class Paper extends VertexModel {
             return $responses;
         }
         foreach ($encoding['constants'] as $response) {
-            $responses[] = self::createResponse($response['question'], 0, $response['data'], $assID);
+            $responses[] = self::createRecord($response['question'], 0, $response['data'], $assID);
         }
         foreach ($encoding['branches'] as $branchIndex => $branch) {
             foreach ($branch as $response) {
-                self::createResponse($response['question'], $branchIndex + 1, $response['data'], $assID);
+                self::createRecord($response['question'], $branchIndex + 1, $response['data'], $assID);
             }
         }
         return $responses;
@@ -91,50 +115,50 @@ class Paper extends VertexModel {
 
     /**
      * @param $masterArr array of responses to the same question in the same location
-     * @param $remote the response to merge
+     * @param $remote record to merge
      */
-    private static function mergeResponse (&$masterArr, $remote) {
-        $remoteID = $remote['users'][0];
+    private static function mergeRecord (&$masterRecord, $remoteResponse) {
+        $masterResponses = $masterRecord['responses'];
+        $remoteUserID = $remoteResponse['users'][0];
 
-        //remove previous response
-        foreach ($masterArr as $masterIndex => $master) {
-            if ($master['question'] === $remote['question']
-                && $master['location'] === $remote['location']
-                && in_array($remoteID, $master['users'])) {
-                unset($master['users'][array_search($remoteID, $master['users'])] );
-            }
-            //We don't want empty responses
-            if (count($master['users']) == 0) {
-                unset($masterArr[$masterIndex]);
-            }
-        }
-
-        $masterArr = array_values($masterArr);
-
-        //Add new response
-        foreach ($masterArr as &$master) {
-            //if our response is the same as a previously-recorded response
-            if ($master['question'] === $remote['question']
-                && $master['location'] === $remote['location']
-                && $master['data'] == $remote['data']) {
-//                echo "1";
-                //if our response doesn't already have us listed
-                if (!in_array($remoteID, $master['users'])) {
-                    //add us to the response
-
-//                    echo "\n".json_encode($master) . " ". $remoteID;
-//                    echo " 2\n";
-                    array_push($master['users'], $remoteID);
-//                    echo "\n".json_encode($master);
+        foreach ($masterResponses as $i => &$masterResponse) {
+            //if the response already has us listed
+            if(in_array($remoteUserID, $masterResponse['users'])) {
+                //if our response is not the same
+                if ($masterResponse['data'] != $remoteResponse['data']) {
+                    //remove us from the response
+                    $masterResponse = self::response_removeUser ($masterResponse, $remoteUserID);
+                } else { //our response is the same
+                    //return
+                    $masterRecord['responses'] = $masterResponses;
+                    return $masterRecord;
                 }
-                //Otherwise the response already includes us, so everything is good.
-                //at this point, we are certainly successfully merged, so we can return
-                return;
+            } else { //we are not listed
+                //if our response is the same
+                if ($masterResponse['data'] == $remoteResponse['data']) {
+                    //add us to the response
+                    $masterResponse = self::response_addUser($masterResponse, $remoteUserID);
+                    $masterResponses[$i] = $masterResponse;
+                }
             }
         }
-        //We have a response that hasn't been recorded before
-        array_push($masterArr, $remote);
-//        echo " 3\n";
+        //We have a new response
+        $masterResponses[] = $remoteResponse;
+        //We're good
+        $masterRecord['responses'] = $masterResponses;
+        return $masterRecord;
+    }
+
+    private static function response_addUser (&$response, $userKey) {
+        $response['users'][] = $userKey;
+        return $response;
+    }
+
+    private static function response_removeUser (&$response, $userKey) {
+        $index = array_search($userKey, $response['users']);
+        if ($index === false) {return false;}
+        unset($response['users'][$index]);
+        return $response;
     }
 
     private static function validateEncoding ($encoding) {
@@ -144,12 +168,15 @@ class Paper extends VertexModel {
             && is_array($encoding['branches']);
     }
 
-    private static function createResponse ($varKey, $location, $data, $user) {
-        return [
+    private static function createRecord ($varKey, $location, $data, $user) {
+        $record = [
             'question' => $varKey,
             'location' => $location,
-            'data' => $data,
-            'users' => [$user]
+            'responses' => [[
+                'data' => $data,
+                'users' => [$user]
+            ]]
         ];
+        return $record;
     }
 }

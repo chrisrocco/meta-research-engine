@@ -30,10 +30,17 @@ class PaperTest extends \Tests\BaseTestCase
      */
     public function testMerge ($paper) {
         $assignments = json_decode( file_get_contents(__DIR__ . "/../../../data/assignments.json") , true);
-        foreach ($assignments as $assignment) {
-            //var_dump($assignment);
+        foreach ($assignments as $i => $assignment) {
+            echo "\nMerging user ".$assignment['_key'];
+            $oldMasterEncoding = $paper->masterEncoding;
             $paper->merge($assignment);
+            echo $paper->masterEncoding == $oldMasterEncoding ? " - without change" : " - with change";
         }
-        echo "\n".json_encode($paper->get('masterEncoding'));
+        $assignment = $assignments[ count($assignments) - 1 ];
+        echo "\nMerging user ".$assignment['_key'];
+        $oldMasterEncoding = $paper->masterEncoding;
+        $paper->merge($assignment);
+        echo $paper->masterEncoding == $oldMasterEncoding ? " - without change" : " - with change";
+//        echo PHP_EOL.json_encode($paper->get('masterEncoding'));
     }
 }
