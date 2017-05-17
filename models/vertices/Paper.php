@@ -24,15 +24,55 @@ class Paper extends VertexModel {
         foreach ($valueResponses as $remote) {
             self::mergeResponse($masterEncoding, $remote);
         }
+//        echo "\n".json_encode($masterEncoding, JSON_PRETTY_PRINT);
         $this->update('masterEncoding', $masterEncoding);
+    }
+
+    public function getConflicts () {
+
+    }
+
+    private function getStructure ($user) {
+
+    }
+
+    private function getScopes ($user) {
+
+    }
+
+    private function getValues ($user) {
+
+    }
+
+    public function getQuestionLocation ($questionKey, $location) {
+        $result = [];
+        foreach ($this->get('masterEncoding') as $response) {
+            if ($response['question'] === $questionKey
+                && $response['location'] === $location
+            ) {
+                $result[] = $response;
+            }
+        }
+        return $result;
+    }
+
+    private function getUsers () {
+
     }
 
     /**
      * @param $assignment Assignment
      */
     private static function getValueResponses ($assignment) {
-        $assID = $assignment->key();
-        $encoding = $assignment->get('encoding');
+        $assID = -1;
+        $encoding = [];
+        if (!is_a($assignment, Assignment::class)) {
+            $assID = $assignment['_key'];
+            $encoding = $assignment['encoding'];
+        } else {
+            $assID = $assignment->key();
+            $encoding = $assignment->get('encoding');
+        }
         $responses = [];
         if (!self::validateEncoding($encoding)) {
             return $responses;
@@ -72,21 +112,29 @@ class Paper extends VertexModel {
         $masterArr = array_values($masterArr);
 
         //Add new response
-        foreach ($masterArr as $master) {
+        foreach ($masterArr as &$master) {
             //if our response is the same as a previously-recorded response
             if ($master['question'] === $remote['question']
                 && $master['location'] === $remote['location']
                 && $master['data'] == $remote['data']) {
+//                echo "1";
                 //if our response doesn't already have us listed
                 if (!in_array($remoteID, $master['users'])) {
                     //add us to the response
+
+//                    echo "\n".json_encode($master) . " ". $remoteID;
+//                    echo " 2\n";
                     array_push($master['users'], $remoteID);
+//                    echo "\n".json_encode($master);
                 }
                 //Otherwise the response already includes us, so everything is good.
                 //at this point, we are certainly successfully merged, so we can return
                 return;
             }
         }
+        //We have a response that hasn't been recorded before
+        array_push($masterArr, $remote);
+//        echo " 3\n";
     }
 
     private static function validateEncoding ($encoding) {
