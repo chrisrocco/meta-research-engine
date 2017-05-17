@@ -49,14 +49,14 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
 
     $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
 
-//    if (!$serializedStructure) {
-//        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
-//            [
-//                '_key' => $studyKey,
-//                'structure' => $structure
-//            ]
-//        );
-//    }
+    if (!$serializedStructure) {
+        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
+            [
+                '_key' => $studyKey,
+                'structure' => $structure
+            ]
+        );
+    }
 
     $obj = json_decode( $structure );
 
