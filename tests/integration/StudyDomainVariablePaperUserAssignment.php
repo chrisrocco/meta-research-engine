@@ -4,7 +4,7 @@ namespace Tests;
 
 use Models\Edges\Assignment;
 use Models\Vertices\Paper;
-use \Models\Vertices\Project;
+use \Models\Vertices\Project\Project;
 use Models\Vertices\User;
 use \Models\Vertices\Variable;
 use \Models\Vertices\Domain;
@@ -33,6 +33,9 @@ class StudyDomainVariablePaperUserAssignment extends BaseIntegrationTest {
         $users = [];
         for ($i = 0; $i < 20; $i++){
             $newUser = User::register("User ".$i, " ", $i."@gmail.com", "password");
+//            if (is_int($newUser)) {
+//                $newUser = User::getByExample(['name' => "User ".$i,'email' => $i."@gmail.com"])[0];
+//            }
             $newUser->update('active', true);
 
             $users[] = $newUser;

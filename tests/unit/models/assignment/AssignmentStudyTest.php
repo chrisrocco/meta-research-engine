@@ -3,7 +3,7 @@ namespace Tests\Models;
 
 use \Models\Edges\Assignment;
 use Models\Vertices\Paper;
-use Models\Vertices\Project;
+use Models\Vertices\Project\Project;
 use Models\Vertices\User;
 
 use triagens\ArangoDb\Edge;
