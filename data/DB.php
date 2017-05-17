@@ -62,7 +62,7 @@ class DB
     }
     public static function update( $doc ){
         $dh = self::getDocumentHandler();
-        $dh->update( $doc );
+        $dh->replace( $doc );
     }
     public static function delete( $doc ){
         $dh = self::getDocumentHandler();
