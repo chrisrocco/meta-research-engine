@@ -50,7 +50,7 @@ class DB
     public static function create( $col, $doc){
         $dh = self::getDocumentHandler();
         return $dh->save( $col, $doc, [
-                'createCollection'  =>  true
+                'createCollection'  =>  'true'
             ]);
     }
     public static function retrieve( $col, $_key ){

@@ -2,6 +2,7 @@
 
 
 use \Models\Vertices\Study;
+use \Models\Vertices\User;
 
 /**
  * Created by PhpStorm.
@@ -14,8 +15,9 @@ use \Models\Vertices\Study;
  *
  * 1.) New study is created                         |   POST    /studies
  * 2.) Paper is added to the study                  |   POST    /studies/{key}/paper
- * 3.) Structure of the study is fetched            |   GET     /studies/{key}/structure
- * 3.) Variables of the study are fetched           |   GET     /studies/{key}/variables
+ * 3.) User is enrolled in the study                |   POST    /studies/{key}/members
+ * 4.) Structure of the study is fetched            |   GET     /studies/{key}/structure
+ * 5.) Variables of the study are fetched           |   GET     /studies/{key}/variables
  */
 class StudyTest extends \Tests\BaseTestCase
 {
@@ -23,7 +25,7 @@ class StudyTest extends \Tests\BaseTestCase
         $random_name = "study " . rand(0, 9999);
         $response = $this->runApp("POST", "/studies", [
             'name'  =>  $random_name,
-            'description'   =>  "A test study"
+            'description'   =>  "A test study2"
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
@@ -45,7 +47,22 @@ class StudyTest extends \Tests\BaseTestCase
             "pmcID"     =>  rand(100000, 20000)
         ]);
 
+
         self::assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateStudy
+     * @param $study Study
+     */
+    function testAddUser ($study) {
+        $response = $this->runApp("POST", "/studies/".$study->key()."/members", [
+            'userKey' => $this->user->key(),
+            'registrationCode' => $study->get('registrationCode')
+        ]);
+
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 409 === $status);
     }
 
     /**
@@ -55,7 +72,8 @@ class StudyTest extends \Tests\BaseTestCase
         $key = $study->key();
         $response = $this->runApp("GET", "/studies/$key/structure");
 
-        self::assertEquals(200 || 400, $response->getStatusCode());
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);
     }
 
     /**
@@ -66,8 +84,8 @@ class StudyTest extends \Tests\BaseTestCase
         $key = $study->key();
         $response = $this->runApp("GET", "/studies/$key/variables");
 
-        self::assertEquals(200 || 400, $response->getStatusCode());
-    }
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);    }
 
     /**
      * @depends testCreateStudy
@@ -75,6 +93,25 @@ class StudyTest extends \Tests\BaseTestCase
     function testGetProjects( $study ){
         $response = $this->runApp("GET", "/loadProjects");
 
-        echo ( (string)$response->getBody() );
+       // echo ( (string)$response->getBody() );
+    }
+
+    /**
+     * @var $user User
+     */
+    private $user;
+    function setUp() {
+        $random_email = rand(0, 99999) . '@gmail.com';
+        $password = 'password';
+
+        $user = User::register(
+            'Random',
+            'Register',
+            $random_email,
+            'password'
+        );
+        $new_hash = $user->rehash();
+        $user->validate( $new_hash );
+        $this->user = $user;
     }
 }

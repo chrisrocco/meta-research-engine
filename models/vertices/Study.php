@@ -11,6 +11,7 @@ namespace Models\Vertices;
 
 use DB\DB;
 use Models\Core\VertexModel;
+use Models\Edges\EnrolledIn;
 use Models\Edges\PaperOf;
 use Models\Edges\SubdomainOf;
 use Models\Edges\VariableOf;
@@ -35,6 +36,28 @@ class Study extends VertexModel {
         SubdomainOf::create(
             $this->id(), $domain->id(), []
         );
+    }
+
+    /**
+     * @param $user User
+     * @param $registrationCode
+     */
+    public function addUser ($user, $registrationCode) {
+        if ($this->get('registrationCode') !== $registrationCode) {
+            return 400;
+        }
+
+        $alreadyEnrolled = EnrolledIn::getByExample(['_from' => $user->id(), '_to' => $this->id()]);
+
+        if ($alreadyEnrolled) {
+            return 409;
+        }
+
+        $newEdge = EnrolledIn::create($this->id(), $user->id());
+        if (!$newEdge) {
+            return 500;
+        }
+        return 200;
     }
 
     /**

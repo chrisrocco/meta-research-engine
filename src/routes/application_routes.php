@@ -33,6 +33,16 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
     return $response;
 });
 
+$app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
+    $queryParams = $request->getQueryParams();
+    $studyKey = $queryParams['studyKey'];
+    $structure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+    $data = [
+        'structure' => $structure->get('structure')
+    ];
+    return $response->write(json_encode($data, JSON_PRETTY_PRINT));
+});
+
 
 /**
  * GET loadAssignmentsDashboardGet
