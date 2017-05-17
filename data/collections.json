@@ -8,5 +8,6 @@
   "paper_of":       "edge",
   "variable_of":    "edge",
   "subdomain_of":   "edge",
-  "enrolled_in":        "edge"
+  "enrolled_in":        "edge",
+  "serialized_project_structures" : "vertex"
 }

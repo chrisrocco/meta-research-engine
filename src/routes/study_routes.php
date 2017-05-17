@@ -35,10 +35,34 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 });
 
 $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
-    
+    $formData = $request->getParams();
+    $studyKey = $args['key'];
+    $structure = $formData['structure'];
 
+    //TODO: check that the user of the token is an admin for the study
+    //TODO: actually change the structure of the study
+    $study = Study::retrieve($studyKey);
+    if ($study) {
+        return $response
+            ->write("No study found with key ". $studyKey)
+            ->withStatus(404);
+    }
 
-    $response->write();
+    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+
+    if (!$serializedStructure) {
+        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
+            [
+                '_key' => $studyKey,
+                'structure' => $structure
+            ]
+        );
+    }
+
+    $serializedStructure->update('structure', $structure);
+    return $response
+        ->write("Successfully hackishly updated project structure")
+        ->withStatus(200);
 });
 
 $app->POST ('/studies/{key}/members', function ($request, $response, $args) {
