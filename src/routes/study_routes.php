@@ -4,7 +4,6 @@ use Models\Vertices\Study;
 use Models\Vertices\Domain;
 use Models\Vertices\Paper;
 use Models\Vertices\User;
-use Models\Edges\EnrolledIn;
 
 /*
  * GET studies/{studyname}/structure
@@ -67,14 +66,22 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-$app->POST ('/studies/{key}/members', function ($request, $response, $args) {
-    $studyKey = $args['key'];
+$app->POST ('/studies/members', function ($request, $response, $args) {
+    //$studyKey = $args['key'];
 
     $formData = $request->getParams();
     $userKey = $formData['userKey'];
     $registrationCode = $formData['registrationCode'];
 
     $user = User::retrieve($userKey);
+    $studyKey = \DB\DB::query('
+        FOR study IN studies
+            FILTER study.registrationCode == @registrationCode
+            RETURN study._key
+    ',[
+        'registrationCode' => $registrationCode
+    ])->getAll()[0];
+
     $study = Study::retrieve($studyKey);
 
     if (!$user) {

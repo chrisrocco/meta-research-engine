@@ -47,11 +47,13 @@ class Study extends VertexModel {
             return 400;
         }
 
-        if (EnrolledIn::getByExample(['_from' => $user->id(), '_to' => $this->id()])) {
+        $alreadyEnrolled = EnrolledIn::getByExample(['_from' => $user->id(), '_to' => $this->id()]);
+
+        if ($alreadyEnrolled) {
             return 409;
         }
 
-        $newEdge = EnrolledIn::create($user->id(), $this->id());
+        $newEdge = EnrolledIn::create($this->id(), $user->id());
         if (!$newEdge) {
             return 500;
         }
