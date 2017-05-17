@@ -48,7 +48,6 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
 
     //TODO: check that the user of the token is an admin for the study
 
-    //TODO: actually change the structure of the study
     $study = Project::retrieve($studyKey);
     if (!$study) {
         return $response
@@ -91,11 +90,14 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         $tempDomIDMap[$tempParent]->addVariable($question);
     }
 
+    $newVersion = $study->updateVersion();
+
     $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
     if (!$serializedStructure) {
         $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $studyKey]);
     }
     $serializedStructure->update('structure', $structure );
+    $serializedStructure->update('version', $newVersion);
 
     return $response
         ->write("Successfully updated project structure")
@@ -200,16 +202,18 @@ $app->GET("/studies/{key}/papers", function( $request, $response, $args){
 $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $study = Project::create([
+    $project = Project::create([
         'name'  =>  $formData['name'],
         'description'   =>  $formData['description'],
-        'registrationCode' => base64_encode(random_bytes(8))
+        'registrationCode' => base64_encode(random_bytes(8)),
+        'version' => 1,
+        'assignmentTarget' => 2
     ]);
 
     return $response->write(
         json_encode([
-            "projectKey" => $study->key(),
-            "registrationCode" => $study->get('registrationCode')
+            "projectKey" => $project->key(),
+            "registrationCode" => $project->get('registrationCode')
         ])
     );
 });

@@ -35,10 +35,12 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
 
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
-    $studyKey = $queryParams['studyKey'];
-    $structure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+    $projectKey = $queryParams['studyKey'];
+    $project = \Models\Vertices\Project\Project::retrieve($projectKey);
+    $structure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
     $data = [
-        'structure' => $structure->get('structure')
+        'structure' => $structure->get('structure'),
+        'projectName' => $project->get('name')
     ];
     return $response->write(json_encode($data, JSON_PRETTY_PRINT));
 });

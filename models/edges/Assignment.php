@@ -22,6 +22,7 @@ class Assignment extends EdgeModel
     public static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
+        'version'       => -1,
         'encoding'      =>  null
     ];
 

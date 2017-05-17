@@ -27,10 +27,19 @@ class Project extends VertexModel {
     /**
      * @param $paper Paper
      */
-    function addPaper( $paper ){
+    function addPaper( $paper , $priority = 0){
         PaperOf::create(
-            $this->id(), $paper->id(), []
+            $this->id(), $paper->id(), ['priority' => $priority]
         );
+    }
+
+    /**
+     * @return int
+     */
+    public function updateVersion () {
+        $version = $this->get('version') + 1;
+        $this->update('version', $version);
+        return $version;
     }
 
     /**
