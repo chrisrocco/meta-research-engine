@@ -36,6 +36,7 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 
 $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
+    var_dump( $formData );
     $studyKey = $args['key'];
     $structure = json_decode( $formData['structure'], true);
 
