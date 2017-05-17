@@ -4,7 +4,7 @@ namespace Tests;
 
 use Models\Edges\Assignment;
 use Models\Vertices\Paper;
-use \Models\Vertices\Study;
+use \Models\Vertices\Project;
 use Models\Vertices\User;
 use \Models\Vertices\Variable;
 use \Models\Vertices\Domain;
@@ -52,7 +52,7 @@ class StudyDomainVariablePaperUserAssignment extends BaseIntegrationTest {
         }
 
         // Make a study
-        $study = Study::create([
+        $study = Project::create([
             'name' => 'study ' . rand(0, 1000)
         ]);
 

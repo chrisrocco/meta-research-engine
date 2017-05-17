@@ -7,7 +7,7 @@
  */
 require __DIR__ . '/../../../vendor/autoload.php';
 
-use \Models\Vertices\Study;
+use \Models\Vertices\Project;
 use \Models\Vertices\Variable;
 use \Models\Vertices\Domain;
 use \Models\Edges\SubdomainOf;

@@ -1,6 +1,6 @@
 <?php
 
-use Models\Vertices\Study;
+use Models\Vertices\Project\Project;
 use Models\Vertices\Domain;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper;
@@ -12,7 +12,13 @@ use Models\Vertices\User;
  */
 $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
     $study_key = $args['key'];
-    $study = Study::retrieve($study_key);
+    $study = Project::retrieve($study_key);
+    if (!$study) {
+        return $response
+            ->write("Study ".$study_key." not found")
+            ->withStatus(409);
+    }
+
     $structure = $study->getStructureFlat();
     if(!$structure) return $response->write("No Domains")->withStatus(400);
 
@@ -25,7 +31,7 @@ $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
  */
 $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
     $study_key = $args['key'];
-    $study = Study::retrieve($study_key);
+    $study = Project::retrieve($study_key);
     $variables = $study->getVariablesFlat();
     if(!$variables) return $response->write("No Domains")->withStatus(400);
 
@@ -43,7 +49,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     //TODO: check that the user of the token is an admin for the study
 
     //TODO: actually change the structure of the study
-    $study = Study::retrieve($studyKey);
+    $study = Project::retrieve($studyKey);
     if (!$study) {
         return $response
             ->write("No study found with key ". $studyKey)
@@ -97,7 +103,6 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
 });
 
 $app->POST ('/studies/members', function ($request, $response, $args) {
-    //$studyKey = $args['key'];
 
     $formData = $request->getParams();
     $userKey = $formData['userKey'];
@@ -105,14 +110,15 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 
     $user = User::retrieve($userKey);
     $studyKey = \DB\DB::query('
-        FOR study IN studies
+        FOR study IN @@project_collection
             FILTER study.registrationCode == @registrationCode
             RETURN study._key
     ',[
-        'registrationCode' => $registrationCode
+        'registrationCode' => $registrationCode,
+        '@project_collection' => Project::$collection
     ])->getAll()[0];
 
-    $study = Study::retrieve($studyKey);
+    $study = Project::retrieve($studyKey);
 
     if (!$user) {
         return $response
@@ -166,7 +172,7 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
 
     $study_key = $args['key'];
 
-    $study = Study::retrieve($study_key);
+    $study = Project::retrieve($study_key);
 
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
@@ -182,7 +188,7 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
 
 $app->GET("/studies/{key}/papers", function( $request, $response, $args){
     $studyKey = $args['key'];
-    $study = Study::retrieve( $studyKey );
+    $study = Project::retrieve( $studyKey );
     $papersArray = $study->getPapersFlat();
     return $response->write( json_encode($papersArray) );
 });
@@ -194,7 +200,7 @@ $app->GET("/studies/{key}/papers", function( $request, $response, $args){
 $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $study = Study::create([
+    $study = Project::create([
         'name'  =>  $formData['name'],
         'description'   =>  $formData['description'],
         'registrationCode' => base64_encode(random_bytes(8))
@@ -217,7 +223,7 @@ $app->POST("/studies", function ($request, $response, $args) {
 $app->POST("/studies/{key}/domains", function ($request, $response, $args) {
 
     $domain = Domain::retrieve( $request->getParam("domainKey") );
-    $study = Study::retrieve( $args['key'] );
+    $study = Project::retrieve( $args['key'] );
 
     $domain->addDomain( $domain );
 

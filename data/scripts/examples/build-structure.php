@@ -7,7 +7,7 @@
  */
 require __DIR__ . '/../../../vendor/autoload.php';
 
-use \Models\Vertices\Study;
+use \Models\Vertices\Project;
 use \Models\Vertices\Variable;
 use \Models\Vertices\Domain;
 use \Models\Edges\SubdomainOf;
@@ -18,7 +18,7 @@ $subdomains_per_domain = 3;
 $top_level_domains = 3;
 
 // Make a study
-$study = Study::create([
+$study = Project::create([
     'name'  =>  'study ' . rand(0, 1000)
 ]);
 
@@ -76,7 +76,7 @@ $subdomain_of = new \triagens\ArangoDb\EdgeDefinition();
 $subdomain_of->setRelation(SubdomainOf::$collection);
 $subdomain_of->addFromCollection(Domain::$collection);
 $subdomain_of->addToCollection(Domain::$collection);
-$subdomain_of->addToCollection(Study::$collection);
+$subdomain_of->addToCollection(Project::$collection);
 $graph->addEdgeDefinition($variable_of);
 $graph->addEdgeDefinition($subdomain_of);
 $gh = new \triagens\ArangoDb\GraphHandler( \DB\DB::getConnection() );

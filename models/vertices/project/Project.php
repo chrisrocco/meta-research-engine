@@ -6,19 +6,23 @@
  * Time: 3:49 PM
  */
 
-namespace Models\Vertices;
+namespace Models\Vertices\Project;
 
 
 use DB\DB;
 use Models\Core\VertexModel;
+use Models\Vertices\Variable;
+use Models\Vertices\Domain;
+use Models\Vertices\Paper;
+use Models\Vertices\User;
 use Models\Edges\EnrolledIn;
 use Models\Edges\PaperOf;
 use Models\Edges\SubdomainOf;
 use Models\Edges\VariableOf;
 
-class Study extends VertexModel {
+class Project extends VertexModel {
 
-    static $collection = "studies";
+    static $collection = "projects";
 
     /**
      * @param $paper Paper

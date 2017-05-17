@@ -1,7 +1,7 @@
 <?php
 
 
-use \Models\Vertices\Study;
+use \Models\Vertices\Project\Project;
 use \Models\Vertices\User;
 
 /**
@@ -30,7 +30,7 @@ class StudyTest extends \Tests\BaseTestCase
 
         self::assertEquals(200, $response->getStatusCode());
 
-        $studies = Study::getByExample( [ 'name' => $random_name] );
+        $studies = Project::getByExample( [ 'name' => $random_name] );
         $study = $studies[0];
 
         return $study;
@@ -38,7 +38,7 @@ class StudyTest extends \Tests\BaseTestCase
 
     /**
      * @depends testCreateStudy
-     * @param $study_name Study
+     * @param $study_name Project
      */
     function testAddPaper( $study ){
         $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
@@ -57,17 +57,17 @@ class StudyTest extends \Tests\BaseTestCase
     function testGetPapers( $study ){
         $response = $this->runApp("GET", "/studies/".$study->key()."/papers");
         $papers = json_decode( $response->getbody() );
-        var_dump($papers);
+//        var_dump($papers);
 
         self::assertEquals( 200, $response->getStatusCode() );
     }
 
     /**
      * @depends testCreateStudy
-     * @param $study Study
+     * @param $study Project
      */
     function testAddUser ($study) {
-        $response = $this->runApp("POST", "/studies/".$study->key()."/members", [
+        $response = $this->runApp("POST", "/studies/members", [
             'userKey' => $this->user->key(),
             'registrationCode' => $study->get('registrationCode')
         ]);

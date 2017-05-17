@@ -12,7 +12,7 @@ namespace Models\Edges;
 use DB\DB;
 use Models\Core\EdgeModel;
 use Models\Vertices\Paper;
-use Models\Vertices\Study;
+use Models\Vertices\Project;
 use Models\Vertices\User;
 
 class Assignment extends EdgeModel
@@ -45,6 +45,6 @@ class Assignment extends EdgeModel
             'paperKey'  =>  $this->get( '_from' ),
             '@paper_to_study'   =>  PaperOf::$collection
         ];
-        return DB::queryModel($AQL, $bindings, Study::class)[0];
+        return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
 }

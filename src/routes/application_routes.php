@@ -79,7 +79,7 @@ $app->GET('/loadAssignmentsDashboard', function($request, $response, $args) {
 $app->GET('/loadProjects', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
 
-    $cursor = \DB\DB::getAll( \Models\Vertices\Study::$collection );
+    $cursor = \DB\DB::getAll( \Models\Vertices\Project::$collection );
     $documents = $cursor->getAll();
     $flat = [];
     foreach ( $documents as $doc ){

@@ -3,9 +3,9 @@ namespace Tests\Models;
 
 use \Models\Edges\Assignment;
 use Models\Vertices\Paper;
-use Models\Vertices\Study;
+use Models\Vertices\Project;
 use Models\Vertices\User;
-use phpDocumentor\Reflection\Project;
+
 use triagens\ArangoDb\Edge;
 
 /**
@@ -17,7 +17,7 @@ use triagens\ArangoDb\Edge;
 class AssignmentTest extends \Tests\BaseTestCase
 {
     /**
-     * @var Study
+     * @var Project
      */
     private $study;
     /**
@@ -36,7 +36,7 @@ class AssignmentTest extends \Tests\BaseTestCase
         // Need a study, paper, user, and assignment
 
 
-        $this->study = Study::create([]);
+        $this->study = Project::create([]);
         $this->paper = Paper::create([]);
         $this->user  = User::create([]);
 
@@ -51,7 +51,7 @@ class AssignmentTest extends \Tests\BaseTestCase
         $newAssignment = Assignment::assign( $this->paper, $this->user );
         $project = $newAssignment->getProject();
 
-        self::assertInstanceOf( Study::class, $project );
+        self::assertInstanceOf( Project::class, $project );
         return $newAssignment;
     }
 
