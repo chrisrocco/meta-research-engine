@@ -42,7 +42,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     //TODO: check that the user of the token is an admin for the study
     //TODO: actually change the structure of the study
     $study = Study::retrieve($studyKey);
-    if ($study) {
+    if (!$study) {
         return $response
             ->write("No study found with key ". $studyKey)
             ->withStatus(404);
@@ -50,16 +50,18 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
 
     $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
 
-    if (!$serializedStructure) {
-        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
-            [
-                '_key' => $studyKey,
-                'structure' => $structure
-            ]
-        );
-    }
+//    if (!$serializedStructure) {
+//        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create(
+//            [
+//                '_key' => $studyKey,
+//                'structure' => $structure
+//            ]
+//        );
+//    }
 
-    $serializedStructure->update('structure', $structure);
+    $obj = json_decode( $structure );
+
+    $serializedStructure->update('structure', $obj);
     return $response
         ->write("Successfully hackishly updated project structure")
         ->withStatus(200);
