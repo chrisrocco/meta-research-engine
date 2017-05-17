@@ -126,6 +126,16 @@ class Study extends VertexModel {
         return DB::queryModel($AQL, $bindings, Paper::class);
     }
 
+    public function getPapersFlat(){
+        $AQL = "FOR paper IN INBOUND @study @@paper_to_study
+                    RETURN paper";
+        $bindings = [
+            'study'     =>  $this->id(),
+            '@paper_to_study'   =>  PaperOf::$collection
+        ];
+        return DB::query( $AQL, $bindings, true)->getAll();
+    }
+
     private function getTopLevelDomains(){
         $AQL = "FOR domain in INBOUND @root @@domain_to_domain
                     RETURN domain";

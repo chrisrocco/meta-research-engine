@@ -41,14 +41,25 @@ class StudyTest extends \Tests\BaseTestCase
      * @param $study_name Study
      */
     function testAddPaper( $study ){
+        $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
 
         $response = $this->runApp("POST", "/studies/".$study->key()."/papers", [
-            "title"     =>  "test paper",
-            "pmcID"     =>  rand(100000, 20000)
+            "papers" => $jsonPaperData
         ]);
 
-
         self::assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateStudy
+     * @param $study
+     */
+    function testGetPapers( $study ){
+        $response = $this->runApp("GET", "/studies/".$study->key()."/papers");
+        $papers = json_decode( $response->getbody() );
+        var_dump($papers);
+
+        self::assertEquals( 200, $response->getStatusCode() );
     }
 
     /**

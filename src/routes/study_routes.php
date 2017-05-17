@@ -160,19 +160,31 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a study
  */
 $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
-    $formData = $request->getParams();
+    $formData = $request->getParsedBody();
+
+    $paperArray = json_decode( $formData['papers'], true );
+
     $study_key = $args['key'];
 
     $study = Study::retrieve($study_key);
 
-    $paper = Paper::create([
-        'title'     =>  $formData['title'],
-        'pmcID'     =>  $formData['pmcID']
-    ]);
+    foreach ( $paperArray as $paper ){
+        $paperModel = Paper::create([
+            'title'     =>  $paper['title'],
+            'pmcID'     =>  $paper['pmcID']
+        ]);
+        $study->addpaper( $paperModel );
+    }
 
-    $study->addpaper($paper);
+    $count = count( $paperArray );
+    return $response->write("Added $count papers to study");
+});
 
-    return $response->write("Added paper to study");
+$app->GET("/studies/{key}/papers", function( $request, $response, $args){
+    $studyKey = $args['key'];
+    $study = Study::retrieve( $studyKey );
+    $papersArray = $study->getPapersFlat();
+    return $response->write( json_encode($papersArray) );
 });
 
 /**
