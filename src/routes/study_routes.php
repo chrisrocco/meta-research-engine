@@ -35,6 +35,7 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 
 $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
+    var_dump( $formData );
     $studyKey = $args['key'];
     $structure = $formData['structure'];
 
@@ -58,7 +59,6 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         );
     }
 
-    var_dump( $request->getParams() );
     $obj = json_decode( $structure );
 
     $serializedStructure->update('structure', $obj);
