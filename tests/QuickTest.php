@@ -8,9 +8,11 @@
 
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
-        $paper = \Models\Vertices\Paper::retrieve(4332781);
-        $user = \Models\Vertices\User::retrieve(4323770);
 
-        \Models\Edges\Assignment::assign( $paper, $user );
+//        $project = \Models\Vertices\Project\Project::retrieve(4941201);
+//        $queue = new \Models\Vertices\Project\PaperQueue($project->key());
+//        $queue_raw = $queue->next();
+//        echo PHP_EOL.json_encode($queue_raw);
+
     }
 }

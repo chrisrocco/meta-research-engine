@@ -75,7 +75,7 @@ class AssignmentTest extends \Tests\BaseTestCase
         self::assertEquals(200, $response->getStatusCode());
 
         $assignment = Assignment::retrieve($key);
-        self::assertEquals(999, $assignment->get("completion"));
+        self::assertEquals(0, $assignment->get("completion"));
     }
 
     /**

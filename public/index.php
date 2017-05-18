@@ -5,9 +5,6 @@ $settings = require __DIR__ . '/../src/settings.php';
 
 /* Connect to Testing DB */
 $config = $settings['settings']['database_connection_options'];
-$config[\triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_USER] = "integration-testing";
-$config[\triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_PASSWD] = "integrationTesting();";
-$config[\triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE] = "integration-testing";
 $connection = new \triagens\ArangoDb\Connection($config);
 \DB\DB::$connection = $connection;
 /* End Connect */
@@ -60,7 +57,7 @@ require __DIR__ . '/../src/middleware.php';
 // Register routes
 require( __DIR__ . "/../src/routes/user_routes.php");
 require( __DIR__ . "/../src/routes/assignment_routes.php");
-require( __DIR__ . "/../src/routes/study_routes.php");
+require( __DIR__ . "/../src/routes/project_routes.php");
 require( __DIR__ . "/../src/routes/test_routes.php");
 require( __DIR__ . "/../src/routes/application_routes.php");
 

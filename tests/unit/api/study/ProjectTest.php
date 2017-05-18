@@ -1,0 +1,132 @@
+<?php
+
+
+use \Models\Vertices\Project\Project;
+use \Models\Vertices\User;
+
+/**
+ * Created by PhpStorm.
+ * User: chris
+ * Date: 4/30/17
+ * Time: 3:33 PM
+ *
+ *
+ * Follows the lifecycle of a project
+ *
+ * 1.) New project is created                         |   POST    /studies
+ * 2.) Paper is added to the project                  |   POST    /studies/{key}/paper
+ * 3.) User is enrolled in the project                |   POST    /studies/{key}/members
+ * 4.) Structure of the project is fetched            |   GET     /studies/{key}/structure
+ * 5.) Variables of the project are fetched           |   GET     /studies/{key}/variables
+ */
+class ProjectTest extends \Tests\BaseTestCase
+{
+    function testCreateProject(){
+        $random_name = "project " . rand(0, 9999);
+        $response = $this->runApp("POST", "/studies", [
+            'name'  =>  $random_name,
+            'description'   =>  "A test project2"
+        ]);
+
+        self::assertEquals(200, $response->getStatusCode());
+
+        $projects = Project::getByExample( [ 'name' => $random_name] );
+        $project = $projects[0];
+
+        return $project;
+    }
+
+    /**
+     * @depends testCreateProject
+     * @param $project_name Project
+     */
+    function testAddPaper( $project ){
+        $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
+
+        $response = $this->runApp("POST", "/studies/".$project->key()."/papers", [
+            "papers" => $jsonPaperData
+        ]);
+
+        self::assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @depends testCreateProject
+     * @param $project
+     */
+    function testGetPapers( $project ){
+        $response = $this->runApp("GET", "/studies/".$project->key()."/papers");
+        $papers = json_decode( $response->getbody() );
+//        var_dump($papers);
+
+        self::assertEquals( 200, $response->getStatusCode() );
+    }
+
+    /**
+     * @depends testCreateProject
+     * @param $project Project
+     */
+    function testAddUser ($project) {
+        $response = $this->runApp("POST", "/studies/members", [
+            'userKey' => self::$user->key(),
+            'registrationCode' => $project->get('registrationCode')
+        ]);
+
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 409 === $status);
+    }
+
+    /**
+     * @depends testCreateProject
+     * @param
+     */
+    function testGetStructure( $project ){
+        $key = $project->key();
+        $response = $this->runApp("GET", "/studies/$key/structure");
+
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);
+    }
+
+    /**
+     * @depends testCreateProject
+     */
+    function testGetVariables( $project ){
+//        $key = "2826667";
+        $key = $project->key();
+        $response = $this->runApp("GET", "/studies/$key/variables");
+
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);    }
+
+    /**
+     * @depends testCreateProject
+     */
+    function testGetProjects( $project ){
+        $response = $this->runApp("GET", "/loadProjects");
+
+       // echo ( (string)$response->getBody() );
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);
+    }
+
+    /**
+     * @var $user User
+     */
+    static $user;
+    static function setUpBeforeClass() {
+        $random_email = rand(0, 99999) . '@gmail.com';
+        $password = 'password';
+
+        $user = User::register(
+            'Random',
+            'Register',
+            $random_email,
+            'password'
+        );
+        $new_hash = $user->rehash();
+        $user->validate( $new_hash );
+        self::$user = $user;
+//        echo PHP_EOL.self::$user->key();
+    }
+}

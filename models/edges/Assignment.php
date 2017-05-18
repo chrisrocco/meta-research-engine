@@ -12,7 +12,7 @@ namespace Models\Edges;
 use DB\DB;
 use Models\Core\EdgeModel;
 use Models\Vertices\Paper;
-use Models\Vertices\Study;
+use Models\Vertices\Project\Project;
 use Models\Vertices\User;
 
 class Assignment extends EdgeModel
@@ -22,10 +22,8 @@ class Assignment extends EdgeModel
     public static $blank = [
         'done'          =>  false,
         'completion'    =>  0,
-        'encoding'      =>  [
-            'constants' => [],
-            'branches' => [[]]
-        ]
+        'version'       => -1,
+        'encoding'      =>  null
     ];
 
     /**
@@ -35,8 +33,19 @@ class Assignment extends EdgeModel
      */
     public static function assign( $paper, $user ){
         return static::create(
-            $user->id(), $paper->id(),
+            $user->id(),
+            $paper->id(),
             static::$blank
+        );
+    }
+
+    public static function assignByKey ($paperKey, $userKey, $version) {
+        $template = static::$blank;
+        $template['version'] = $version;
+       return static::create(
+            User::$collection."/".$userKey,
+            Paper::$collection."/".$paperKey,
+            $template
         );
     }
 
@@ -48,6 +57,6 @@ class Assignment extends EdgeModel
             'paperKey'  =>  $this->get( '_from' ),
             '@paper_to_study'   =>  PaperOf::$collection
         ];
-        return DB::queryModel($AQL, $bindings, Study::class)[0];
+        return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
 }

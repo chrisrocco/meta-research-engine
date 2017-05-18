@@ -1,12 +1,13 @@
 {
   "users":          "vertex",
   "papers":         "vertex",
-  "studies":        "vertex",
+  "projects":        "vertex",
   "assignments":    "edge",
   "variables":      "vertex",
   "domains":        "vertex",
   "paper_of":       "edge",
   "variable_of":    "edge",
   "subdomain_of":   "edge",
-  "enrolled_in":        "edge"
+  "enrolled_in":        "edge",
+  "serialized_project_structures" : "vertex"
 }
