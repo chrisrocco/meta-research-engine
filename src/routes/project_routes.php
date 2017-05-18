@@ -201,10 +201,18 @@ $app->GET("/studies/{key}/papers", function( $request, $response, $args){
 $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();
 
+    $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
+    $registrationCode = '';
+    $random_string_length = 6;
+    $max = strlen($characters) - 1;
+    for ($i = 0; $i < $random_string_length; $i++) {
+        $registrationCode .= $characters[mt_rand(0, $max)];
+    }
+
     $project = Project::create([
         'name'  =>  $formData['name'],
         'description'   =>  $formData['description'],
-        'registrationCode' => base64_encode(random_bytes(8)),
+        'registrationCode' => $registrationCode,
         'version' => 1,
         'assignmentTarget' => 2
     ]);
@@ -212,7 +220,7 @@ $app->POST("/studies", function ($request, $response, $args) {
     return $response->write(
         json_encode([
             "projectKey" => $project->key(),
-            "registrationCode" => $project->get('registrationCode')
+            "registrationCode" => $registrationCode
         ])
     );
 });
