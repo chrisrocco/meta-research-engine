@@ -9,9 +9,10 @@
 class QuickTest extends \Tests\BaseTestCase {
     function testQuickly(){
 
-        $project = \Models\Vertices\Project\Project::retrieve(4928122);
-        $queue = new \Models\Vertices\Project\PaperQueue($project->key());
-        $queue_raw = $queue->next();
-        echo PHP_EOL.json_encode($queue_raw);
+//        $project = \Models\Vertices\Project\Project::retrieve(4941201);
+//        $queue = new \Models\Vertices\Project\PaperQueue($project->key());
+//        $queue_raw = $queue->next();
+//        echo PHP_EOL.json_encode($queue_raw);
+
     }
 }

@@ -11,6 +11,7 @@ namespace Models\Vertices\Project;
 
 use DB\DB;
 use Models\Core\VertexModel;
+use Models\Edges\Assignment;
 use Models\Vertices\Variable;
 use Models\Vertices\Domain;
 use Models\Vertices\Paper;
@@ -70,6 +71,13 @@ class Project extends VertexModel {
         if (!$newEdge) {
             return 500;
         }
+
+        $queueItems = $this->getNextPaper($this->get('assignmentTarget'));
+        echo PHP_EOL.json_encode($queueItems);
+        foreach ($queueItems as $queueItem) {
+            if ($queueItem === false) {continue;}
+            Assignment::assignByKey($queueItem['paperKey'], $user->key(), $this->get('version'));
+        }
         return 200;
     }
 
@@ -127,16 +135,9 @@ class Project extends VertexModel {
         return DB::query($AQL, $bindings, true)->getAll();
     }
 
-    public function getNextPaper(){
-        $AQL = "FOR paper in INBOUND @study @@paper_to_study
-                    SORT RAND()
-                    LIMIT 1
-                    RETURN paper";
-        $bindings = [
-            'study'     =>  $this->id(),
-            '@paper_to_study'   =>  PaperOf::$collection
-        ];
-        return DB::queryModel($AQL, $bindings, Paper::class);
+    public function getNextPaper($numPapers = 1){
+        $queue = new PaperQueue($this->key());
+        return $queue->next($numPapers);
     }
 
     public function getPapersFlat(){
