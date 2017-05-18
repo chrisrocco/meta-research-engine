@@ -149,7 +149,10 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
             $message = "User already enrolled in Project. Aborting enrollment";
             break;
         case 200 :
-            $message = "User successfully enrolled in project";
+            return $response
+                ->write( json_encode([
+                    'studyName' => $project->get('name')
+                ]) );
             break;
         default :
             $status = 500;
