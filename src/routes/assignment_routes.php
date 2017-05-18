@@ -29,6 +29,11 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('completion', $formData['completion']);
     $assignment->update('encoding', $formData['encoding']);
 
+    if ($formData['done'] == true) {
+        $assignment->getPaper()->merge($assignment);
+        echo "Attempted merge into MasterEncoding";
+    }
+
     return $response
         ->write("Updated Assignment " . $args['key'])
         ->withStatus(200);

@@ -59,4 +59,8 @@ class Assignment extends EdgeModel
         ];
         return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
+
+    public function getPaper () {
+        return Paper::retrieve($this->get('_from'));
+    }
 }
