@@ -42,6 +42,7 @@
       "Models\\Core\\": "models/core",
       "Models\\Edges\\": "models/edges",
       "Models\\Vertices\\": "models/vertices",
+      "Encodings\\" : "lib/encodings",
       "Models\\Vertices\\Project\\" : "models/vertices/project",
       "DB\\": "data/",
       "DB\\Queries\\": "data/queries",

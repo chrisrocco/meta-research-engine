@@ -78,6 +78,12 @@ class DB
     /*----------------------------------------------------*/
     /*----------------------- Query -----------------------*/
     /*----------------------------------------------------*/
+    /**
+     * @param string $query_string
+     * @param array $bindVars
+     * @param bool $flat
+     * @return \triagens\ArangoDb\Cursor
+     */
     public static function query($query_string, $bindVars = [], $flat = true){
         $connection = self::getConnection();
         $statement = new Statement(
