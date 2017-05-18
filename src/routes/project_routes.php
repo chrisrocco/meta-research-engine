@@ -122,6 +122,7 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
     /* End Query */
 
     $project = Project::retrieve($projectKey);
+    $projectName = $project->get('name');
 
     if (!$user) {
         return $response
@@ -141,6 +142,13 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 
     $status = $project->addUser ( $user, $registrationCode );
 
+    if( $status == 200 ){
+        return $response
+            ->write( json_encode([
+                'studyName' => $projectName
+            ], JSON_PRETTY_PRINT) );
+    }
+
     switch($status) {
         case 400 :
             $message = "Project / registration code mismatch";
@@ -148,11 +156,6 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
         case 409 :
             $message = "User already enrolled in Project. Aborting enrollment";
             break;
-        case 200 :
-            return $response
-                ->write( json_encode([
-                    'studyName' => $project->get('name')
-                ], JSON_PRETTY_PRINT) );
         default :
             $status = 500;
             $message = "Something went very, very wrong";
