@@ -216,19 +216,3 @@ $app->POST("/studies", function ($request, $response, $args) {
         ])
     );
 });
-
-/**
- * POST studies/{key}/domains
- * Summary: Adds a domain to a study
- *
- * The domain should have its subdomains already built
- */
-$app->POST("/studies/{key}/domains", function ($request, $response, $args) {
-
-    $domain = Domain::retrieve( $request->getParam("domainKey") );
-    $study = Project::retrieve( $args['key'] );
-
-    $domain->addDomain( $domain );
-
-    return $response->write("Created Study");
-});

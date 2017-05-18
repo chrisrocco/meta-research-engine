@@ -33,8 +33,19 @@ class Assignment extends EdgeModel
      */
     public static function assign( $paper, $user ){
         return static::create(
-            $user->id(), $paper->id(),
+            $user->id(),
+            $paper->id(),
             static::$blank
+        );
+    }
+
+    public static function assignByKey ($paperKey, $userKey, $version) {
+        $template = static::$blank;
+        $template['version'] = $version;
+       return static::create(
+            User::$collection."/".$userKey,
+            Paper::$collection."/".$paperKey,
+            $template
         );
     }
 

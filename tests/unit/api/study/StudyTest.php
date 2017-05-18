@@ -68,7 +68,7 @@ class StudyTest extends \Tests\BaseTestCase
      */
     function testAddUser ($study) {
         $response = $this->runApp("POST", "/studies/members", [
-            'userKey' => $this->user->key(),
+            'userKey' => self::$user->key(),
             'registrationCode' => $study->get('registrationCode')
         ]);
 
@@ -78,6 +78,7 @@ class StudyTest extends \Tests\BaseTestCase
 
     /**
      * @depends testCreateStudy
+     * @param
      */
     function testGetStructure( $study ){
         $key = $study->key();
@@ -105,13 +106,15 @@ class StudyTest extends \Tests\BaseTestCase
         $response = $this->runApp("GET", "/loadProjects");
 
        // echo ( (string)$response->getBody() );
+        $status = $response->getStatusCode();
+        self::assertTrue(200 === $status || 400 === $status);
     }
 
     /**
      * @var $user User
      */
-    private $user;
-    function setUp() {
+    static $user;
+    static function setUpBeforeClass() {
         $random_email = rand(0, 99999) . '@gmail.com';
         $password = 'password';
 
@@ -123,6 +126,7 @@ class StudyTest extends \Tests\BaseTestCase
         );
         $new_hash = $user->rehash();
         $user->validate( $new_hash );
-        $this->user = $user;
+        self::$user = $user;
+//        echo PHP_EOL.self::$user->key();
     }
 }

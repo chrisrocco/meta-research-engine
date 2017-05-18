@@ -29,6 +29,7 @@ class PaperQueue {
             COLLECT
                 paperKey = paper._key,
                 paperTitle = paper.title,
+                pmcID = paper.pmcID,
                 assignmentCount = COUNT (assignments)
                 ,priority = paperOf.priority
                 
@@ -36,6 +37,7 @@ class PaperQueue {
             SORT priority DESC, assignmentCount DESC
             RETURN {
                 "paperKey" : paperKey,
+                "pmcID" : pmcID,
                 "assignments" : assignmentCount,
                 "priority" : priority,
                 "paperTitle" : paperTitle
@@ -53,7 +55,7 @@ class PaperQueue {
      * Gets the next queueItem in the PaperQueue. Returns false if the queue is empty
      * @return mixed
      */
-    public function next () {
+    public function next ($queueLimit = 1) {
         $result = DB::query('
             LET project = DOCUMENT ( @projectID )
             FOR paper, paperOf IN INBOUND project._id @@paper_to_project
@@ -65,20 +67,23 @@ class PaperQueue {
             COLLECT
                 paperKey = paper._key,
                 paperTitle = paper.title,
+                pmcID = paper.pmcID,
                 assignmentCount = COUNT (assignments)
                 ,priority = paperOf.priority
                 
             FILTER (priority == 0 && assignmentCount <= project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
-            LIMIT 1
+            LIMIT @queueLimit
             RETURN {
                 "paperKey" : paperKey,
+                "pmcID" : pmcID,
                 "assignments" : assignmentCount,
                 "priority" : priority,
                 "paperTitle" : paperTitle
             }
             ', [
             'projectID' => $this->project->id(),
+            'queueLimit' => $queueLimit,
             '@paper_to_project' => PaperOf::$collection,
             '@paper_to_user' => Assignment::$collection
         ], true
@@ -86,9 +91,11 @@ class PaperQueue {
         if (count($result) === 0) {
             return false;
         }
-        $nextQueuedPaper = $result[0];
-        $this->updatePriority ($nextQueuedPaper);
-        return $nextQueuedPaper;
+        $dequeuedPapers = $result;
+        foreach ($dequeuedPapers as $dequeuedPaper) {
+            $this->updatePriority ($dequeuedPaper);
+        }
+        return $dequeuedPapers;
     }
 
     /**
