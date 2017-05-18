@@ -7,32 +7,32 @@ use Models\Vertices\Paper;
 use Models\Vertices\User;
 
 /*
- * GET studies/{studyname}/structure
- * Summary: Gets the domain / field structure of the specified research study
+ * GET studies/{projectname}/structure
+ * Summary: Gets the domain / field structure of the specified research project
  */
 $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
-    $study_key = $args['key'];
-    $study = Project::retrieve($study_key);
-    if (!$study) {
+    $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
+    if (!$project) {
         return $response
-            ->write("Study ".$study_key." not found")
+            ->write("Project ".$project_key." not found")
             ->withStatus(409);
     }
 
-    $structure = $study->getStructureFlat();
+    $structure = $project->getStructureFlat();
     if(!$structure) return $response->write("No Domains")->withStatus(400);
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
 /**
- * GET studies/{studyname}/variables
+ * GET studies/{projectname}/variables
  * Summary: Gets a list of every field's name
  */
 $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
-    $study_key = $args['key'];
-    $study = Project::retrieve($study_key);
-    $variables = $study->getVariablesFlat();
+    $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
+    $variables = $project->getVariablesFlat();
     if(!$variables) return $response->write("No Domains")->withStatus(400);
 
     return $response
@@ -43,22 +43,22 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
 $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     var_dump( $formData );
-    $studyKey = $args['key'];
+    $projectKey = $args['key'];
     $structure = json_decode( $formData['structure'], true);
 
-    //TODO: check that the user of the token is an admin for the study
+    //TODO: check that the user of the token is an admin for the project
 
-    $study = Project::retrieve($studyKey);
-    if (!$study) {
+    $project = Project::retrieve($projectKey);
+    if (!$project) {
         return $response
-            ->write("No study found with key ". $studyKey)
+            ->write("No project found with key ". $projectKey)
             ->withStatus(404);
     }
 
     $tempDomIDMap = []; // temporary domain id => Domain
 
-    //Remove the study's old structure
-    $study->removeStructure(6);
+    //Remove the project's old structure
+    $project->removeStructure(4);
 
     //Create each of the new domains
     foreach ($structure['domains'] as $newDom) {
@@ -73,7 +73,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
     //Connect the domain_to_domain edges
     foreach ($structure['domains'] as $newDom) {
         if ($newDom['parent'] === "#") {
-            $study->addDomain( $tempDomIDMap[$newDom['id']] );
+            $project->addDomain( $tempDomIDMap[$newDom['id']] );
         }
         else {
             $tempDomIDMap[$newDom['parent']]->addSubdomain( $tempDomIDMap[$newDom['id']] );
@@ -90,11 +90,11 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         $tempDomIDMap[$tempParent]->addVariable($question);
     }
 
-    $newVersion = $study->updateVersion();
+    $newVersion = $project->updateVersion();
 
-    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($studyKey);
+    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
     if (!$serializedStructure) {
-        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $studyKey]);
+        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $projectKey]);
     }
     $serializedStructure->update('structure', $structure );
     $serializedStructure->update('version', $newVersion);
@@ -111,17 +111,17 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
     $user = User::retrieve($userKey);
 
     /* Query Start */
-    $AQL = "FOR study IN @@project_collection
-                FILTER study.registrationCode == @registrationCode
-                RETURN study._key";
+    $AQL = "FOR project IN @@project_collection
+                FILTER project.registrationCode == @registrationCode
+                RETURN project._key";
     $bindings = [
         'registrationCode' => $registrationCode,
         '@project_collection' => Project::$collection
     ];
-    $studyKey = \DB\DB::query( $AQL, $bindings )->getAll()[0];
+    $projectKey = \DB\DB::query( $AQL, $bindings )->getAll()[0];
     /* End Query */
 
-    $study = Project::retrieve($studyKey);
+    $project = Project::retrieve($projectKey);
 
     if (!$user) {
         return $response
@@ -133,23 +133,23 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
             ->write("User not verified. Please verify your email.")
             ->withStatus(400);
     }
-    if (!$study) {
+    if (!$project) {
         return $response
-            ->write("Study ".$studyKey. " not found")
+            ->write("Project ".$projectKey. " not found")
             ->withStatus(404);
     }
 
-    $status = $study->addUser ( $user, $registrationCode );
+    $status = $project->addUser ( $user, $registrationCode );
 
     switch($status) {
         case 400 :
             $message = "Project / registration code mismatch";
             break;
         case 409 :
-            $message = "User already enrolled in Study. Aborting enrollment";
+            $message = "User already enrolled in Project. Aborting enrollment";
             break;
         case 200 :
-            $message = "User successfully enrolled in study";
+            $message = "User successfully enrolled in project";
             break;
         default :
             $status = 500;
@@ -163,40 +163,40 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 });
 
 /**
- * POST studies/{studyname}/papers
- * Summary: Adds a paper to a study
+ * POST studies/{projectname}/papers
+ * Summary: Adds a paper to a project
  */
 $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $paperArray = json_decode( $formData['papers'], true );
 
-    $study_key = $args['key'];
+    $project_key = $args['key'];
 
-    $study = Project::retrieve($study_key);
+    $project = Project::retrieve($project_key);
 
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
             'title'     =>  $paper['title'],
             'pmcID'     =>  $paper['pmcID']
         ]);
-        $study->addpaper( $paperModel );
+        $project->addpaper( $paperModel );
     }
 
     $count = count( $paperArray );
-    return $response->write("Added $count papers to study");
+    return $response->write("Added $count papers to project");
 });
 
 $app->GET("/studies/{key}/papers", function( $request, $response, $args){
-    $studyKey = $args['key'];
-    $study = Project::retrieve( $studyKey );
-    $papersArray = $study->getPapersFlat();
+    $projectKey = $args['key'];
+    $project = Project::retrieve( $projectKey );
+    $papersArray = $project->getPapersFlat();
     return $response->write( json_encode($papersArray) );
 });
 
 /**
  * POST studies
- * Summary: Creates a study
+ * Summary: Creates a project
  */
 $app->POST("/studies", function ($request, $response, $args) {
     $formData = $request->getParams();

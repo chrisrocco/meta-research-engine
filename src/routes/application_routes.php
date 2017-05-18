@@ -19,9 +19,9 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
     $key = $queryParams['key'];
 
     $assignment = \Models\Edges\Assignment::retrieve( $key );
-    $study = $assignment->getProject();
-    $questionsList = $study->getVariablesFlat();
-    $structure = $study->getStructureFlat();
+    $project = $assignment->getProject();
+    $questionsList = $project->getVariablesFlat();
+    $structure = $project->getStructureFlat();
 
     $data = [
         "assignment" => $assignment->toArray(),
@@ -35,7 +35,7 @@ $app->GET('/loadAssignment', function($request, $response, $args) {
 
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
-    $projectKey = $queryParams['studyKey'];
+    $projectKey = $queryParams['projectKey'];
     $project = \Models\Vertices\Project\Project::retrieve($projectKey);
     $structure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
 
@@ -64,16 +64,16 @@ $app->GET('/loadAssignmentsDashboard', function($request, $response, $args) {
     $user = \Models\Vertices\User::retrieve( $userKey );
 
     $AQL = 'FOR vertex, edge IN INBOUND @root @@assignments
-                FOR study IN OUTBOUND vertex @@paper_to_study
+                FOR project IN OUTBOUND vertex @@paper_to_project
                     return {
                         "assignment": edge,
                         "paper": vertex,
-                        "study": study
+                        "project": project
                     }';
     $bindings = [
         'root'  =>  $user->id(),
         '@assignments'  =>  \Models\Edges\Assignment::$collection,
-        '@paper_to_study'   =>  \Models\Edges\PaperOf::$collection
+        '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection
     ];
 
     $data = \DB\DB::query($AQL, $bindings)->getAll();

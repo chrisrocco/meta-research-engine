@@ -11,39 +11,39 @@ use \Models\Vertices\User;
  * Time: 3:33 PM
  *
  *
- * Follows the lifecycle of a study
+ * Follows the lifecycle of a project
  *
- * 1.) New study is created                         |   POST    /studies
- * 2.) Paper is added to the study                  |   POST    /studies/{key}/paper
- * 3.) User is enrolled in the study                |   POST    /studies/{key}/members
- * 4.) Structure of the study is fetched            |   GET     /studies/{key}/structure
- * 5.) Variables of the study are fetched           |   GET     /studies/{key}/variables
+ * 1.) New project is created                         |   POST    /studies
+ * 2.) Paper is added to the project                  |   POST    /studies/{key}/paper
+ * 3.) User is enrolled in the project                |   POST    /studies/{key}/members
+ * 4.) Structure of the project is fetched            |   GET     /studies/{key}/structure
+ * 5.) Variables of the project are fetched           |   GET     /studies/{key}/variables
  */
-class StudyTest extends \Tests\BaseTestCase
+class ProjectTest extends \Tests\BaseTestCase
 {
-    function testCreateStudy(){
-        $random_name = "study " . rand(0, 9999);
+    function testCreateProject(){
+        $random_name = "project " . rand(0, 9999);
         $response = $this->runApp("POST", "/studies", [
             'name'  =>  $random_name,
-            'description'   =>  "A test study2"
+            'description'   =>  "A test project2"
         ]);
 
         self::assertEquals(200, $response->getStatusCode());
 
-        $studies = Project::getByExample( [ 'name' => $random_name] );
-        $study = $studies[0];
+        $projects = Project::getByExample( [ 'name' => $random_name] );
+        $project = $projects[0];
 
-        return $study;
+        return $project;
     }
 
     /**
-     * @depends testCreateStudy
-     * @param $study_name Project
+     * @depends testCreateProject
+     * @param $project_name Project
      */
-    function testAddPaper( $study ){
+    function testAddPaper( $project ){
         $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
 
-        $response = $this->runApp("POST", "/studies/".$study->key()."/papers", [
+        $response = $this->runApp("POST", "/studies/".$project->key()."/papers", [
             "papers" => $jsonPaperData
         ]);
 
@@ -51,11 +51,11 @@ class StudyTest extends \Tests\BaseTestCase
     }
 
     /**
-     * @depends testCreateStudy
-     * @param $study
+     * @depends testCreateProject
+     * @param $project
      */
-    function testGetPapers( $study ){
-        $response = $this->runApp("GET", "/studies/".$study->key()."/papers");
+    function testGetPapers( $project ){
+        $response = $this->runApp("GET", "/studies/".$project->key()."/papers");
         $papers = json_decode( $response->getbody() );
 //        var_dump($papers);
 
@@ -63,13 +63,13 @@ class StudyTest extends \Tests\BaseTestCase
     }
 
     /**
-     * @depends testCreateStudy
-     * @param $study Project
+     * @depends testCreateProject
+     * @param $project Project
      */
-    function testAddUser ($study) {
+    function testAddUser ($project) {
         $response = $this->runApp("POST", "/studies/members", [
             'userKey' => self::$user->key(),
-            'registrationCode' => $study->get('registrationCode')
+            'registrationCode' => $project->get('registrationCode')
         ]);
 
         $status = $response->getStatusCode();
@@ -77,11 +77,11 @@ class StudyTest extends \Tests\BaseTestCase
     }
 
     /**
-     * @depends testCreateStudy
+     * @depends testCreateProject
      * @param
      */
-    function testGetStructure( $study ){
-        $key = $study->key();
+    function testGetStructure( $project ){
+        $key = $project->key();
         $response = $this->runApp("GET", "/studies/$key/structure");
 
         $status = $response->getStatusCode();
@@ -89,20 +89,20 @@ class StudyTest extends \Tests\BaseTestCase
     }
 
     /**
-     * @depends testCreateStudy
+     * @depends testCreateProject
      */
-    function testGetVariables( $study ){
+    function testGetVariables( $project ){
 //        $key = "2826667";
-        $key = $study->key();
+        $key = $project->key();
         $response = $this->runApp("GET", "/studies/$key/variables");
 
         $status = $response->getStatusCode();
         self::assertTrue(200 === $status || 400 === $status);    }
 
     /**
-     * @depends testCreateStudy
+     * @depends testCreateProject
      */
-    function testGetProjects( $study ){
+    function testGetProjects( $project ){
         $response = $this->runApp("GET", "/loadProjects");
 
        // echo ( (string)$response->getBody() );
