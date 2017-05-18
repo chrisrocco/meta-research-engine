@@ -131,7 +131,7 @@ $app->POST('/users/reset', function ($request, $response, $args) {
     $hash           = $request->getParam('hash');
 
     $resultSet = User::getByExample([
-        'hashCode' => $hash
+        'hash_code' => $hash
     ]);
 
     if( count($resultSet) == 0){
