@@ -125,3 +125,25 @@ $app->POST('/users/recover', function ($request, $response, $args) {
     return $response
         ->withStatus( 500 );
 });
+
+$app->POST('/users/reset', function ($request, $response, $args) {
+    $newPassword    = $request->getParam('newPassword');
+    $hash           = $request->getParam('hash');
+
+    $resultSet = User::getByExample([
+        'hashCode' => $hash
+    ]);
+
+    if( count($resultSet) == 0){
+        return $response
+            ->write( "invalid hash" )
+            ->withStatus( 400 );
+    }
+
+    $user = $resultSet[0];
+    $passhash = password_hash($newPassword, PASSWORD_DEFAULT);
+    $user->update('password', $passhash);
+
+    return $response->write("Successfully reset password");
+
+});
