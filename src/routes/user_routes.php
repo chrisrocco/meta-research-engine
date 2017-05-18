@@ -99,3 +99,29 @@ $app->GET('/users/validate', function ($request, $response, $args) {
         ->withStatus(400);
 
 });
+
+/**
+ * params: email and callback url to send the hash to
+ */
+$app->POST('/users/recover', function ($request, $response, $args) {
+    $formData = $request->getParams();
+    $email = $formData['email'];
+    $callback = $formData['callback'];
+
+    $user = User::getByExample([
+        'email' => $email
+    ])[0];
+    $hash = $user->rehash();
+
+    $email = \Email\Email::resetPasswordEmail( $email, "", $callback, $hash);
+    $result = $email->send();
+
+    if($result){
+        return $response
+            ->write("An email with recovery instructions has been sent.")
+            ->withStatus(200);
+    }
+
+    return $response
+        ->withStatus( 500 );
+});
