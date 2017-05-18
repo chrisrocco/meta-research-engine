@@ -56,7 +56,7 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
  * Notes: Returns a list of assignments, their papers, and conflicts
 
  */
-$app->GET('/loadAssignmentsDashboard', function($request, $response, $args) {
+$app->GET('/loadAssignments', function($request, $response, $args) {
 
     $queryParams = $request->getQueryParams();
     $userKey = $queryParams['userKey'];
