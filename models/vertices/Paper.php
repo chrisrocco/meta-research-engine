@@ -9,11 +9,27 @@
 namespace Models\Vertices;
 
 
+use DB\DB;
 use Models\Core\VertexModel;
 use Models\Edges\Assignment;
+use Models\Edges\PaperOf;
+use Models\Vertices\Project\Project;
 
 class Paper extends VertexModel {
     static $collection = 'papers';
+
+    /**
+     * @return \Models\Vertices\Project\Project
+     */
+    public function getProject(){
+        $AQL = "FOR project IN OUTBOUND @paperKey @@paper_to_study
+                    RETURN project";
+        $bindings = [
+            'paperKey'  =>  $this->key(),
+            '@paper_to_study'   =>  PaperOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Project::class)[0];
+    }
 
     /**
      * @param $assignment Assignment
