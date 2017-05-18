@@ -63,11 +63,11 @@ for( $i = 0; $i < $top_level_domains; $i++ ){
 // Add the domains to a study
 foreach ($domains as &$d){
     $study->addDomain( $d );
-    print "added domain to study " . $d->id() . "\n";
+    print "added domain to project " . $d->id() . "\n";
 }
 
 // Create a graph
-$graph = new \triagens\ArangoDb\Graph("study_structures_PHP");
+$graph = new \triagens\ArangoDb\Graph("project_structures_PHP");
 $variable_of = new \triagens\ArangoDb\EdgeDefinition();
 $variable_of->setRelation(VariableOf::$collection);
 $variable_of->addFromCollection(Variable::$collection);
