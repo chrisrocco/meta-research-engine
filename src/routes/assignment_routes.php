@@ -30,8 +30,14 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('encoding', $formData['encoding']);
 
     if ($formData['done'] == true) {
-        $assignment->getPaper()->merge($assignment);
-        echo "Attempted merge into MasterEncoding";
+        echo PHP_EOL."Attempting merge into masterEncoding";
+        $paper = $assignment->getPaper();
+        if (!$paper) {
+            return $response
+                ->write ("Could not find paper from assignment ".$args['key'])
+                ->withStatus(500);
+        }
+        $paper->merge($assignment);
     }
 
     return $response

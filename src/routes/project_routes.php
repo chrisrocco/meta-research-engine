@@ -7,10 +7,10 @@ use Models\Vertices\Paper;
 use Models\Vertices\User;
 
 /*
- * GET studies/{projectname}/structure
+ * GET projects/{projectname}/structure
  * Summary: Gets the domain / field structure of the specified research project
  */
-$app->GET("/studies/{key}/structure", function ($request, $response, $args) {
+$app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     if (!$project) {
@@ -26,10 +26,10 @@ $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
 });
 
 /**
- * GET studies/{projectname}/variables
+ * GET projects/{projectname}/variables
  * Summary: Gets a list of every field's name
  */
-$app->GET("/studies/{key}/variables", function ($request, $response, $args) {
+$app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $variables = $project->getVariablesFlat();
@@ -40,7 +40,7 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-$app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
+$app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     var_dump( $formData );
     $projectKey = $args['key'];
@@ -104,7 +104,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-$app->POST ('/studies/members', function ($request, $response, $args) {
+$app->POST ('/projects/members', function ($request, $response, $args) {
     $formData = $request->getParams();
     $userKey = $formData['userKey'];
     $registrationCode = $formData['registrationCode'];
@@ -168,10 +168,10 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 });
 
 /**
- * POST studies/{projectname}/papers
+ * POST projects/{projectname}/papers
  * Summary: Adds a paper to a project
  */
-$app->POST("/studies/{key}/papers", function ($request, $response, $args) {
+$app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $paperArray = json_decode( $formData['papers'], true );
@@ -183,7 +183,8 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
             'title'     =>  $paper['title'],
-            'pmcID'     =>  $paper['pmcID']
+            'pmcID'     =>  $paper['pmcID'],
+            'masterEncoding' => Paper::blankMasterEncoding
         ]);
         $project->addpaper( $paperModel );
     }
@@ -192,7 +193,7 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     return $response->write("Added $count papers to project");
 });
 
-$app->GET("/studies/{key}/papers", function( $request, $response, $args){
+$app->GET("/projects/{key}/papers", function( $request, $response, $args){
     $projectKey = $args['key'];
     $project = Project::retrieve( $projectKey );
     $papersArray = $project->getPapersFlat();
@@ -200,10 +201,10 @@ $app->GET("/studies/{key}/papers", function( $request, $response, $args){
 });
 
 /**
- * POST studies
+ * POST projects
  * Summary: Creates a project
  */
-$app->POST("/studies", function ($request, $response, $args) {
+$app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
 
     $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
