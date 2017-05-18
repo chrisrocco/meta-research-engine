@@ -105,20 +105,21 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
 });
 
 $app->POST ('/studies/members', function ($request, $response, $args) {
-
     $formData = $request->getParams();
     $userKey = $formData['userKey'];
     $registrationCode = $formData['registrationCode'];
-
     $user = User::retrieve($userKey);
-    $studyKey = \DB\DB::query('
-        FOR study IN @@project_collection
-            FILTER study.registrationCode == @registrationCode
-            RETURN study._key
-    ',[
+
+    /* Query Start */
+    $AQL = "FOR study IN @@project_collection
+                FILTER study.registrationCode == @registrationCode
+                RETURN study._key";
+    $bindings = [
         'registrationCode' => $registrationCode,
         '@project_collection' => Project::$collection
-    ])->getAll()[0];
+    ];
+    $studyKey = \DB\DB::query( $AQL, $bindings )->getAll()[0];
+    /* End Query */
 
     $study = Project::retrieve($studyKey);
 
@@ -127,24 +128,22 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
             ->write("User ".$userKey. " not found")
             ->withStatus(400);
     }
-
     if (!$user->get('active')) {
         return $response
             ->write("User not verified. Please verify your email.")
             ->withStatus(400);
     }
-
     if (!$study) {
         return $response
             ->write("Study ".$studyKey. " not found")
-            ->withStatus(400);
+            ->withStatus(404);
     }
 
-    $status = $study->addUser ($user, $registrationCode);
+    $status = $study->addUser ( $user, $registrationCode );
 
     switch($status) {
         case 400 :
-            $message = "Study / registration code mismatch";
+            $message = "Project / registration code mismatch";
             break;
         case 409 :
             $message = "User already enrolled in Study. Aborting enrollment";
@@ -154,7 +153,7 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
             break;
         default :
             $status = 500;
-            $message = "Something went very, very, wrong";
+            $message = "Something went very, very wrong";
             break;
     }
 
