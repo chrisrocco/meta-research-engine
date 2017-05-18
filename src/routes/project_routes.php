@@ -152,8 +152,7 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
             return $response
                 ->write( json_encode([
                     'studyName' => $project->get('name')
-                ]) );
-            break;
+                ], JSON_PRETTY_PRINT) );
         default :
             $status = 500;
             $message = "Something went very, very wrong";
