@@ -14,7 +14,7 @@ class PaperTest extends \Tests\BaseTestCase
         $paper_data = [
             'title' =>  'Test Paper',
             'pmcID' =>  '12345',
-            'masterEncoding' => []
+            'masterEncoding' => Paper::blankMasterEncoding
         ];
         $paper = Paper::create($paper_data);
 
@@ -45,4 +45,16 @@ class PaperTest extends \Tests\BaseTestCase
         echo $paper->get('masterEncoding') == $oldMasterEncoding ? " - without change" : " - with change";
 //        echo PHP_EOL.json_encode($paper->get('masterEncoding'));
     }
+
+    /**
+     * @depends testCreate
+     * @var paper Paper
+     */
+//    public function generateFrontEndStuff ($paper) {
+//        echo PHP_EOL;
+//        $masterEncoding = $paper->get('masterEncoding');
+//        $valueRecords = $masterEncoding['values'];
+//        $scopeRecords = $masterEncoding['scopes'];
+//        $paper->
+//    }
 }

@@ -20,79 +20,170 @@ class Paper extends VertexModel {
      */
     public function merge ($assignment) {
         $this->masterEncoding = $this->get('masterEncoding');
-        $valueResponses = self::getValueRecords($assignment);
-        foreach ($valueResponses as $remoteRecord) {
-            $masterRecord = $this->getRecordByLocation($remoteRecord['question'], $remoteRecord['location']);
+
+        $valueRecords = self::getValueRecords($assignment);
+        foreach ($valueRecords as $remoteRecord) {
+            $masterRecord = $this->getValueRecordByLocationAndName($remoteRecord['question'], $remoteRecord['location']);
             if (!$masterRecord) {
                 //We have a new record
-                $this->addRecord($remoteRecord);
+                $this->addValueRecord($remoteRecord);
             } else {
-                $this->updateRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0], $this->isConflicted));
+                $this->updateValueRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0], 'data'));
             }
         }
+
+        $scopeRecords = self::getScopeRecords($assignment);
+        foreach ($scopeRecords as $remoteRecord) {
+            $masterRecord = $this->getScopeRecordByName($remoteRecord['question']);
+//            echo PHP_EOL.json_encode($masterRecord);
+            if (!$masterRecord) {
+                //We have a new record
+                $this->addScopeRecord($remoteRecord);
+            } else {
+                $this->updateScopeRecord(self::mergeRecord($masterRecord, $remoteRecord['responses'][0], 'scope'));
+            }
+        }
+
+        $structureRecord = self::getStructureRecord($assignment);
+        $masterRecord = $this->getStructure();
+
+        $this->updateStructureRecord(self::mergeRecord($masterRecord, $structureRecord['responses'][0], 'branches'));
+
+
 
         //figure out the conflicted flag
-        $isConflicted = false;
-        foreach ($this->masterEncoding as $record) {
-            if (count($record['responses']) > 1) {
-                $isConflicted = true;
-                break;
-            }
-        }
+
 
         $this->update('masterEncoding', $this->masterEncoding);
-        $this->update('isConflicted', $isConflicted);
+//        $this->update('isConflicted', $isConflicted);
     }
+
+    const blankMasterEncoding = [
+        'values' => [],
+        'scopes' => [],
+        'structure' => [
+            'responses' => []
+        ]
+        ];
 
     private $masterEncoding = [];
 
-    public function getConflicts () {
+    public function getConflicts () {}
 
+    private function getStructure () {
+        return $this->masterEncoding['structure'];
     }
 
-    private function getStructure ($user) {
-
+    private function getScopes () {
+        return $this->masterEncoding['scopes'];
     }
 
-    private function getScopes ($user) {
-
+    private function getValues () {
+        return $this->masterEncoding['structure'];
     }
 
-    private function getValues ($user) {
+    /**
+     * @param $masterArr array of responses to the same question in the same location
+     * @param $remote record to merge
+     */
+    private static function mergeRecord (&$masterRecord, $remoteResponse, $valueName) {
+        $masterResponses = $masterRecord['responses'];
+        $remoteUserID = $remoteResponse['users'][0];
 
+        foreach ($masterResponses as $i => &$masterResponse) {
+            //if the response already has us listed
+            if(in_array($remoteUserID, $masterResponse['users'])) {
+                //if our response is not the same
+                if ($masterResponse[$valueName] != $remoteResponse[$valueName]) {
+                    //remove us from the response
+                    $masterResponse = self::response_removeUser ($masterResponse, $remoteUserID);
+                    //If we just created an empty response
+                    if (count($masterResponse['users']) === 0) {
+                        //remove that response
+                        unset($masterResponses[$i]);
+                    }
+                } else { //our response is the same
+                    //return
+                    $masterRecord['responses'] = $masterResponses;
+                    return $masterRecord;
+                }
+            } else { //we are not listed
+                //if our response is the same
+                if ($masterResponse[$valueName] == $remoteResponse[$valueName]) {
+                    //add us to the response
+                    $masterResponse = self::response_addUser($masterResponse, $remoteUserID);
+                    $masterResponses[$i] = $masterResponse;
+                    $masterRecord['responses'] = $masterResponses;
+                    return $masterRecord;
+                }
+            }
+        }
+        //We have a new response
+        $masterResponses[] = $remoteResponse;
+//        $isConflicted = true;
+        //We're good
+        $masterRecord['responses'] = $masterResponses;
+        return $masterRecord;
     }
 
-    private function getRecordByLocation ($questionKey, $location) {
-        for ($i = 0; $i < count($this->masterEncoding); $i++) {
-            if ($this->masterEncoding[$i]['question'] === $questionKey
-                && $this->masterEncoding[$i]['location'] === $location
+    private function getValueRecordByLocationAndName ($questionKey, $location) {
+        for ($i = 0; $i < count($this->masterEncoding['values']); $i++) {
+            if ($this->masterEncoding['values'][$i]['question'] === $questionKey
+                && $this->masterEncoding['values'][$i]['location'] === $location
             ) {
-                $record = &$this->masterEncoding[$i];
+                $record = &$this->masterEncoding['values'][$i];
                 return $record;
             }
         }
         return false;
     }
 
-    private function updateRecord ($record) {
-        for ($i = 0; $i < count($this->masterEncoding); $i++) {
-            if ($this->masterEncoding[$i]['question'] === $record['question']
-                && $this->masterEncoding[$i]['location'] === $record['location']
+    private function getScopeRecordByName ($questionKey) {
+        for ($i = 0; $i < count($this->masterEncoding['scopes']); $i++) {
+            if ($this->masterEncoding['scopes'][$i]['question'] === $questionKey
+            ) {
+                $record = &$this->masterEncoding['scopes'][$i];
+                return $record;
+            }
+        }
+        return false;
+    }
+
+    private function updateValueRecord ($record) {
+        for ($i = 0; $i < count($this->masterEncoding['values']); $i++) {
+            if ($this->masterEncoding['values'][$i]['question'] === $record['question']
+                && $this->masterEncoding['values'][$i]['location'] === $record['location']
             ) {
 //                echo "\n\t".json_encode($record);
-                $this->masterEncoding[$i]['responses'] = $record['responses'];
+                $this->masterEncoding['values'][$i]['responses'] = $record['responses'];
                 return;
             }
         }
-        $this->addRecord($record);
+        $this->addValueRecord($record);
     }
 
-    private function addRecord ($record) {
-        $this->masterEncoding [] = $record;
+    private function updateScopeRecord ($record) {
+        for ($i = 0; $i < count($this->masterEncoding['scopes']); $i++) {
+            if ($this->masterEncoding['scopes'][$i]['question'] === $record['question']
+            ) {
+//                echo "\n\t".json_encode($record);
+                $this->masterEncoding['scopes'][$i]['responses'] = $record['responses'];
+                return;
+            }
+        }
+        $this->addScopeRecord($record);
     }
 
-    private function getUsers () {
+    private function updateStructureRecord ($record) {
+        $this->masterEncoding['structure'] = $record;
+    }
 
+    private function addValueRecord ($record) {
+        $this->masterEncoding['values'][] = $record;
+    }
+
+    private function addScopeRecord ($record) {
+        $this->masterEncoding['scopes'][] = $record;
     }
 
     /**
@@ -108,62 +199,84 @@ class Paper extends VertexModel {
             $assID = $assignment->key();
             $encoding = $assignment->get('encoding');
         }
-        $responses = [];
+        $records = [];
         if (!self::validateEncoding($encoding)) {
-            return $responses;
+            return $records;
         }
         foreach ($encoding['constants'] as $response) {
-            $responses[] = self::createRecord($response['question'], 0, $response['data'], $assID);
+            $records[] = self::createRecord($response['question'], 0, $response['data'], $assID);
         }
         foreach ($encoding['branches'] as $branchIndex => $branch) {
             foreach ($branch as $response) {
                 self::createRecord($response['question'], $branchIndex + 1, $response['data'], $assID);
             }
         }
-        return $responses;
+        return $records;
+    }
+
+    /**
+     * @param $assignment Assignment
+     * @return array scopeRecords
+     */
+    private static function getScopeRecords ($assignment) {
+        if (!is_a($assignment, Assignment::class)) {
+            $assID = $assignment['_key'];
+            $encoding = $assignment['encoding'];
+        } else {
+            $assID = $assignment->key();
+            $encoding = $assignment->get('encoding');
+        }
+        $records = [];
+        if (!self::validateEncoding($encoding)) {
+            return $records;
+        }
+        foreach ($encoding['constants'] as $response) {
+            $records[] = [
+                'question' => $response['question'],
+                'responses' => [
+                    [
+                    'scope' => 'constant',
+                    'users' => [$assID]
+                    ]
+                ]
+            ];
+        }
+        foreach($encoding['branches'][0] as $response) {
+            $records[] = [
+                'question' => $response['question'],
+                'responses' => [
+                    'scope' => 'variable',
+                    'users' => [$assID]
+                ]
+            ];
+        }
+        return $records;
     }
 
 
     /**
-     * @param $masterArr array of responses to the same question in the same location
-     * @param $remote record to merge
+     * @param $assignment Assignment
+     * @return array structureRecord
      */
-    private static function mergeRecord (&$masterRecord, $remoteResponse, &$isConflicted) {
-        $masterResponses = $masterRecord['responses'];
-        $remoteUserID = $remoteResponse['users'][0];
-
-        foreach ($masterResponses as $i => &$masterResponse) {
-            //if the response already has us listed
-            if(in_array($remoteUserID, $masterResponse['users'])) {
-                //if our response is not the same
-                if ($masterResponse['data'] != $remoteResponse['data']) {
-                    //remove us from the response
-                    $masterResponse = self::response_removeUser ($masterResponse, $remoteUserID);
-                    //If we just created an empty record
-                    if (count($masterResponse['users']) === 0) {
-                        //remove that record
-                        unset($masterResponses[$i]);
-                    }
-                } else { //our response is the same
-                    //return
-                    $masterRecord['responses'] = $masterResponses;
-                    return $masterRecord;
-                }
-            } else { //we are not listed
-                //if our response is the same
-                if ($masterResponse['data'] == $remoteResponse['data']) {
-                    //add us to the response
-                    $masterResponse = self::response_addUser($masterResponse, $remoteUserID);
-                    $masterResponses[$i] = $masterResponse;
-                }
-            }
+    private static function getStructureRecord ($assignment) {
+        if (!is_a($assignment, Assignment::class)) {
+            $assID = $assignment['_key'];
+            $encoding = $assignment['encoding'];
+        } else {
+            $assID = $assignment->key();
+            $encoding = $assignment->get('encoding');
         }
-        //We have a new response
-        $masterResponses[] = $remoteResponse;
-        $isConflicted = true;
-        //We're good
-        $masterRecord['responses'] = $masterResponses;
-        return $masterRecord;
+        $records = [];
+        if (!self::validateEncoding($encoding)) {
+            return $records;
+        }
+        $record = [
+            'responses' => [[
+                'branches' => count($encoding['branches']),
+                'users' => [$assID]
+            ]]
+        ];
+        return $record;
     }
 
     private static function response_addUser (&$response, $userKey) {
