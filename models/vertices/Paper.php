@@ -14,6 +14,8 @@ use Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Project\Project;
+use triagens\ArangoDb\Document;
+require __DIR__ . '/../../lib/master_encoding/MasterEncoding.php';
 
 class Paper extends VertexModel {
     static $collection = 'papers';
@@ -29,6 +31,19 @@ class Paper extends VertexModel {
             '@paper_to_study'   =>  PaperOf::$collection
         ];
         return DB::queryModel($AQL, $bindings, Project::class)[0];
+    }
+
+    /**
+     * @param $assignment Assignment
+     */
+    public function roccoMerge( $assignment ){
+        $masterEncodingObject = $this->get( 'masterEncoding' );
+        $assignmentObject = $assignment->toArray();
+        $mergeLog = \MasterEncoding::merge( $assignmentObject, $masterEncodingObject );
+        $this->update( 'masterEncoding', $masterEncodingObject );
+
+        $arango_doc = Document::createFromArray( $mergeLog );
+        DB::create( "merge_logs", $arango_doc );
     }
 
     /**
@@ -79,7 +94,7 @@ class Paper extends VertexModel {
         'scopes' => [],
         'structure' => [
             'responses' => []
-        ]
+            ]
         ];
 
     private $masterEncoding = [];

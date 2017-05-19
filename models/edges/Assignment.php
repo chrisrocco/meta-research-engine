@@ -61,10 +61,14 @@ class Assignment extends EdgeModel
     }
 
     public function getPaper () {
-        return DB::queryModel(
-            'RETURN DOCUMENT (@assignmentID)',
-            [ 'assignmentID' => $this->id()],
-            Paper::class
-        )[0];
+        $split = explode("/", $this->getFrom());
+        return Paper::retrieve( $split[1] );
+
+        /* This wasn't working */
+//        return DB::queryModel(
+//            'RETURN DOCUMENT (@assignmentID)',
+//            [ 'assignmentID' => $this->id()],
+//            Paper::class
+//        )[0];
     }
 }
