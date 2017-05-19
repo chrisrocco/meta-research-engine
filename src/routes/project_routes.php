@@ -180,7 +180,15 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
+    $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
     $EXPECTED = "papersCSV";
+
+    if (!$project) {
+        return $response
+            ->write ("No project with key ". $project_key." found.")
+            ->withStatus(404);
+    }
 
     /* ----- Validation Steps -----
      * 1.) File was posted
@@ -188,30 +196,65 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
      * 3.) Structure of csv is valid
      * */
     if( !isset( $_FILES[$EXPECTED] ) ){
-
-    }
-    $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
-
-    $formData = $request->getParsedBody();
-    $paperArray = json_decode( $formData['papers'], true );
-    $project_key = $args['key'];
-    $project = Project::retrieve($project_key);
-
-    if (!$project) {
         return $response
-            ->write ("No project with key ". $project_key." found.")
-            ->withStatus(409);
+            ->write(json_encode([
+                'reason' => "badFileNameError",
+                'msg' => "No file named ".$EXPECTED." uploaded"
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
     }
 
-    foreach ( $paperArray as $paper ){
-        $paperModel = Paper::create([
-            'title'     =>  $paper['title'],
-            'pmcID'     =>  $paper['pmcID'],
-            'masterEncoding' => []
-        ]);
-        $project->addpaper( $paperModel );
+    //try to parse the csv
+    try {
+        $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
+    } catch (Exception $e) {
+        return $response
+            ->write(json_encode([
+                'reason' => "parseFailure",
+                'msg' => $e->getMessage()
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
     }
-    $count = count( $paperArray );
+    //Is the file empty?
+    if (!isset($csv[0])) {
+        return $response
+            ->write(json_encode([
+                'reason' => "emptyFileError",
+                'msg' => "Empty csv file given"
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
+    }
+    //Are there exactly three columns?
+    if (count($csv[0]) !== 3) {
+        return $response
+            ->write(json_encode([
+                'reason' => "columnCountError",
+                'msg' => "Incorrect number of columns specified: ".count($csv[0])
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
+    }
+
+    //Try to interpret the data
+    try {
+        foreach ($csv as $row) {
+            $paperModel = Paper::create([
+                'title' => $row[0],
+                'description' => $row[1],
+                'url' => $row[2],
+                'masterEncoding' => []
+            ]);
+            $project->addpaper( $paperModel );
+        }
+    } catch (Exception $e) {
+        return $response
+            ->write(json_encode([
+                'reason' => "interpretFailure",
+                'msg' => $e->getMessage()
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
+    }
+
+    $count = count( $csv );
     return $response->write("Added $count papers to project");
 });
 
