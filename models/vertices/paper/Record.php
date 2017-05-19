@@ -135,6 +135,9 @@ class Record  implements \JsonSerializable {
                 return false;
             }
         }
+        foreach ($encoding[MasterEncoding::ENCODING_BRANCHES] as $branchNum => $responses) {
+
+        }
         return $records;
     }
 
