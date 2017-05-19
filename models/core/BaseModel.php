@@ -152,6 +152,14 @@ abstract class BaseModel {
         return $data_set;
     }
 
+    static function idToKey ($idString) {
+        $whatIWant = false;
+        if (($pos = strpos($idString, "/")) !== FALSE) {
+            $whatIWant = substr($idString, $pos+1);
+        }
+        return $whatIWant;
+    }
+
     protected static function addMetaData( &$data ){
         $data["date_created"] = date("c");
     }
