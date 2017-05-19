@@ -181,8 +181,10 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $EXPECTED = "papersCSV";
-    var_dump( file_get_contents( $_FILES[$EXPECTED]['tmp_name'] ) );
-    return $response;
+    $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
+
+    return $response
+        ->write( json_encode($csv, JSON_PRETTY_PRINT) );
 
     $formData = $request->getParsedBody();
     $paperArray = json_decode( $formData['papers'], true );
