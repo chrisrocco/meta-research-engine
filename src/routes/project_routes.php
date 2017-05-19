@@ -147,7 +147,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 //        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
     foreach ($queueItems as $queueItem) {
         if ($queueItem === false) {continue;}
-        Assignment::assignByKey($queueItem['paperKey'], $user->key(), $this->get('version'));
+        Assignment::assignByKey($queueItem['paperKey'], $user->key(), $project->get('version'));
     }
 
     if( $status == 200 ){

@@ -135,6 +135,18 @@ class Record  implements \JsonSerializable {
                 return false;
             }
         }
+        foreach ($encoding[MasterEncoding::ENCODING_BRANCHES] as $branchNum => $responses) {
+            foreach ($responses as $response) {
+                try {
+                    $records[] = Record::newSingle(
+                        $key, $response[MasterEncoding::RECORD_NAME],
+                        $branchNum + 1, $response[MasterEncoding::VALUE_TERM]
+                    );
+                } catch (\Exception $e) {
+                    return false;
+                }
+            }
+        }
         return $records;
     }
 

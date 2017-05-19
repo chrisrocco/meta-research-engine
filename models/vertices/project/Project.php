@@ -72,12 +72,6 @@ class Project extends VertexModel {
             return 500;
         }
 
-        $queueItems = $this->getNextPaper($this->get('assignmentTarget'));
-//        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
-        foreach ($queueItems as $queueItem) {
-            if ($queueItem === false) {continue;}
-            Assignment::assignByKey($queueItem['paperKey'], $user->key(), $this->get('version'));
-        }
         return 200;
     }
 
@@ -138,6 +132,11 @@ class Project extends VertexModel {
     public function getNextPaper($numPapers = 1){
         $queue = new PaperQueue($this->key());
         return $queue->next($numPapers);
+    }
+
+    public function getPaperQueue () {
+        $queue = new PaperQueue($this->key());
+        return $queue->getQueueRaw();
     }
 
     public function getPapersFlat(){
