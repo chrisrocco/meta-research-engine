@@ -172,14 +172,15 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
+
+    var_dump( $_FILES );
+
+    return $response;
+
     $formData = $request->getParsedBody();
-
     $paperArray = json_decode( $formData['papers'], true );
-
     $project_key = $args['key'];
-
     $project = Project::retrieve($project_key);
-
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
             'title'     =>  $paper['title'],
@@ -188,7 +189,6 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
         ]);
         $project->addpaper( $paperModel );
     }
-
     $count = count( $paperArray );
     return $response->write("Added $count papers to project");
 });
