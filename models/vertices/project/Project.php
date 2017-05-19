@@ -14,7 +14,7 @@ use Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use Models\Vertices\Variable;
 use Models\Vertices\Domain;
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 use Models\Vertices\User;
 use Models\Edges\EnrolledIn;
 use Models\Edges\PaperOf;

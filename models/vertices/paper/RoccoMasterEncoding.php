@@ -9,29 +9,31 @@
  * master response users: array
  * */
 
-class MasterEncoding {
+namespace Models\Vertices\Paper;
+
+class RoccoMasterEncoding {
     static function merge( $assignment, &$masterEncoding ){
         $log = [];
         $log['headers']['Assignment'] = $assignment;
         $log['headers']['Report'] = $masterEncoding;
-        $parsedAssignment = MasterEncoding::parseAssignment( $assignment );
+        $parsedAssignment = RoccoMasterEncoding::parseAssignment( $assignment );
         foreach ( $parsedAssignment as $i => $userRecord ){
-            $masterRecord = &MasterEncoding::matchRecord( $userRecord, $masterEncoding );
+            $masterRecord = &RoccoMasterEncoding::matchRecord( $userRecord, $masterEncoding );
             if( $masterRecord == self::$NO_MATCH ){
-                MasterEncoding::record( $userRecord, $masterEncoding );
+                RoccoMasterEncoding::record( $userRecord, $masterEncoding );
                 $log[]["Added New Record"] = $userRecord;
                 continue;
             }
-            $masterResponse = &MasterEncoding::matchResponse( $userRecord, $masterRecord );
+            $masterResponse = &RoccoMasterEncoding::matchResponse( $userRecord, $masterRecord );
             if( $masterResponse == self::$NO_MATCH ){
-                MasterEncoding::recordResponse( $userRecord, $masterRecord );
+                RoccoMasterEncoding::recordResponse( $userRecord, $masterRecord );
                 $log[]['Recorded New Response'][] = [
                     "userRecord" => $userRecord,
                     "master" => $masterRecord
                 ];
                 continue;
             }
-            MasterEncoding::recordResponseUser( $userRecord, $masterResponse, $log );
+            RoccoMasterEncoding::recordResponseUser( $userRecord, $masterResponse, $log );
         }
         return $log;
     }

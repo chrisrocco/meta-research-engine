@@ -1,6 +1,6 @@
 <?php
 
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 
 /**
  * Created by PhpStorm.
@@ -8,7 +8,7 @@ use Models\Vertices\Paper;
  * Date: 4/30/17
  * Time: 12:00 AM
  */
-class PaperTest extends \Tests\BaseTestCase
+class PaperTest /*extends \Tests\BaseTestCase*/
 {
     public static function setUpBeforeClass() {
         parent::setUpBeforeClass();

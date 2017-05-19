@@ -13,17 +13,17 @@ use \Models\Vertices\User;
  *
  * Follows the lifecycle of a project
  *
- * 1.) New project is created                         |   POST    /studies
- * 2.) Paper is added to the project                  |   POST    /studies/{key}/paper
- * 3.) User is enrolled in the project                |   POST    /studies/{key}/members
- * 4.) Structure of the project is fetched            |   GET     /studies/{key}/structure
- * 5.) Variables of the project are fetched           |   GET     /studies/{key}/variables
+ * 1.) New project is created                         |   POST    /projects
+ * 2.) Paper is added to the project                  |   POST    /projects/{key}/paper
+ * 3.) User is enrolled in the project                |   POST    /projects/{key}/members
+ * 4.) Structure of the project is fetched            |   GET     /projects/{key}/structure
+ * 5.) Variables of the project are fetched           |   GET     /projects/{key}/variables
  */
 class ProjectTest extends \Tests\BaseTestCase
 {
     function testCreateProject(){
         $random_name = "project " . rand(0, 9999);
-        $response = $this->runApp("POST", "/studies", [
+        $response = $this->runApp("POST", "/projects", [
             'name'  =>  $random_name,
             'description'   =>  "A test project2"
         ]);
@@ -43,7 +43,7 @@ class ProjectTest extends \Tests\BaseTestCase
     function testAddPaper( $project ){
         $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
 
-        $response = $this->runApp("POST", "/studies/".$project->key()."/papers", [
+        $response = $this->runApp("POST", "/projects/".$project->key()."/papers", [
             "papers" => $jsonPaperData
         ]);
 
@@ -55,26 +55,13 @@ class ProjectTest extends \Tests\BaseTestCase
      * @param $project
      */
     function testGetPapers( $project ){
-        $response = $this->runApp("GET", "/studies/".$project->key()."/papers");
+        $response = $this->runApp("GET", "/projects/".$project->key()."/papers");
         $papers = json_decode( $response->getbody() );
 //        var_dump($papers);
 
         self::assertEquals( 200, $response->getStatusCode() );
     }
 
-    /**
-     * @depends testCreateProject
-     * @param $project Project
-     */
-    function testAddUser ($project) {
-        $response = $this->runApp("POST", "/studies/members", [
-            'userKey' => self::$user->key(),
-            'registrationCode' => $project->get('registrationCode')
-        ]);
-
-        $status = $response->getStatusCode();
-        self::assertTrue(200 === $status || 409 === $status);
-    }
 
     /**
      * @depends testCreateProject
@@ -82,7 +69,7 @@ class ProjectTest extends \Tests\BaseTestCase
      */
     function testGetStructure( $project ){
         $key = $project->key();
-        $response = $this->runApp("GET", "/studies/$key/structure");
+        $response = $this->runApp("GET", "/projects/$key/structure");
 
         $status = $response->getStatusCode();
         self::assertTrue(200 === $status || 400 === $status);
@@ -94,7 +81,7 @@ class ProjectTest extends \Tests\BaseTestCase
     function testGetVariables( $project ){
 //        $key = "2826667";
         $key = $project->key();
-        $response = $this->runApp("GET", "/studies/$key/variables");
+        $response = $this->runApp("GET", "/projects/$key/variables");
 
         $status = $response->getStatusCode();
         self::assertTrue(200 === $status || 400 === $status);    }

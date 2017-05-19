@@ -3,7 +3,7 @@
 namespace Tests;
 
 use Models\Edges\Assignment;
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 use \Models\Vertices\Project\Project;
 use Models\Vertices\User;
 use \Models\Vertices\Variable;

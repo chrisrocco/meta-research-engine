@@ -3,7 +3,7 @@
 use Models\Vertices\Project\Project;
 use Models\Vertices\Domain;
 use Models\Vertices\Variable;
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 use Models\Vertices\User;
 
 /*
@@ -184,7 +184,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
         $paperModel = Paper::create([
             'title'     =>  $paper['title'],
             'pmcID'     =>  $paper['pmcID'],
-            'masterEncoding' => Paper::blankMasterEncoding
+            'masterEncoding' => []
         ]);
         $project->addpaper( $paperModel );
     }

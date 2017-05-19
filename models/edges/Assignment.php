@@ -11,7 +11,7 @@ namespace Models\Edges;
 
 use DB\DB;
 use Models\Core\EdgeModel;
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;
 

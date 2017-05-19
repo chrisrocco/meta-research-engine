@@ -1,6 +1,6 @@
 <?php
+use Models\Vertices\Paper\Paper;
 use \Models\Vertices\User;
-use Models\Vertices\Paper;
 use Models\Edges\Assignment;
 
 /**

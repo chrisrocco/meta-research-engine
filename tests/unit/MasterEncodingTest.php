@@ -1,5 +1,6 @@
 <?php
-require __DIR__ . '/../../lib/master_encoding/MasterEncoding.php';
+
+use Models\Vertices\Paper\RoccoMasterEncoding;
 
 class MasterEncodingTest extends \Tests\BaseTestCase {
 
@@ -37,7 +38,7 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
      * @depends testValid
      */
     function testParseAssignment( $mockAssignment ){
-        $output = MasterEncoding::parseAssignment( $mockAssignment );
+        $output = RoccoMasterEncoding::parseAssignment( $mockAssignment );
         self::assertEquals( 3, count( $output ));
         return $output;
     }
@@ -63,10 +64,10 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
             "location" => 0
         ];
 
-        $dummy = MasterEncoding::matchRecord( $dummyRecord, $this->masterEncoding );
-        $good = MasterEncoding::matchRecord( $goodRecord, $this->masterEncoding );
+        $dummy = RoccoMasterEncoding::matchRecord( $dummyRecord, $this->masterEncoding );
+        $good = RoccoMasterEncoding::matchRecord( $goodRecord, $this->masterEncoding );
 
-        self::assertEquals( MasterEncoding::$NO_MATCH, $dummy );
+        self::assertEquals( RoccoMasterEncoding::$NO_MATCH, $dummy );
         self::assertTrue( $good == $this->masterEncoding[0] );
 
         return $good;
@@ -94,10 +95,10 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
             "location" => 0
         ];
 
-        $good = MasterEncoding::matchResponse( $goodRecord, $goodMasterRecord );
-        $bad = MasterEncoding::matchResponse( $badUserResponse, $goodMasterRecord );
+        $good = RoccoMasterEncoding::matchResponse( $goodRecord, $goodMasterRecord );
+        $bad = RoccoMasterEncoding::matchResponse( $badUserResponse, $goodMasterRecord );
 
-        self::assertEquals( MasterEncoding::$NO_MATCH, $bad );
+        self::assertEquals( RoccoMasterEncoding::$NO_MATCH, $bad );
         self::assertTrue( $good == $this->masterEncoding[0]['responses'][0] );
     }
     function testRecord(){
@@ -110,7 +111,7 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
             "question" => "some question"
         ];
 
-        MasterEncoding::record( $sampleRecord, $this->masterEncoding );
+        RoccoMasterEncoding::record( $sampleRecord, $this->masterEncoding );
 
         $result = false;
         foreach ( $this->masterEncoding as $masterRecord ){
@@ -137,7 +138,7 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
             ],
             "question" => "some question"
         ];
-        MasterEncoding::recordResponse( $sampleRecord, $masterRecord );
+        RoccoMasterEncoding::recordResponse( $sampleRecord, $masterRecord );
 
         $result = false;
         foreach ( $masterRecord['responses'] as $masterResponse ){
@@ -162,7 +163,7 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
             "question" => "some question"
         ];
 
-        MasterEncoding::recordResponseUser( $sampleRecord, $masterResponse );
+        RoccoMasterEncoding::recordResponseUser( $sampleRecord, $masterResponse );
 
         $result = false;
         foreach ( $masterResponse['users'] as $user ){
@@ -175,7 +176,7 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
         $masterEncoding = $this->masterEncoding;
         $assignment = $this->mockAssignment;
 
-        $log = MasterEncoding::merge( $assignment, $masterEncoding );
+        $log = RoccoMasterEncoding::merge( $assignment, $masterEncoding );
 
         $file = fopen( __DIR__ . "/../data/masterEncodingOutput.json", "w");
         fwrite( $file, json_encode($masterEncoding, JSON_PRETTY_PRINT) );
@@ -185,9 +186,9 @@ class MasterEncodingTest extends \Tests\BaseTestCase {
         $master = [];
         $assignment = json_decode( json_encode( $this->mockAssignment ), true );
 
-        $log_first = MasterEncoding::merge( $assignment, $master );
+        $log_first = RoccoMasterEncoding::merge( $assignment, $master );
         $assignment['encoding']['constants'][0]['data']['value'] = "D";
-        $log_afterchange = MasterEncoding::merge( $assignment, $master );
+        $log_afterchange = RoccoMasterEncoding::merge( $assignment, $master );
 
         self::assertEquals( 3, count( $master ) );
     }

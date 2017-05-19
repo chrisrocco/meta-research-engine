@@ -11,7 +11,7 @@ namespace Models\Vertices\Project;
 use DB\DB;
 use Models\Edges\Assignment;
 use Models\Edges\PaperOf;
-use Models\Vertices\Paper;
+use Models\Vertices\Paper\Paper;
 
 
 class PaperQueue {
