@@ -225,7 +225,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             ->withStatus(400);
     }
     //Are there exactly three columns?
-    if (count($csv[0]) !== 3) {
+    if ( count($csv[rand(0, count($csv)-1)]) !== 3 ) {
         return $response
             ->write(json_encode([
                 'reason' => "columnCountError",
