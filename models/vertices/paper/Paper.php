@@ -43,7 +43,7 @@ class Paper extends VertexModel {
         $masterEncodingObject = $this->get('RoccoMasterEncoding');
         $assignmentObject = $assignment->toArray();
         $mergeLog = RoccoMasterEncoding::merge( $assignmentObject, $masterEncodingObject );
-        $this->update( 'RoccoMasterEncoding', $masterEncodingObject );
+        $this->update( 'masterEncoding', $masterEncodingObject );
 
         $arango_doc = Document::createFromArray( $mergeLog );
         DB::create( "merge_logs", $arango_doc );
