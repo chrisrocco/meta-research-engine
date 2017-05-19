@@ -4,6 +4,7 @@ use Models\Vertices\Project\Project;
 use Models\Vertices\Domain;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
+use Models\Edges\Assignment;
 use Models\Vertices\User;
 
 /*
@@ -142,6 +143,13 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 
     $status = $project->addUser ( $user, $registrationCode );
 
+    $queueItems = $project->getNextPaper($project->get('assignmentTarget'));
+//        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
+    foreach ($queueItems as $queueItem) {
+        if ($queueItem === false) {continue;}
+        Assignment::assignByKey($queueItem['paperKey'], $user->key(), $this->get('version'));
+    }
+
     if( $status == 200 ){
         return $response
             ->write( json_encode([
@@ -172,6 +180,9 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
+    return $response->write($request);;
+
+
     $formData = $request->getParsedBody();
 
     $paperArray = json_decode( $formData['papers'], true );
@@ -179,6 +190,12 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
 
     $project = Project::retrieve($project_key);
+
+    if (!$project) {
+        return $response
+            ->write ("No project with key ". $project_key." found.")
+            ->withStatus(409);
+    }
 
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
