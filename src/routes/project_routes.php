@@ -7,10 +7,10 @@ use Models\Vertices\Paper;
 use Models\Vertices\User;
 
 /*
- * GET studies/{projectname}/structure
+ * GET projects/{projectname}/structure
  * Summary: Gets the domain / field structure of the specified research project
  */
-$app->GET("/studies/{key}/structure", function ($request, $response, $args) {
+$app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     if (!$project) {
@@ -26,10 +26,10 @@ $app->GET("/studies/{key}/structure", function ($request, $response, $args) {
 });
 
 /**
- * GET studies/{projectname}/variables
+ * GET projects/{projectname}/variables
  * Summary: Gets a list of every field's name
  */
-$app->GET("/studies/{key}/variables", function ($request, $response, $args) {
+$app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $variables = $project->getVariablesFlat();
@@ -40,7 +40,7 @@ $app->GET("/studies/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-$app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
+$app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     var_dump( $formData );
     $projectKey = $args['key'];
@@ -104,7 +104,7 @@ $app->POST ('/studies/{key}/structure', function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-$app->POST ('/studies/members', function ($request, $response, $args) {
+$app->POST ('/projects/members', function ($request, $response, $args) {
     $formData = $request->getParams();
     $userKey = $formData['userKey'];
     $registrationCode = $formData['registrationCode'];
@@ -122,6 +122,7 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
     /* End Query */
 
     $project = Project::retrieve($projectKey);
+    $projectName = $project->get('name');
 
     if (!$user) {
         return $response
@@ -141,15 +142,19 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 
     $status = $project->addUser ( $user, $registrationCode );
 
+    if( $status == 200 ){
+        return $response
+            ->write( json_encode([
+                'studyName' => $projectName
+            ], JSON_PRETTY_PRINT) );
+    }
+
     switch($status) {
         case 400 :
             $message = "Project / registration code mismatch";
             break;
         case 409 :
             $message = "User already enrolled in Project. Aborting enrollment";
-            break;
-        case 200 :
-            $message = "User successfully enrolled in project";
             break;
         default :
             $status = 500;
@@ -163,10 +168,10 @@ $app->POST ('/studies/members', function ($request, $response, $args) {
 });
 
 /**
- * POST studies/{projectname}/papers
+ * POST projects/{projectname}/papers
  * Summary: Adds a paper to a project
  */
-$app->POST("/studies/{key}/papers", function ($request, $response, $args) {
+$app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $paperArray = json_decode( $formData['papers'], true );
@@ -178,7 +183,8 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     foreach ( $paperArray as $paper ){
         $paperModel = Paper::create([
             'title'     =>  $paper['title'],
-            'pmcID'     =>  $paper['pmcID']
+            'pmcID'     =>  $paper['pmcID'],
+            'masterEncoding' => Paper::blankMasterEncoding
         ]);
         $project->addpaper( $paperModel );
     }
@@ -187,7 +193,7 @@ $app->POST("/studies/{key}/papers", function ($request, $response, $args) {
     return $response->write("Added $count papers to project");
 });
 
-$app->GET("/studies/{key}/papers", function( $request, $response, $args){
+$app->GET("/projects/{key}/papers", function( $request, $response, $args){
     $projectKey = $args['key'];
     $project = Project::retrieve( $projectKey );
     $papersArray = $project->getPapersFlat();
@@ -195,16 +201,24 @@ $app->GET("/studies/{key}/papers", function( $request, $response, $args){
 });
 
 /**
- * POST studies
+ * POST projects
  * Summary: Creates a project
  */
-$app->POST("/studies", function ($request, $response, $args) {
+$app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
+
+    $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
+    $registrationCode = '';
+    $random_string_length = 6;
+    $max = strlen($characters) - 1;
+    for ($i = 0; $i < $random_string_length; $i++) {
+        $registrationCode .= $characters[mt_rand(0, $max)];
+    }
 
     $project = Project::create([
         'name'  =>  $formData['name'],
         'description'   =>  $formData['description'],
-        'registrationCode' => base64_encode(random_bytes(8)),
+        'registrationCode' => $registrationCode,
         'version' => 1,
         'assignmentTarget' => 2
     ]);
@@ -212,7 +226,7 @@ $app->POST("/studies", function ($request, $response, $args) {
     return $response->write(
         json_encode([
             "projectKey" => $project->key(),
-            "registrationCode" => $project->get('registrationCode')
+            "registrationCode" => $registrationCode
         ])
     );
 });

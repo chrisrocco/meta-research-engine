@@ -13,7 +13,7 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
 
     $assignment = Assignment::retrieve($args["key"]);
 
-    return $response->write(json_encode($assignment->toArray(),  JSON_PRETTY_PRINT));
+    return $response->write(json_encode($assignment->toArray(), JSON_PRETTY_PRINT));
 });
 
 /**
@@ -24,10 +24,16 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
 $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParams();
 
-    $assignment = Assignment::retrieve( $args['key'] );
+    $assignment = Assignment::retrieve($args['key']);
     $assignment->update('done', $formData['done']);
     $assignment->update('completion', $formData['completion']);
     $assignment->update('encoding', $formData['encoding']);
+
+    if ($formData['done'] == true) {
+        $paper = $assignment->getPaper();
+//        $paper->merge($assignment);
+        $paper->roccoMerge($assignment);
+    }
 
     return $response
         ->write("Updated Assignment " . $args['key'])
@@ -42,7 +48,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
  */
 $app->GET('/users/{key}/assignments', function ($request, $response, $args) {
     $user = User::retrieve($args['key']);
-    $assignments = $user->getAssignments( true );
+    $assignments = $user->getAssignments(true);
     return $response->write(json_encode($assignments, JSON_PRETTY_PRINT));
 });
 
@@ -55,9 +61,9 @@ $app->POST('/assignments', function ($request, $response, $args) {
     $paperKey = $request->getParam("paperKey");
     $userKey = $request->getParam("userKey");
 
-    $user = User::retrieve( $userKey );
-    $paper = Paper::retrieve( $paperKey );
-    Assignment::assign( $paper, $user );
+    $user = User::retrieve($userKey);
+    $paper = Paper::retrieve($paperKey);
+    Assignment::assign($paper, $user);
 
     $response->write("Created Assignment");
 });

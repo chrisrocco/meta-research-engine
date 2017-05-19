@@ -51,12 +51,24 @@ class Assignment extends EdgeModel
 
     // Project == Study
     public function getProject(){
-        $AQL = "FOR project IN OUTBOUND @paperKey @@paper_to_study
+        $AQL = "FOR project IN OUTBOUND @paperID @@paper_to_study
                     RETURN project";
         $bindings = [
-            'paperKey'  =>  $this->get( '_from' ),
+            'paperID'  =>  $this->get( '_from' ),
             '@paper_to_study'   =>  PaperOf::$collection
         ];
         return DB::queryModel($AQL, $bindings, Project::class)[0];
+    }
+
+    public function getPaper () {
+        $split = explode("/", $this->getFrom());
+        return Paper::retrieve( $split[1] );
+
+        /* This wasn't working */
+//        return DB::queryModel(
+//            'RETURN DOCUMENT (@assignmentID)',
+//            [ 'assignmentID' => $this->id()],
+//            Paper::class
+//        )[0];
     }
 }

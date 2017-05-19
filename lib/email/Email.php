@@ -46,7 +46,20 @@ class Email {
 
         return $email;
     }
+    public static function resetPasswordEmail($to, $full_name, $callback, $hash_code){
+        $href = $callback . "?hash=" . $hash_code;
 
+        $email = new Email($to, $full_name);
+        $email->subject("Reset Password | Big Data");
+
+        $html_email_template = file_get_contents (__DIR__ . '/templates/reset_password_email.html');
+
+        $html_email_template = str_replace('{{href}}', $href, $html_email_template);
+
+        $email->body($html_email_template);
+
+        return $email;
+    }
 
 
 
