@@ -180,15 +180,15 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
-    return $response->write(json_encode($request->getUploadedFiles(), JSON_PRETTY_PRINT));
+    $EXPECTED = "papersCSV";
+    $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
 
+    return $response
+        ->write( json_encode($csv, JSON_PRETTY_PRINT) );
 
     $formData = $request->getParsedBody();
-
     $paperArray = json_decode( $formData['papers'], true );
-
     $project_key = $args['key'];
-
     $project = Project::retrieve($project_key);
 
     if (!$project) {
@@ -205,7 +205,6 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
         ]);
         $project->addpaper( $paperModel );
     }
-
     $count = count( $paperArray );
     return $response->write("Added $count papers to project");
 });
