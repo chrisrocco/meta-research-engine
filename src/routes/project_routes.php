@@ -181,10 +181,16 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $EXPECTED = "papersCSV";
-    $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
 
-    return $response
-        ->write( json_encode($csv, JSON_PRETTY_PRINT) );
+    /* ----- Validation Steps -----
+     * 1.) File was posted
+     * 2.) File is of type .csv
+     * 3.) Structure of csv is valid
+     * */
+    if( !isset( $_FILES[$EXPECTED] ) ){
+
+    }
+    $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
 
     $formData = $request->getParsedBody();
     $paperArray = json_decode( $formData['papers'], true );
