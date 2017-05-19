@@ -180,8 +180,8 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
-    var_dump( $_FILES );
-
+    $EXPECTED = "papersCSV";
+    var_dump( file_get_contents( $_FILES[$EXPECTED]['tmp_name'] ) );
     return $response;
 
     $formData = $request->getParsedBody();
