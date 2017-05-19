@@ -255,7 +255,12 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     }
 
     $count = count( $csv );
-    return $response->write("Added $count papers to project");
+    return $response
+        ->write(json_encode([
+            'reason' => "success",
+            'msg' => "Added $count papers to project"
+        ]), JSON_PRETTY_PRINT)
+        ->withStatus(200);
 });
 
 $app->GET("/projects/{key}/papers", function( $request, $response, $args){
