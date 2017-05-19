@@ -180,7 +180,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * Summary: Adds a paper to a project
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
-    return $response->write($request);;
+    return $response->write(json_encode($request->getUploadedFiles(), JSON_PRETTY_PRINT));
 
 
     $formData = $request->getParsedBody();
