@@ -121,6 +121,34 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
     return $response;
 });
 
+$app->GET('/loadManageProject', function ($request, $response, $args) {
+    $queryParams = $request->getQueryParams();
+    $projectKey = $queryParams['projectKey'];
+
+    $project = \Models\Vertices\Project\Project::retrieve($projectKey);
+    if (!$project) {
+        return $response->write ('No project with key '.$projectKey.' found')
+            ->withStatus(409);
+    }
+
+    $paperQueue = $project->getPaperQueue();
+    if (!$paperQueue) {
+        return $response->write("Error retrieving PaperQueue")
+            ->withStatus(500);
+    }
+
+    $return = [
+        'project' => $project->toArray(),
+        'paperQueue' => $paperQueue
+    ];
+
+    return $response
+        ->write (json_encode($return, JSON_PRETTY_PRINT))
+        ->withStatus(200);
+
+
+});
+
 $app->GET('/loadProjects', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
 
