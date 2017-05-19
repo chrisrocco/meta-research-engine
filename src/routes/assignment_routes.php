@@ -32,7 +32,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     if ($formData['done'] == true) {
         $paper = $assignment->getPaper();
 //        $paper->merge($assignment);
-        $paper->roccoMerge($assignment);
+        $paper->merge($assignment);
     }
 
     return $response
