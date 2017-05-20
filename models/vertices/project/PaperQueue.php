@@ -23,7 +23,7 @@ class PaperQueue {
             FOR paper, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
                     FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
-                        FILTER project.version == assignment.projectVersion
+                        //FILTER project.version == assignment.projectVersion
                         RETURN assignment
                 )
             COLLECT
@@ -61,7 +61,7 @@ class PaperQueue {
             FOR paper, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
                     FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
-                        FILTER project.version == assignment.projectVersion
+                        //FILTER project.version == assignment.projectVersion
                         RETURN assignment
                 )
             COLLECT
