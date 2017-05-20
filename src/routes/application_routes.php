@@ -13,18 +13,20 @@
  * Notes: Returns the assignment, the associated structure, and question list
 
  */
-$app->GET('/loadAssignment', function($request, $response, $args) {
+$app->GET('/loadPaperCoder', function($request, $response, $args) {
 
     $queryParams = $request->getQueryParams();
     $key = $queryParams['key'];
 
     $assignment = \Models\Edges\Assignment::retrieve( $key );
+    $paper = $assignment->getPaper();
     $project = $assignment->getProject();
     $questionsList = $project->getVariablesFlat();
     $structure = $project->getStructureFlat();
 
     $data = [
         "assignment" => $assignment->toArray(),
+        "paper"     => $paper->toArray(),
         "questions" =>  $questionsList,
         "structure" =>  $structure
     ];
