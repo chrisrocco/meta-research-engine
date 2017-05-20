@@ -43,7 +43,7 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
 
 $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
-    var_dump( $formData );
+    //var_dump( $formData );
     $projectKey = $args['key'];
     $structure = json_decode( $formData['structure'], true);
 
