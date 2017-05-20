@@ -132,7 +132,6 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
     }
 
     $paperQueue = $project->getPapersFlat();
-    var_dump($paperQueue);
     if ($paperQueue === false) {
         return $response->write("Error retrieving papers")
             ->withStatus(500);
