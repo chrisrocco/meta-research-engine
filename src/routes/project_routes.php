@@ -263,6 +263,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     return $response
         ->write(json_encode([
             'reason' => "success",
+            'newPaperCount' => $count,
             'msg' => "Added $count papers to project"
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
