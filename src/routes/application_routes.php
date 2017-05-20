@@ -5,6 +5,7 @@
  * Date: 5/13/2017
  * Time: 8:41 PM
  */
+use Models\Vertices\Project\Project;
 
 
 /**
@@ -195,4 +196,21 @@ $app->GET('/loadProjects', function($request, $response, $args) {
 
     $response->write(json_encode( $data, JSON_PRETTY_PRINT ));
     return $response;
+});
+
+$app->GET('/loadCodeBook', function($request, $response, $args) {
+
+    $cursor = \DB\DB::getAll( Project::$collection );
+    $projects = Project::wrapAll( $cursor );
+
+    $output = [];
+    foreach ( $projects as $project ){
+        $output[] = [
+            "project" => $project->toArray(),
+            "structure" => $project->getStructureFlat()
+        ];
+    }
+
+    return $response
+        ->write( json_encode($output, JSON_PRETTY_PRINT) );
 });
