@@ -48,6 +48,16 @@ class RoccoMasterEncoding {
                 "data" => $constant['data']
             ];
         }
+        foreach ( $assignment['encoding']['branches'] as $branchNum => $branchVariables ){
+            foreach($branchVariables as $variable) {
+                $output[] = [
+                    "user" => $assignment['_key'],
+                    "question" => $variable['question'],
+                    "location" => $branchNum + 1,
+                    "data" => $variable['data']
+                ];
+            }
+        }
         return $output;
     }
     static function &matchRecord( $userRecord, &$masterEncoding ){
