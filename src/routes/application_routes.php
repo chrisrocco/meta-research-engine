@@ -141,7 +141,10 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
              FOR user, assignment IN OUTBOUND paper._id @@assignments
                 RETURN {"_key" : user._key, "name" : user.name, "email" : user.email}
         ),
-        assignmentCount = COUNT (assignedUsers)
+        assignmentCount = COUNT ( 
+            FOR user, assignment IN OUTBOUND paper._id @@assignments
+                RETURN TRUE
+        )
     RETURN {
         "key" : key,
         "title" : title,
