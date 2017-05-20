@@ -111,6 +111,10 @@ $app->POST('/users/recover', function ($request, $response, $args) {
     $user = User::getByExample([
         'email' => $email
     ])[0];
+    if( !$user ){
+        return $response
+            ->withStatus( 404 );
+    }
     $hash = $user->rehash();
 
     $email = \Email\Email::resetPasswordEmail( $email, "", $callback, $hash);
@@ -123,6 +127,7 @@ $app->POST('/users/recover', function ($request, $response, $args) {
     }
 
     return $response
+        ->write("Email failed to send")
         ->withStatus( 500 );
 });
 
