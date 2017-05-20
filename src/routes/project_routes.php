@@ -230,7 +230,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             return $response
                 ->write(json_encode([
                     'reason' => "columnCountError",
-                    'column' => $i,
+                    'row' => $i,
                     'msg' => "Incorrect number of columns specified: ".count($csv[0])
                 ]), JSON_PRETTY_PRINT)
                 ->withStatus(400);
