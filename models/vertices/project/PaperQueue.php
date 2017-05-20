@@ -28,16 +28,16 @@ class PaperQueue {
                 )
             COLLECT
                 paperKey = paper._key,
+                assignmentCount = COUNT (assignments),
+                priority = paperOf.priority,
                 paperTitle = paper.title,
-                pmcID = paper.pmcID,
-                assignmentCount = COUNT (assignments)
-                ,priority = paperOf.priority
+                paperDescription = paper.description
                 
-            FILTER (priority == 0 && assignmentCount <= project.assignmentTarget) || priority > 0
+            FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
             RETURN {
                 "paperKey" : paperKey,
-                "pmcID" : pmcID,
+                "paperDescription" : pmcID,
                 "assignments" : assignmentCount,
                 "priority" : priority,
                 "paperTitle" : paperTitle
@@ -66,17 +66,17 @@ class PaperQueue {
                 )
             COLLECT
                 paperKey = paper._key,
+                assignmentCount = COUNT (assignments),
+                priority = paperOf.priority,
                 paperTitle = paper.title,
-                pmcID = paper.pmcID,
-                assignmentCount = COUNT (assignments)
-                ,priority = paperOf.priority
+                paperDescription = paper.description
                 
-            FILTER (priority == 0 && assignmentCount <= project.assignmentTarget) || priority > 0
+            FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
             LIMIT @queueLimit
             RETURN {
                 "paperKey" : paperKey,
-                "pmcID" : pmcID,
+                "paperDescription" : paperDescription,
                 "assignments" : assignmentCount,
                 "priority" : priority,
                 "paperTitle" : paperTitle

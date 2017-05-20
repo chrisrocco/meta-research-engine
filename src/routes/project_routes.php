@@ -178,6 +178,8 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 /**
  * POST projects/{projectname}/papers
  * Summary: Adds a paper to a project
+ * FailCodes: badFileNameError, parseFailure, emptyFileError, columnCountError, interpretFailure
+ * SuccessCode: success
  */
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
