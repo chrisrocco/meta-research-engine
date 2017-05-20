@@ -131,15 +131,15 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
             ->withStatus(409);
     }
 
-    $paperQueue = $project->getPaperQueue();
+    $paperQueue = $project->getPapersFlat();
     if (!$paperQueue) {
-        return $response->write("Error retrieving PaperQueue")
+        return $response->write("Error retrieving papers")
             ->withStatus(500);
     }
 
     $return = [
         'project' => $project->toArray(),
-        'paperQueue' => $paperQueue
+        'papers' => $paperQueue
     ];
 
     return $response
