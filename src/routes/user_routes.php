@@ -133,7 +133,9 @@ $app->POST('/users/recover', function ($request, $response, $args) {
 
 $app->POST('/users/reset', function ($request, $response, $args) {
     $newPassword    = $request->getParam('newPassword');
-    $hash           = $request->getParam('hash');
+    $hash           = $request->getParam('hash_code');
+
+    var_dump( $hash );
 
     $resultSet = User::getByExample([
         'hash_code' => $hash

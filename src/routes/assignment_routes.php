@@ -24,6 +24,8 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
 $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParams();
 
+    var_dump( $request->getHeaders() );
+
     $assignment = Assignment::retrieve($args['key']);
     $assignment->update('done', $formData['done']);
     $assignment->update('completion', $formData['completion']);
@@ -36,7 +38,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     }
 
     return $response
-        ->write("Updated Assignment " . $args['key'])
+        ->write( "" )
         ->withStatus(200);
 });
 
