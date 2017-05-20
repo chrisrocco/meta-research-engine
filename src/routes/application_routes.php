@@ -131,15 +131,40 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
             ->withStatus(409);
     }
 
-    $paperQueue = $project->getPapersFlat();
-    if ($paperQueue === false) {
+    $papers = \DB\DB::query(
+        'FOR paper IN INBOUND @studyID @@paper_to_study
+    COLLECT
+        key = paper._key,
+        title = paper.title,
+        description = paper.description,
+        assignedUsers = (
+             FOR user, assignment IN OUTBOUND paper._id @@assignments
+                RETURN {"key" : user._key, "name" : user.name, "email" : user.email}
+        ),
+        assignmentCount = COUNT (assignedUsers)
+    RETURN {
+        "key" : key,
+        "title" : title,
+        "description" : description,
+        "assignedUsers" : assignedUsers,
+        "assignmentCount" : assignmentCount
+    }',
+        [
+            'studyID' => $project->id(),
+            '@paper_to_study' => \Models\Edges\PaperOf::$collection,
+            '@assignments' => \Models\Edges\Assignment::$collection
+        ],
+        true
+    )->getAll();
+
+    if ($papers === false) {
         return $response->write("Error retrieving papers")
             ->withStatus(500);
     }
 
     $return = [
         'project' => $project->toArray(),
-        'papers' => $paperQueue
+        'papers' => $papers
     ];
 
     return $response
