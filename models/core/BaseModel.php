@@ -161,7 +161,7 @@ abstract class BaseModel {
     }
 
     protected static function addMetaData( &$data ){
-        $data["date_created"] = date("c");
+        $data["date_created"] = date("F j, Y, g:i a");
     }
 
     static $collection;     // uses a default collection name. For example, the BaseModel, 'User' would use 'users'. If this gets overridden, you will have to create the DB collection manually.
