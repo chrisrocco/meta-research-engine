@@ -225,13 +225,16 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             ->withStatus(400);
     }
     //Are there exactly three columns?
-    if ( count($csv[rand(0, count($csv)-1)]) !== 3 ) {
-        return $response
-            ->write(json_encode([
-                'reason' => "columnCountError",
-                'msg' => "Incorrect number of columns specified: ".count($csv[0])
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
+    foreach ( $csv as $i => $row ){
+        if ( count($row) !== 3 ) {
+            return $response
+                ->write(json_encode([
+                    'reason' => "columnCountError",
+                    'column' => $i,
+                    'msg' => "Incorrect number of columns specified: ".count($csv[0])
+                ]), JSON_PRETTY_PRINT)
+                ->withStatus(400);
+        }
     }
 
     //Try to interpret the data
