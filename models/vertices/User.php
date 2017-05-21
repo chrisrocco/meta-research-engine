@@ -69,7 +69,8 @@ class User extends VertexModel
             "_key" => $user->key(),
             "first_name" => $user->get("first_name"),
             "last_name" => $user->get("last_name"),
-            "email" => $user->get('email')
+            "email" => $user->get('email'),
+            "role"  => $user->get('role')
         ];
 
         // Building the JWT
