@@ -13,9 +13,6 @@ namespace Models\Vertices\Paper;
 
 class RoccoMasterEncoding {
     static function merge( $assignment, &$masterEncoding ){
-
-        var_dump( $masterEncoding );
-
         $log = [];
         $log['headers']['Assignment'] = $assignment;
         $log['headers']['Report'] = $masterEncoding;
