@@ -33,6 +33,7 @@ class RoccoMasterEncoding {
                 ];
                 continue;
             }
+            self::cleanup( $userRecord['user'], $masterRecord );
             RoccoMasterEncoding::recordResponseUser( $userRecord, $masterResponse, $log );
         }
         return $log;
