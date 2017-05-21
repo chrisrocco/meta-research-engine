@@ -246,6 +246,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
                 'title' => $row[0],
                 'description' => $row[1],
                 'url' => $row[2],
+                'status' => "pending",
                 'masterEncoding' => []
             ]);
             $project->addpaper( $paperModel );

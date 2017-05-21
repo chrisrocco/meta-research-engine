@@ -38,6 +38,15 @@ class RoccoMasterEncoding {
         return $log;
     }
 
+    static function conflictedStatus ($masterEncoding) {
+        foreach ($masterEncoding as $record) {
+            if (count($record['responses']) > 1 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static function parseAssignment( $assignment ){
         $output = [];
         foreach ( $assignment['encoding']['constants'] as $constant ){

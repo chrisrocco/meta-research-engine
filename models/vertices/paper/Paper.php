@@ -61,8 +61,43 @@ class Paper extends VertexModel {
         return $users;
     }
 
-    public function getReport ($conflictLevel) {
+    public function updateStatus () {
+        $masterEncoding = $this->get('masterEncoding');
+        $conflicted = RoccoMasterEncoding::checkConflictedStatus($masterEncoding);
 
+        if ($conflicted) {
+            $status = "conflicted";
+            $this->update('status', $status);
+            return $status;
+        }
+
+        $assignmentCount = count($assignments);
+
+        $assignments = $this->getAssignments();
+        if (count($assignments) === 0) {
+            $status = "pending";
+            $this->update('status', $status);
+            return $status;
+        }
+
+        foreach ($assignments as $assignment) {
+            if ($assignment->get('done') == false) {
+                $status = "active";
+                $this->update('status', $status);
+                return $status;
+            }
+        }
+
+            //no new features
+//        if ($assignmentCount < $this->getProject()->get('assignmentTarget')) {
+//            $status = "complete";
+//            $this->update('status', $status);
+//            return $status;
+//        }
+
+        $status = "clean";
+        $this->update('status', $status);
+        return $status;
     }
 
 }
