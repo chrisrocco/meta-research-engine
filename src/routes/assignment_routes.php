@@ -30,7 +30,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('encoding', $formData['encoding']);
 
     $paper = $assignment->getPaper();
-    if ($formData['done'] == true) {
+    if (json_decode($formData['done']) === true) {
         $paper->roccoMerge($assignment);
     }
     $status = $paper->updateStatus();
