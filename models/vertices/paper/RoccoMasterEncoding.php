@@ -13,6 +13,11 @@ namespace Models\Vertices\Paper;
 
 class RoccoMasterEncoding {
     static function merge( $assignment, &$masterEncoding ){
+
+        foreach ( $masterEncoding as &$masterRecord ){
+            self::cleanup( $assignment["_key"], $masterRecord );
+        }
+
         $log = [];
         $log['headers']['Assignment'] = $assignment;
         $log['headers']['Report'] = $masterEncoding;
