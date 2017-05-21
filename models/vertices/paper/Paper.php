@@ -37,6 +37,18 @@ class Paper extends VertexModel {
         return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
 
+    public function getAssignments() {
+        return DB::queryModel(
+            'FOR user, ass IN OUTBOUND @paperID @@assignments
+                        RETURN ass',
+            [
+                'paperID' => $this->id(),
+                '@assignments' => Assignment::$collection
+            ],
+            Assignment::class
+        );
+    }
+
     /**
      * @param $assignment Assignment
      */
@@ -63,7 +75,7 @@ class Paper extends VertexModel {
 
     public function updateStatus () {
         $masterEncoding = $this->get('masterEncoding');
-        $conflicted = RoccoMasterEncoding::checkConflictedStatus($masterEncoding);
+        $conflicted = RoccoMasterEncoding::conflictedStatus($masterEncoding);
 
         if ($conflicted) {
             $status = "conflicted";

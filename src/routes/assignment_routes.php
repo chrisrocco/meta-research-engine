@@ -22,7 +22,7 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
  * Notes:
  */
 $app->PUT('/assignments/{key}', function ($request, $response, $args) {
-    $formData = $request->getParams();
+    $formData = $request->getParsedBody();
 
 //    var_dump( $request->getHeaders() );
 
@@ -31,8 +31,8 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('completion', $formData['completion']);
     $assignment->update('encoding', $formData['encoding']);
 
+    $paper = $assignment->getPaper();
     if ($formData['done'] == true) {
-        $paper = $assignment->getPaper();
         $paper->roccoMerge($assignment);
     }
     $status = $paper->updateStatus();
