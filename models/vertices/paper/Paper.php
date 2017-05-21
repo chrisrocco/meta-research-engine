@@ -41,7 +41,7 @@ class Paper extends VertexModel {
      * @param $assignment Assignment
      */
     public function roccoMerge( $assignment ){
-        $masterEncodingObject = $this->get('RoccoMasterEncoding');
+        $masterEncodingObject = $this->get('masterEncoding');
         $assignmentObject = $assignment->toArray();
         $mergeLog = RoccoMasterEncoding::merge( $assignmentObject, $masterEncodingObject );
         $this->update( 'masterEncoding', $masterEncodingObject );
@@ -71,9 +71,9 @@ class Paper extends VertexModel {
             return $status;
         }
 
-        $assignmentCount = count($assignments);
 
         $assignments = $this->getAssignments();
+        $assignmentCount = count($assignments);
         if (count($assignments) === 0) {
             $status = "pending";
             $this->update('status', $status);
