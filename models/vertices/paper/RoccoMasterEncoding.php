@@ -57,6 +57,9 @@ class RoccoMasterEncoding {
                 "data" => $constant['data']
             ];
         }
+        if (!isset($assignment['encoding']['branches'])) {
+            return $output;
+        }
         foreach ( $assignment['encoding']['branches'] as $branchNum => $branchVariables ){
             foreach($branchVariables as $variable) {
                 $output[] = [
