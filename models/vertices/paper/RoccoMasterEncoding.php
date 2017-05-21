@@ -57,25 +57,26 @@ class RoccoMasterEncoding {
 
     static function parseAssignment( $assignment ){
         $output = [];
-        foreach ( $assignment['encoding']['constants'] as $constant ){
-            $output[] = [
-                "user" => $assignment['_key'],
-                "question" => $constant['question'],
-                "location" => 0,
-                "data" => $constant['data']
-            ];
-        }
-        if (!isset($assignment['encoding']['branches'])) {
-            return $output;
-        }
-        foreach ( $assignment['encoding']['branches'] as $branchNum => $branchVariables ){
-            foreach($branchVariables as $variable) {
+        if( $assignment['encoding']['constants'] ){
+            foreach ( $assignment['encoding']['constants'] as $constant ){
                 $output[] = [
                     "user" => $assignment['_key'],
-                    "question" => $variable['question'],
-                    "location" => $branchNum + 1,
-                    "data" => $variable['data']
+                    "question" => $constant['question'],
+                    "location" => 0,
+                    "data" => $constant['data']
                 ];
+            }
+        }
+        if ( $assignment['encoding']['branches'] ) {
+            foreach ( $assignment['encoding']['branches'] as $branchNum => $branchVariables ){
+                foreach($branchVariables as $variable) {
+                    $output[] = [
+                        "user" => $assignment['_key'],
+                        "question" => $variable['question'],
+                        "location" => $branchNum + 1,
+                        "data" => $variable['data']
+                    ];
+                }
             }
         }
         return $output;
@@ -164,12 +165,13 @@ class RoccoMasterEncoding {
     }
 
     static function cleanupEmptyRecords( &$masterEncoding ){
-        for ( $i = 0; $i < count( $masterEncoding ); $i++ ){
-            $masterRecord = &$masterEncoding[$i];
-            if( count( $masterRecord['responses'] ) == 0 ){
-                array_splice( $masterEncoding, $i, 1 );
+        $count = count( $masterEncoding );
+        for ( $i = 0; $i < $count; $i++ ){
+            if( count( $masterEncoding[$i]['responses'] ) === 0 ){
+                unset( $masterEncoding[$i] );
             }
         }
+        $masterEncoding = array_values( $masterEncoding );
     }
 
     static function compareData( $A, $B, $log = null ){
