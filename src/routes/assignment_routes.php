@@ -35,8 +35,8 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
         $paper = $assignment->getPaper();
 //        $paper->merge($assignment);
         $paper->roccoMerge($assignment);
-        $paper->updateStatus();
     }
+    $paper->updateStatus();
 
     return $response
         ->write( "" )
