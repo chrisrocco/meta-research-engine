@@ -8,6 +8,7 @@
 use Models\Edges\Assignment;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
+use Models\Vertices\Variable;
 
 
 /**
@@ -159,7 +160,6 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     return $response->write(json_encode($data, JSON_PRETTY_PRINT));
 });
 
-
 /**
  * GET loadAssignmentsDashboardGet
  * Summary: Called from a users dashboard
@@ -290,9 +290,19 @@ $app->GET('/loadConflictResolution', function($request, $response, $args) {
     $thePaper       = $myAssignment->getPaper();
     $collaborators  = $thePaper->getCollaborators();
 
+    /* Inject actual question objects */
+    $masterEncodingArr = $thePaper->get( 'masterEncoding' );
+    foreach ( $masterEncodingArr as &$record ){
+        $questionKey = $record['question'];
+        $questionModel = Variable::retrieve( $questionKey );
+        $record['question'] = $questionModel->toArray();
+    }
+    $paperObj = $thePaper->toArray();
+    $paperObj['masterEncoding'] = $masterEncodingArr;
+
     $output = [];
     $output['assignment']   = $myAssignment->toArray();
-    $output['paper']        = $thePaper->toArray();
+    $output['paper']        = $paperObj;
     foreach ( $collaborators as $user ){
         if( $user->id() == $myAssignment->getTo() ) continue;   // don't include myself as a collaborator
         $output['collaborators'][] = [

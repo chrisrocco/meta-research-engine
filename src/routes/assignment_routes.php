@@ -24,8 +24,6 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
 $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
-//    var_dump( $request->getHeaders() );
-
     $assignment = Assignment::retrieve($args['key']);
     $assignment->update('done', $formData['done']);
     $assignment->update('completion', $formData['completion']);
