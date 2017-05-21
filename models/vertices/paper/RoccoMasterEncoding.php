@@ -88,7 +88,7 @@ class RoccoMasterEncoding {
         $userData = $userRecord['data'];
         foreach ( $masterRecord['responses'] as &$masterResponse ){
             $masterData = $masterResponse['data'];
-            if( $userData == $masterData ){
+            if( RoccoMasterEncoding::compareData($userData, $masterData) ){
                 return $masterResponse;
             }
         }
@@ -153,6 +153,21 @@ class RoccoMasterEncoding {
                 }
             }
         }
+    }
+
+    static function compareData( $A, $B, $log = null ){
+        $result = true;
+        foreach ($A as $key => $value) {
+            if( $A[$key] != $B[$key] ) $result = false;
+        }
+        if( $log ){
+            $log[] = [
+                "compared" => $A,
+                "with" => $B,
+                "and got" => $result
+            ];
+        }
+        return $result;
     }
 
     static $NO_MATCH = "";
