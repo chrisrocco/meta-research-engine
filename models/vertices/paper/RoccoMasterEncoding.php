@@ -41,6 +41,8 @@ class RoccoMasterEncoding {
             self::cleanup( $userRecord['user'], $masterRecord );
             RoccoMasterEncoding::recordResponseUser( $userRecord, $masterResponse, $log );
         }
+
+        self::cleanupEmptyRecords( $masterEncoding );
         return $log;
     }
 
@@ -157,6 +159,15 @@ class RoccoMasterEncoding {
                         "Old Response" => $response
                     ];
                 }
+            }
+        }
+    }
+
+    static function cleanupEmptyRecords( &$masterEncoding ){
+        for ( $i = 0; $i < count( $masterEncoding ); $i++ ){
+            $masterRecord = &$masterEncoding[$i];
+            if( count( $masterRecord['responses'] ) === 0 ){
+                array_splice( $masterEncoding, $i, 1 );
             }
         }
     }
