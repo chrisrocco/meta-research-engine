@@ -86,7 +86,7 @@ class Paper extends VertexModel {
 
         $assignments = $this->getAssignments();
         $assignmentCount = count($assignments);
-        if (count($assignments) === 0) {
+        if ($assignmentCount === 0) {
             $status = "pending";
             $this->update('status', $status);
             return $status;
@@ -100,9 +100,15 @@ class Paper extends VertexModel {
             }
         }
 
-        $status = "clean";
+        if ($assignmentCount < $this->getProject()->get('assignmentTarget')) {
+            $status = "clean";
+            $this->update('status', $status);
+            return $status;
+        }
+        $status = "complete";
         $this->update('status', $status);
         return $status;
+
     }
 
 }
