@@ -166,7 +166,7 @@ class RoccoMasterEncoding {
     static function cleanupEmptyRecords( &$masterEncoding ){
         for ( $i = 0; $i < count( $masterEncoding ); $i++ ){
             $masterRecord = &$masterEncoding[$i];
-            if( count( $masterRecord['responses'] ) === 0 ){
+            if( count( $masterRecord['responses'] ) == 0 ){
                 array_splice( $masterEncoding, $i, 1 );
             }
         }
