@@ -15,6 +15,7 @@ use Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Project\Project;
+use Models\Vertices\User;
 use triagens\ArangoDb\Document;
 use MasterEncoding\MasterEncoding;
 
@@ -49,28 +50,19 @@ class Paper extends VertexModel {
         DB::create( "merge_logs", $arango_doc );
     }
 
-    /**
-     * @param $assignment Assignment
-     */
-//    public function merge ($assignment) {
-//        $masterEncoding = new MasterEncoding($this->get('RoccoMasterEncoding'));
-//        $encoding = $assignment->get('encoding');
-//        if (!$encoding) { //Maybe this already happens if the attribute isn't found?
-//            throw new Exception("'encoding' attribute not found on ".$assignment->id());
-//
-//        }
-////        $userKey = BaseModel::idToKey($assignment->getTo());
-//        $userKey = $assignment->key();
-//        $masterEncoding->merge($encoding, $userKey);
-//        $this->update('RoccoMasterEncoding', $masterEncoding->toStorage());
-//    }
+    public function getCollaborators(){
+        $AQL = "FOR user, assignment IN OUTBOUND @paper @@paper_to_user
+                    RETURN user";
+        $bindings = [
+            "paper"             =>  $this->id(),
+            "@paper_to_user"    =>  Assignment::$collection
+        ];
+        $users = DB::queryModel($AQL, $bindings, User::class);
+        return $users;
+    }
 
     public function getReport ($conflictLevel) {
 
-    }
-
-    public static function blankMasterEncoding () {
-        return MasterEncoding::BLANK;
     }
 
 }

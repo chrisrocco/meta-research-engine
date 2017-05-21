@@ -5,6 +5,8 @@
  * Date: 5/13/2017
  * Time: 8:41 PM
  */
+use Models\Edges\Assignment;
+use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
 
 
@@ -36,7 +38,7 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
     return $response;
 });
 
-$app->GET('/loadConflictResolution', function($request, $response, $args) {
+/*$app->GET('/loadConflictResolution', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $paperKey = $queryParams['paperKey'];
     $paper = \Models\Vertices\Paper::retrieve($paperKey);
@@ -73,7 +75,7 @@ $app->GET('/loadConflictResolution', function($request, $response, $args) {
     return $response
         ->write(json_encode($result))
         ->withStatus (200);
-});
+});*/
 
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
@@ -208,6 +210,27 @@ $app->GET('/loadCodeBook', function($request, $response, $args) {
         $output[] = [
             "project" => $project->toArray(),
             "structure" => $project->getStructureFlat()
+        ];
+    }
+
+    return $response
+        ->write( json_encode($output, JSON_PRETTY_PRINT) );
+});
+
+$app->GET('/loadConflictResolution', function($request, $response, $args) {
+    $assignmentKey = $request->getQueryParam("assignmentKey");
+
+    $myAssignment   = Assignment::retrieve( $assignmentKey );
+    $thePaper       = $myAssignment->getPaper();
+    $collaborators  = $thePaper->getCollaborators();
+
+    $output = [];
+    $output['assignment']   = $myAssignment->toArray();
+    $output['paper']        = $thePaper->toArray();
+    foreach ( $collaborators as $user ){
+        if( $user->id() == $myAssignment->getTo() ) continue;   // don't include myself as a collaborator
+        $output['collaborators'][] = [
+            "_key"  =>  $user->key()
         ];
     }
 

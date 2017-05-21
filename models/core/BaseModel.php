@@ -153,11 +153,7 @@ abstract class BaseModel {
     }
 
     static function idToKey ($idString) {
-        $whatIWant = false;
-        if (($pos = strpos($idString, "/")) !== FALSE) {
-            $whatIWant = substr($idString, $pos+1);
-        }
-        return $whatIWant;
+        return explode("/", $idString)[1];
     }
 
     protected static function addMetaData( &$data ){

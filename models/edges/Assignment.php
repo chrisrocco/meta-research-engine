@@ -10,6 +10,7 @@ namespace Models\Edges;
 
 
 use DB\DB;
+use Models\Core\BaseModel;
 use Models\Core\EdgeModel;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
@@ -61,14 +62,6 @@ class Assignment extends EdgeModel
     }
 
     public function getPaper () {
-        $split = explode("/", $this->getFrom());
-        return Paper::retrieve( $split[1] );
-
-        /* This wasn't working */
-//        return DB::queryModel(
-//            'RETURN DOCUMENT (@assignmentID)',
-//            [ 'assignmentID' => $this->id()],
-//            Paper::class
-//        )[0];
+        return Paper::retrieve( BaseModel::idToKey( $this->getFrom() ) );
     }
 }
