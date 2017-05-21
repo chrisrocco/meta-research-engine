@@ -57,7 +57,7 @@ class RoccoMasterEncoding {
 
     static function parseAssignment( $assignment ){
         $output = [];
-        if( $assignment['encoding']['constants'] ){
+        if( isset( $assignment['encoding']['constants'] ) ){
             foreach ( $assignment['encoding']['constants'] as $constant ){
                 $output[] = [
                     "user" => $assignment['_key'],
@@ -67,7 +67,7 @@ class RoccoMasterEncoding {
                 ];
             }
         }
-        if ( $assignment['encoding']['branches'] ) {
+        if ( isset( $assignment['encoding']['branches'] ) ) {
             foreach ( $assignment['encoding']['branches'] as $branchNum => $branchVariables ){
                 foreach($branchVariables as $variable) {
                     $output[] = [
