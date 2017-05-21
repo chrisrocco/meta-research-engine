@@ -75,6 +75,72 @@ $app->GET('/loadConflictResolution', function($request, $response, $args) {
         ->withStatus (200);
 });
 
+
+
+$app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
+    $queryParams = $request->getQueryParams();
+    $userKey = $queryParams['userKey'];
+    $user = \Models\Vertices\User::retrieve($userKey);
+    if (!$user) {
+        return $response
+            ->write("No user with key ". $userKey." found")
+            ->withStatus(409);
+    }
+    $query = \DB\DB::query('
+            LET user = DOCUMENT (@userID)
+            LET assignmentStatuses = (
+                FOR paper, assignment IN INBOUND user._id @@assignments
+                    return TO_BOOL(assignment.done)
+            )
+            
+            RETURN {
+                "projects" : (
+                    FOR project IN OUTBOUND user._id @@enrolled_in
+                        RETURN project
+                ),
+                "activeAssignments" : (
+                    FOR status IN assignmentStatuses
+                        FILTER status == false
+                        COLLECT WITH COUNT INTO length
+                        RETURN length
+                ),
+                "completeAssignments" : (
+                    FOR status IN assignmentStatuses
+                        FILTER status == true
+                        COLLECT WITH COUNT INTO length RETURN length
+                ),
+                "totalActivePapers" : (
+                    FOR paper IN @@papers
+                        FILTER paper.status != "pending"
+                        COLLECT WITH COUNT INTO length RETURN length
+                ),
+                "totalUsers" : COUNT (@@users),
+                "totalProjects" : COUNT (@@projects),
+                "totalQuestionsAnswered" : 
+                SUM (
+                    FOR p IN @@papers
+                        FILTER IS_ARRAY (p.masterEncoding)
+                        FOR record IN p.masterEncoding
+                            FOR response IN record.responses
+                                RETURN COUNT (response.users)
+                )
+            }',
+        [
+            'userID' => \Models\Vertices\User::$collection."/".$userKey,
+            '@assignments' => \Models\Edges\Assignment::$collection,
+            '@enrolled_in' => \Models\Edges\EnrolledIn::$collection,
+            '@papers' => \Models\Vertices\Paper\Paper::$collection,
+            '@users' => \Models\Vertices\User::$collection,
+            '@projects' => Project::$collection
+        ],
+        true)->getAll();
+        return $response
+            ->write(json_encode($query[0]))
+            ->withStatus(200);
+});
+
+
+
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $projectKey = $queryParams['projectKey'];
