@@ -150,6 +150,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
     foreach ($queueItems as $queueItem) {
         if ($queueItem === false) {continue;}
         Assignment::assignByKey($queueItem['paperKey'], $user->key(), $project->get('version'));
+        Paper::updateStatusByKey($queueItem['paperKey']);
     }
 
     if( $status == 200 ){

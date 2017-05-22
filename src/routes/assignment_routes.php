@@ -30,6 +30,11 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('encoding', $formData['encoding']);
 
     $paper = $assignment->getPaper();
+    if (!$paper) {
+        return $response
+            ->write("Could not get Paper from assignment. Not merging into masterEncoding.")
+            ->withStatus(500);
+    }
     if (json_decode($formData['done']) === true) {
         $paper->roccoMerge($assignment);
     }

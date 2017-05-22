@@ -73,6 +73,14 @@ class Paper extends VertexModel {
         return $users;
     }
 
+    public static function updateStatusByKey ($paperKey) {
+        $paper = Paper::retrieve($paperKey);
+        if (!$paper) {
+            return false;
+        }
+        return $paper->updateStatus();
+    }
+
     public function updateStatus () {
         $masterEncoding = $this->get('masterEncoding');
         $conflicted = RoccoMasterEncoding::conflictedStatus($masterEncoding);
