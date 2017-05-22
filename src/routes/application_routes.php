@@ -208,6 +208,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
         key = paper._key,
         title = paper.title,
         description = paper.description,
+        status = paper.status,
         assignedUsers = (
              FOR user, assignment IN OUTBOUND paper._id @@assignments
                 RETURN {"_key" : user._key, "first_name" : user.first_name, "last_name" : user.last_name, "email" : user.email}
@@ -219,6 +220,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
     RETURN {
         "key" : key,
         "title" : title,
+        "status" : status,
         "description" : description,
         "assignedUsers" : assignedUsers,
         "assignmentCount" : assignmentCount
