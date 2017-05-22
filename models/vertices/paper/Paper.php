@@ -28,10 +28,10 @@ class Paper extends VertexModel {
      * @return \Models\Vertices\Project\Project
      */
     public function getProject() {
-        $AQL = "FOR project IN OUTBOUND @paperKey @@paper_to_study
+        $AQL = "FOR project IN OUTBOUND @paperID @@paper_to_study
                     RETURN project";
         $bindings = [
-            'paperKey' => $this->key(),
+            'paperID' => $this->id(),
             '@paper_to_study' => PaperOf::$collection
         ];
         return DB::queryModel($AQL, $bindings, Project::class)[0];
@@ -107,8 +107,8 @@ class Paper extends VertexModel {
                 return $status;
             }
         }
-
-        if ($assignmentCount < $this->getProject()->get('assignmentTarget')) {
+        $project = $this->getProject();
+        if ($project && $assignmentCount < $project->get('assignmentTarget')) {
             $status = "clean";
             $this->update('status', $status);
             return $status;
