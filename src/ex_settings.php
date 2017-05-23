@@ -7,9 +7,9 @@ $settings = [
         // Database Connection
         "database_connection_options" => [
             // database name
-            \triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE => 'development',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE => '',
             // server endpoint to connect to
-            \triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT => 'tcp://35.184.147.35:8529',
+            \triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT => '',
             // authorization type to use (currently supported: 'Basic')
             \triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_TYPE => 'Basic',
             // user for basic authorization
