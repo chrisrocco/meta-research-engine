@@ -17,7 +17,7 @@ $app->GET('/secure', function ($request, $response, $args) {
 
 $app->POST ('/reportError', function ($request, $response, $args) {
     $formData = $request->getParams();
-    $error = json_encode($formData['error'],JSON_PRETTY_PRINT);
+    $error = json_encode($formData,JSON_PRETTY_PRINT);
     $email = \Email\Email::errorReportEmail($error);
     $email->send();
 });
