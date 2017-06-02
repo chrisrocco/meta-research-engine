@@ -38,10 +38,8 @@ class Email {
 
         $html_email_template = file_get_contents (__DIR__ . '/templates/validate_email.html');
 
-        $html_email_template = str_replace('{server_host}', "http://coursebooks.xyz", $html_email_template);
-        $html_email_template = str_replace('{hash_code}', $hash_code, $html_email_template);
-        $html_email_template = str_replace('{ID}', $user_id, $html_email_template);
-
+        $href = "https://researchcoder.com/api/users/validate?_key=$user_id&hash_code=$hash_code";
+        $html_email_template = str_replace('{href}', $href, $html_email_template);
         $email->body($html_email_template);
 
         return $email;
