@@ -21,3 +21,9 @@ $app->POST ('/reportError', function ($request, $response, $args) {
     $email = \Email\Email::errorReportEmail($error);
     $email->send();
 });
+
+$app->GET("/500", function ($request, $response, $args) {
+    return $response
+        ->write ("I am an error. Deal with me.")
+        ->withStatus(500);
+});
