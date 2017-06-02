@@ -14,3 +14,10 @@ $app->GET('/secure', function ($request, $response, $args) {
         ->withStatus(200);
 
 });
+
+$app->POST ('/reportError', function ($request, $response, $args) {
+    $formData = $request->getParams();
+    $error = $formData['error'];
+    $email = \Email\Email::errorReportEmail($error);
+    $email->send();
+});
