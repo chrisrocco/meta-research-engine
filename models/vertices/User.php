@@ -1,11 +1,12 @@
 <?php
 namespace Models\Vertices;
 
-use DB\DB;
+//use DB\DB;
 use Firebase\JWT\JWT;
 
 //use Models\Core\VertexModel;
 use Models\Edges\Assignment;
+use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 
 class User extends VertexModel
