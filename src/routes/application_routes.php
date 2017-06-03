@@ -6,7 +6,10 @@
  * Time: 8:41 PM
  */
 use Models\Edges\Assignment;
+use Models\Edges\EnrolledIn;
+use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
+use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\User;
 use Models\Vertices\Variable;
 use vector\ArangoORM\DB\DB;
@@ -128,11 +131,11 @@ $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
                 )
             }',
         [
-            'userID' => \Models\Vertices\User::$collection."/".$userKey,
-            '@assignments' => \Models\Edges\Assignment::$collection,
-            '@enrolled_in' => \Models\Edges\EnrolledIn::$collection,
-            '@papers' => \Models\Vertices\Paper\Paper::$collection,
-            '@users' => \Models\Vertices\User::$collection,
+            'userID' => User::$collection."/".$userKey,
+            '@assignments' => Assignment::$collection,
+            '@enrolled_in' => EnrolledIn::$collection,
+            '@papers' => Paper::$collection,
+            '@users' => User::$collection,
             '@projects' => Project::$collection
         ],
         true)->getAll();
@@ -144,11 +147,12 @@ $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $projectKey = $queryParams['projectKey'];
-    $project = \Models\Vertices\Project\Project::retrieve($projectKey);
-    $structure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
+    $project = Project::retrieve($projectKey);
+    $result_set_structure = SerializedProjectStructure::getByExample([ "_key" => $projectKey ]);
 
     $data = [];
-    if( $structure ){
+    if( count( $result_set_structure ) == 1 ){
+        $structure = $result_set_structure[0];
         $data['structure'] = $structure->get('structure');
     } else {
         $data['structure'] = false;

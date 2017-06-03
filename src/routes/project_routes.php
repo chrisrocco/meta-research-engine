@@ -2,6 +2,7 @@
 
 use Models\Vertices\Project\Project;
 use Models\Vertices\Domain;
+use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
 use Models\Edges\Assignment;
@@ -44,7 +45,6 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
 
 $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
-    //var_dump( $formData );
     $projectKey = $args['key'];
     $structure = json_decode( $formData['structure'], true);
 
@@ -96,9 +96,9 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
 
     $newVersion = $project->updateVersion();
 
-    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
+    $serializedStructure = SerializedProjectStructure::retrieve($projectKey);
     if (!$serializedStructure) {
-        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $projectKey]);
+        $serializedStructure = SerializedProjectStructure::create( ['_key' => $projectKey]);
     }
     $serializedStructure->update('structure', $structure );
     $serializedStructure->update('version', $newVersion);
