@@ -55,12 +55,4 @@ class AssignmentTest extends \Tests\BaseTestCase
         return $newAssignment;
     }
 
-    /**
-     * @depends testGetProject
-     */
-    public function testGetPaperCoderData( $assignmentModel ){
-        $response = $this->runApp("GET", "/loadAssignment?key=".$assignmentModel->key());
-
-        self::assertEquals(200, $response->getStatusCode());
-    }
 }

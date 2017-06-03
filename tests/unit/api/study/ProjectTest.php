@@ -21,6 +21,9 @@ use \Models\Vertices\User;
  */
 class ProjectTest extends \Tests\BaseTestCase
 {
+
+    protected $withMiddleware = false;
+
     function testCreateProject(){
         $random_name = "project " . rand(0, 9999);
         $response = $this->runApp("POST", "/projects", [
@@ -34,20 +37,6 @@ class ProjectTest extends \Tests\BaseTestCase
         $project = $projects[0];
 
         return $project;
-    }
-
-    /**
-     * @depends testCreateProject
-     * @param $project_name Project
-     */
-    function testAddPaper( $project ){
-        $jsonPaperData = file_get_contents( __DIR__ . '/../../../data/papers.json');
-
-        $response = $this->runApp("POST", "/projects/".$project->key()."/papers", [
-            "papers" => $jsonPaperData
-        ]);
-
-        self::assertEquals(200, $response->getStatusCode());
     }
 
     /**
