@@ -11,6 +11,7 @@ namespace Tests\Models;
 
 use Models\Vertices\User;
 use Tests\BaseTestCase;
+use triagens\ArangoDb\Exception;
 
 class CrudTest extends BaseTestCase {
 
@@ -66,9 +67,11 @@ class CrudTest extends BaseTestCase {
     public function testDelete( $existingUserModel ){
         $existingUserModel->delete();
 
-        $frob_db = User::retrieve( $existingUserModel->key() );
+        $rs = User::getByExample([
+            "_key" => $existingUserModel->key()
+        ]);
 
-        self::assertFalse( $frob_db );
+        self::assertEquals( 0, count($rs) );
     }
 
 }

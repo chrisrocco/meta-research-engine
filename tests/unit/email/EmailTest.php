@@ -12,7 +12,7 @@ use Email\Email;
 
 class EmailTest extends \Tests\BaseTestCase {
 
-    public function testValidationEmail(){
+    /*public function testValidationEmail(){
 
         $email = Email::validationEmail(
             'slimskeletonmailserver@gmail.com',
@@ -24,6 +24,6 @@ class EmailTest extends \Tests\BaseTestCase {
         $result = $email->send();
 
         self::assertTrue($result);
-    }
+    }*/
 
 }
