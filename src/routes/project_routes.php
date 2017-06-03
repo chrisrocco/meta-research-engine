@@ -43,6 +43,9 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
+error_reporting( E_ALL );
+ini_set('display_errors', 1);
+
 $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     $projectKey = $args['key'];
@@ -156,8 +159,10 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
     $queueItems = $project->getNextPaper($project->get('assignmentTarget'));
 //        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
     foreach ($queueItems as $queueItem) {
-        if ($queueItem === false) {continue;}
-        Assignment::assignByKey($queueItem['paperKey'], $user->key(), $project->get('version'));
+        if ($queueItem === false) { continue; }
+        $paper = Paper::retrieve( $queueItem['paperKey'] ); // Damnit, Caleb. AssignByKey? Really?
+        $assignment = Assignment::assign( $paper, $user );
+        $assignment->update( "version", $project->get("version"));
         Paper::updateStatusByKey($queueItem['paperKey']);
     }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f03728deb0410600d84b7f15d69e97d",
+    "content-hash": "0194117bc35b46c9b0f74587417e9404",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -655,7 +655,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
-                "reference": "241f5390199705fb0182d115aa079412b2a49fac"
+                "reference": "5671fa147860dfd53536098ce14d6d74f2994100"
             },
             "require": {
                 "php": ">=5.4",
@@ -687,7 +687,7 @@
                 "package",
                 "template"
             ],
-            "time": "2017-06-02 22:21:19"
+            "time": "2017-06-03 05:43:23"
         }
     ],
     "packages-dev": [
