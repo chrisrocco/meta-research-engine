@@ -1,6 +1,6 @@
 {
-  "name": "bigdata-server",
-  "description": "The RESTful web service for UAB's Big Data project",
+  "name": "research-engine",
+  "description": "The Back-end of a research engine powering UAB's Energetics department",
   "keywords": [
     "bigdata",
     "arangodb",
@@ -46,15 +46,9 @@
   },
   "autoload": {
     "psr-4": {
-      "Models\\Core\\": "models/core",
-      "Models\\Edges\\": "models/edges",
-      "Models\\Vertices\\": "models/vertices",
-      "Models\\Vertices\\Project\\" : "models/vertices/project",
-      "Models\\Vertices\\Paper\\" : "models/vertices/paper",
+      "Models\\": "models/",
       "DB\\": "data/",
-      "DB\\Queries\\": "data/queries",
-      "Email\\": "lib/email/",
-      "SlimRequestHandler\\": "lib/api"
+      "Email\\": "lib/email/"
     }
   },
   "scripts": {

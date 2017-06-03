@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5aa8161191d56456b8c638138e3b320d",
+    "content-hash": "2f03728deb0410600d84b7f15d69e97d",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -648,6 +648,46 @@
                 "psr-7"
             ],
             "time": "2017-02-27T09:14:40+00:00"
+        },
+        {
+            "name": "vector/arangodb-php-orm",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
+                "reference": "241f5390199705fb0182d115aa079412b2a49fac"
+            },
+            "require": {
+                "php": ">=5.4",
+                "triagens/arangodb": "^3.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "5.2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "vector\\ArangoORM\\": "src/",
+                    "vector\\ArangoORM\\DB\\": "src/database/",
+                    "vector\\ArangoORM\\Models\\Core\\": "src/models/core/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris Rocco",
+                    "email": "chris.rocco7@gmail.com"
+                }
+            ],
+            "description": "Object relationship mapping utility for ArangoDB.",
+            "keywords": [
+                "composer",
+                "package",
+                "template"
+            ],
+            "time": "2017-06-02 22:21:19"
         }
     ],
     "packages-dev": [
@@ -1967,7 +2007,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "vector/arangodb-php-orm": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
