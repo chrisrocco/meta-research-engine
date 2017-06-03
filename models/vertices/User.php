@@ -4,7 +4,7 @@ namespace Models\Vertices;
 //use DB\DB;
 use Firebase\JWT\JWT;
 
-//use Models\Core\VertexModel;
+//use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
@@ -119,9 +119,7 @@ class User extends VertexModel
     }
     function rehash(){
         $hash_code = bin2hex(random_bytes(22));
-
         $this->update('hash_code', $hash_code);
-
         return $hash_code;
     }
     function checkHash($hash_code){

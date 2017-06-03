@@ -10,9 +10,10 @@ namespace Models\Vertices;
 
 
 use DB\DB;
-use Models\Core\VertexModel;
+
 use Models\Edges\VariableOf;
 use Models\Edges\SubdomainOf;
+use vector\ArangoORM\Models\Core\VertexModel;
 
 class Domain extends VertexModel
 {
@@ -22,8 +23,8 @@ class Domain extends VertexModel
      * @param $domain Domain
      */
     function addSubdomain( $domain ){
-        SubdomainOf::create(
-            $this->id(), $domain->id(), []
+        SubdomainOf::createEdge(
+            $this, $domain, []
         );
     }
 
@@ -31,8 +32,8 @@ class Domain extends VertexModel
      * @param $variable Variable
      */
     function addVariable( $variable ){
-        VariableOf::create(
-            $this->id(), $variable->id(), []
+        VariableOf::createEdge(
+            $this, $variable, []
         );
     }
 

@@ -9,15 +9,14 @@
 namespace Models\Vertices\Paper;
 
 
-use DB\DB;
 use Models\Core\BaseModel;
-use Models\Core\VertexModel;
+use vector\ArangoORM\DB\DB;
+use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;
 use triagens\ArangoDb\Document;
-use MasterEncoding\MasterEncoding;
 
 use triagens\ArangoDb\Exception;
 
