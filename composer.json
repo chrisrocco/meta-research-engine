@@ -54,7 +54,6 @@
   "scripts": {
     "start":              "php -S localhost:8080 -t public public/index.php",
     "test":               "phpunit",
-    "test-connection":    "phpunit tests/unit/database/ConnectionTest.php",
     "test-quick":         "phpunit tests/QuickTest.php",
     "db-init":            "php data/scripts/db-init.php",
     "db-truncate":        "php data/scripts/db-truncate.php"
