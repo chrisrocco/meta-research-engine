@@ -47,7 +47,6 @@
   "autoload": {
     "psr-4": {
       "Models\\": "models/",
-      "DB\\": "data/",
       "Email\\": "lib/email/"
     }
   },

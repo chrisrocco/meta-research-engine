@@ -1,10 +1,7 @@
 <?php
 namespace Models\Vertices;
 
-//use vector\ArangoORM\DB\DB;
 use Firebase\JWT\JWT;
-
-//use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Edges\Assignment;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;

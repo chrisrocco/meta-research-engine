@@ -9,7 +9,6 @@
 namespace Models\Vertices\Paper;
 
 
-use Models\Core\BaseModel;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Edges\Assignment;

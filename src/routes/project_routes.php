@@ -6,6 +6,7 @@ use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
 use Models\Edges\Assignment;
 use Models\Vertices\User;
+use vector\ArangoORM\DB\DB;
 
 /*
  * GET projects/{projectname}/structure
@@ -121,7 +122,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
         'registrationCode' => $registrationCode,
         '@project_collection' => Project::$collection
     ];
-    $projectKeys = \DB\DB::query( $AQL, $bindings )->getAll();
+    $projectKeys = DB::query( $AQL, $bindings )->getAll();
     /* End Query */
 
     if (count ($projectKeys) === 0 ) {

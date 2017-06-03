@@ -76,17 +76,6 @@ class ProjectTest extends \Tests\BaseTestCase
         self::assertTrue(200 === $status || 400 === $status);    }
 
     /**
-     * @depends testCreateProject
-     */
-    function testGetProjects( $project ){
-        $response = $this->runApp("GET", "/loadProjects");
-
-       // echo ( (string)$response->getBody() );
-        $status = $response->getStatusCode();
-        self::assertTrue(200 === $status || 400 === $status);
-    }
-
-    /**
      * @var $user User
      */
     static $user;

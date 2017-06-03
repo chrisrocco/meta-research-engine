@@ -6,9 +6,10 @@
  * Time: 8:41 PM
  */
 use Models\Edges\Assignment;
-use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
+use Models\Vertices\User;
 use Models\Vertices\Variable;
+use vector\ArangoORM\DB\DB;
 
 
 /**
@@ -78,8 +79,6 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
         ->withStatus (200);
 });*/
 
-
-
 $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $userKey = $queryParams['userKey'];
@@ -89,7 +88,7 @@ $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
             ->write("No user with key ". $userKey." found")
             ->withStatus(409);
     }
-    $query = \DB\DB::query('
+    $query = DB::query('
             LET user = DOCUMENT (@userID)
             LET assignmentStatuses = (
                 FOR paper, assignment IN INBOUND user._id @@assignments
@@ -142,8 +141,6 @@ $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
             ->withStatus(200);
 });
 
-
-
 $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $projectKey = $queryParams['projectKey'];
@@ -171,7 +168,7 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $userKey = $queryParams['userKey'];
 
-    $user = \Models\Vertices\User::retrieve( $userKey );
+    $user = User::retrieve( $userKey );
 
     $AQL = 'FOR vertex, edge IN INBOUND @root @@assignments
                 FOR project IN OUTBOUND vertex @@paper_to_project
@@ -186,7 +183,7 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
         '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection
     ];
 
-    $data = \DB\DB::query($AQL, $bindings)->getAll();
+    $data = DB::query($AQL, $bindings)->getAll();
 
     $response->write( json_encode($data, JSON_PRETTY_PRINT) );
     return $response;
@@ -202,7 +199,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
             ->withStatus(409);
     }
 
-    $papers = \DB\DB::query(
+    $papers = DB::query(
         'FOR paper IN INBOUND @studyID @@paper_to_study
     COLLECT
         key = paper._key,
@@ -253,7 +250,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
 $app->GET('/loadProjects', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
 
-    $cursor = \DB\DB::getAll( \Models\Vertices\Project\Project::$collection );
+    $cursor = DB::getAll( \Models\Vertices\Project\Project::$collection );
     $documents = $cursor->getAll();
     $flat = [];
     foreach ( $documents as $doc ){
@@ -270,7 +267,7 @@ $app->GET('/loadProjects', function($request, $response, $args) {
 
 $app->GET('/loadCodeBook', function($request, $response, $args) {
 
-    $cursor = \DB\DB::getAll( Project::$collection );
+    $cursor = DB::getAll( Project::$collection );
     $projects = Project::wrapAll( $cursor );
 
     $output = [];

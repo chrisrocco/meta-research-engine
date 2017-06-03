@@ -10,7 +10,7 @@ namespace Models\Edges;
 
 
 use vector\ArangoORM\DB\DB;
-use Models\Core\BaseModel;
+use vector\ArangoORM\Models\Core\BaseModel;
 use vector\ArangoORM\Models\Core\EdgeModel;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;

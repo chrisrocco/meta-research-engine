@@ -3,11 +3,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $settings = require __DIR__ . '/../src/settings.php';
 
-/* Connect to Testing DB */
-$config = $settings['settings']['database_connection_options'];
-$connection = new \triagens\ArangoDb\Connection($config);
-\DB\DB::$connection = $connection;
-/* End Connect */
+require __DIR__ . '/../data/db_connect.php';
 
 // Instantiate the Slim App
 $app = new \Slim\App($settings);
@@ -58,7 +54,7 @@ require __DIR__ . '/../src/middleware.php';
 require( __DIR__ . "/../src/routes/user_routes.php");
 require( __DIR__ . "/../src/routes/assignment_routes.php");
 require( __DIR__ . "/../src/routes/project_routes.php");
-require(__DIR__ . "/../src/routes/core_routes.php");
+require( __DIR__ . "/../src/routes/core_routes.php");
 require( __DIR__ . "/../src/routes/application_routes.php");
 
 // Run App
