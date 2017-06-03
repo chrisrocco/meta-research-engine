@@ -9,10 +9,9 @@
 namespace Models\Vertices;
 
 
-use DB\DB;
-
 use Models\Edges\VariableOf;
 use Models\Edges\SubdomainOf;
+use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 
 class Domain extends VertexModel

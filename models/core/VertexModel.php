@@ -9,7 +9,7 @@
 namespace Models\Core;
 
 
-use DB\DB;
+use vector\ArangoORM\DB\DB;
 use triagens\ArangoDb\Document;
 
 /**

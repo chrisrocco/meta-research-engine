@@ -8,7 +8,7 @@
 
 namespace Models\Vertices\Project;
 
-use DB\DB;
+use vector\ArangoORM\DB\DB;
 use Models\Edges\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Paper\Paper;

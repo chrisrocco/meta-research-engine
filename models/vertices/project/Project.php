@@ -9,7 +9,7 @@
 namespace Models\Vertices\Project;
 
 
-use DB\DB;
+use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Vertices\Variable;
 use Models\Vertices\Domain;
