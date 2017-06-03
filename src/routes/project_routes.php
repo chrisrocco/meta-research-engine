@@ -112,83 +112,101 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
 });
 
 $app->POST ('/projects/members', function ($request, $response, $args) {
-    $formData = $request->getParams();
-    $userKey = $formData['userKey'];
-    $registrationCode = $formData['registrationCode'];
+    $userKey = $request->getParam('userKey');
+    $registrationCode = $request->getParam('registrationCode');
+
     $user = User::retrieve($userKey);
 
-    /* Query Start */
-    $AQL = "FOR project IN @@project_collection
-                FILTER project.registrationCode == @registrationCode
-                RETURN project._key";
-    $bindings = [
-        'registrationCode' => $registrationCode,
-        '@project_collection' => Project::$collection
-    ];
-    $projectKeys = DB::query( $AQL, $bindings )->getAll();
-    /* End Query */
+    $project_result_set = Project::getByExample( [ "registrationCode" => $registrationCode ] );
 
-    if (count ($projectKeys) === 0 ) {
+    if( count($project_result_set) == 0 ) return $response->withStatus( 404 )->write( "Project Not Found" );
+
+    $project = $project_result_set[0];
+    $enroll_result = $project->addUser( $user, $registrationCode );
+
+
+    /*------------ What was this mess about? --------------*/
+    /*-----------------------------------------------------*/
+//    $AQL = "FOR project IN @@project_collection
+//                FILTER project.registrationCode == @registrationCode
+//                RETURN project._key";
+//    $bindings = [
+//        'registrationCode' => $registrationCode,
+//        '@project_collection' => Project::$collection
+//    ];
+//    $projectKeys = DB::query( $AQL, $bindings )->getAll();
+//
+//    if (count ($projectKeys) === 0 ) {
+//        return $response
+//            ->write("Project not found")
+//            ->withStatus(404);
+//    }
+//    $projectKey = $projectKeys[0];
+//
+//    $project = Project::retrieve($projectKey);
+//    if (!$project) {
+//        return $response
+//            ->write("Project ".$projectKey. " not found")
+//            ->withStatus(404);
+//    }
+//    $projectName = $project->get('name');
+//
+//    if (!$user) {
+//        return $response
+//            ->write("User ".$userKey. " not found")
+//            ->withStatus(400);
+//    }
+//    if (!$user->get('active')) {
+//        return $response
+//            ->write("User not verified. Please verify your email.")
+//            ->withStatus(400);
+//    }
+//
+//    $status = $project->addUser ( $user, $registrationCode );
+
+
+    /*------------ This business logic needs refractored into a class --------------*/
+    /*------------------------------------------------------------------------------*/
+
+    // AssignmentManager->enrollmentAssignment( $user, $project );
+
+    try {
+        $queueItems = $project->getNextPaper( 2 );              // Not performing as promised
+        foreach ($queueItems as $queueItem) {                   // How is anybody supposed to know what the contents of a "queue item" are?
+            if ($queueItem === false) { continue; }
+            $paper = Paper::retrieve( $queueItem['paperKey'] ); // Damnit, Caleb. AssignByKey? Really?
+            $assignment = Assignment::assign( $paper, $user );
+            $assignment->update( "version", $project->get("version"));
+            Paper::updateStatusByKey($queueItem['paperKey']);
+        }
+    } catch ( Exception $e ){
+        throw new Exception( "Caleb Code Exception" );
+    }
+
+
+
+
+    if( $enroll_result == 200 ){
         return $response
-            ->write("Project not found")
-            ->withStatus(404);
-    }
-    $projectKey = $projectKeys[0];
-
-    $project = Project::retrieve($projectKey);
-    if (!$project) {
-        return $response
-            ->write("Project ".$projectKey. " not found")
-            ->withStatus(404);
-    }
-    $projectName = $project->get('name');
-
-    if (!$user) {
-        return $response
-            ->write("User ".$userKey. " not found")
-            ->withStatus(400);
-    }
-    if (!$user->get('active')) {
-        return $response
-            ->write("User not verified. Please verify your email.")
-            ->withStatus(400);
+            ->write( json_encode( [ 'studyName' => $project->get( 'name' ) ], JSON_PRETTY_PRINT) );
     }
 
-    $status = $project->addUser ( $user, $registrationCode );
-
-    $queueItems = $project->getNextPaper($project->get('assignmentTarget'));
-//        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
-    foreach ($queueItems as $queueItem) {
-        if ($queueItem === false) { continue; }
-        $paper = Paper::retrieve( $queueItem['paperKey'] ); // Damnit, Caleb. AssignByKey? Really?
-        $assignment = Assignment::assign( $paper, $user );
-        $assignment->update( "version", $project->get("version"));
-        Paper::updateStatusByKey($queueItem['paperKey']);
-    }
-
-    if( $status == 200 ){
-        return $response
-            ->write( json_encode([
-                'studyName' => $projectName
-            ], JSON_PRETTY_PRINT) );
-    }
-
-    switch($status) {
+    switch( $enroll_result ) {
         case 400 :
             $message = "Project / registration code mismatch";
+            return $response->withStatus( 400 )->write( $message );
             break;
         case 409 :
             $message = "User already enrolled in Project. Aborting enrollment";
+            return $response->withStatus( 409 )->write( $message );
             break;
-        default :
+        default:
             $status = 500;
             $message = "Something went very, very wrong";
+            $message = "No exception here! Just a 500";
+            return $response->withStatus( 500 )->write( $message );
             break;
     }
-
-    return $response
-        ->write($message)
-        ->withStatus($status);
 });
 
 /**

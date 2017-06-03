@@ -130,9 +130,10 @@ class Project extends VertexModel {
         return $queue->next($numPapers);
     }
 
+
     public function getPaperQueue () {
         $queue = new PaperQueue($this->key());
-        return $queue->getQueueRaw();
+        return $queue->getQueueRaw();           // Raw -> Flat
     }
 
     public function getPapersFlat(){
