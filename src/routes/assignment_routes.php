@@ -29,11 +29,24 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('completion', $formData['completion']);
     $assignment->update('encoding', $formData['encoding']);
 
-    $paper = $assignment->getPaper();
-    if (json_decode($formData['done']) === true) {
-        $paper->roccoMerge($assignment);
+
+    try {
+        $paper = $assignment->getPaper();
+        if (!$paper) {
+            return $response
+                ->write("Could not get Paper from assignment. Not merging into masterEncoding.")
+                ->withStatus(500);
+        }
+        if (json_decode($formData['done']) === true) {
+            $paper->roccoMerge($assignment);
+        }
+        $status = $paper->updateStatus();
+    } catch ( Exception $e ){
+        return $response
+            ->write( json_encode([
+                "error" => $e
+            ]));
     }
-    $status = $paper->updateStatus();
 
     return $response
         ->write( json_encode([

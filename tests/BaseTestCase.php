@@ -75,7 +75,7 @@ class BaseTestCase extends \PHPUnit_Framework_TestCase {
         require( __DIR__ . "/../src/routes/user_routes.php");
         require( __DIR__ . "/../src/routes/assignment_routes.php");
         require( __DIR__ . "/../src/routes/project_routes.php");
-        require( __DIR__ . "/../src/routes/test_routes.php");
+        require(__DIR__ . "/../src/routes/core_routes.php");
         require( __DIR__ . "/../src/routes/application_routes.php");
 
         // Process the application

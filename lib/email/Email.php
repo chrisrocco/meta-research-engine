@@ -58,6 +58,33 @@ class Email {
 
         return $email;
     }
+    public static function errorReportEmail ($error_body) {
+        $settings = require __DIR__ . '/../../src/settings.php';
+        $smtp_settings = $settings['settings']['smtp'];
+
+        $mail = new \PHPMailer();
+
+        $mail->isSMTP();
+        $mail->Host         =   $smtp_settings['host'];
+        $mail->SMTPAuth     =   $smtp_settings['smtp_auth'];
+        $mail->Username     =   $smtp_settings['username'];
+        $mail->Password     =   $smtp_settings['password'];
+        $mail->SMTPSecure   =   $smtp_settings['smtp_secure'];
+        $mail->Port         =   $smtp_settings['port'];
+
+        $mail->From         =   Email::$app_email;
+        $mail->FromName     =   Email::$app_name;
+
+        $mail->addAddress("chris.rocco7@gmail.com", "Chris Rocco");
+        $mail->addAddress("caleb.falcione@gmail.com", "Caleb Falcione");
+        $mail->addReplyTo(Email::$app_email, Email::$app_name);
+        $mail->isHTML(true);
+
+        $mail->Subject = "Researchcoder.com bug report";
+        $mail->Body = $error_body;
+
+        return $mail;
+    }
 
 
 

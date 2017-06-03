@@ -73,6 +73,14 @@ class Paper extends VertexModel {
         return $users;
     }
 
+    public static function updateStatusByKey ($paperKey) {
+        $paper = Paper::retrieve($paperKey);
+        if (!$paper) {
+            return false;
+        }
+        return $paper->updateStatus();
+    }
+
     public function updateStatus () {
         $masterEncoding = $this->get('masterEncoding');
         $conflicted = RoccoMasterEncoding::conflictedStatus($masterEncoding);
@@ -99,8 +107,8 @@ class Paper extends VertexModel {
                 return $status;
             }
         }
-
-        if ($assignmentCount < $this->getProject()->get('assignmentTarget')) {
+        $project = $this->getProject();
+        if ($project && $assignmentCount < $project->get('assignmentTarget')) {
             $status = "clean";
             $this->update('status', $status);
             return $status;
