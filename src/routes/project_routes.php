@@ -121,10 +121,22 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
         'registrationCode' => $registrationCode,
         '@project_collection' => Project::$collection
     ];
-    $projectKey = \DB\DB::query( $AQL, $bindings )->getAll()[0];
+    $projectKeys = \DB\DB::query( $AQL, $bindings )->getAll();
     /* End Query */
 
+    if (count ($projectKeys) === 0 ) {
+        return $response
+            ->write("Project not found")
+            ->withStatus(404);
+    }
+    $projectKey = $projectKeys[0];
+
     $project = Project::retrieve($projectKey);
+    if (!$project) {
+        return $response
+            ->write("Project ".$projectKey. " not found")
+            ->withStatus(404);
+    }
     $projectName = $project->get('name');
 
     if (!$user) {
@@ -136,11 +148,6 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
         return $response
             ->write("User not verified. Please verify your email.")
             ->withStatus(400);
-    }
-    if (!$project) {
-        return $response
-            ->write("Project ".$projectKey. " not found")
-            ->withStatus(404);
     }
 
     $status = $project->addUser ( $user, $registrationCode );
