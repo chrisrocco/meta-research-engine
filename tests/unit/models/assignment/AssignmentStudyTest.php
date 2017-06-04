@@ -38,7 +38,7 @@ class AssignmentTest extends \Tests\BaseTestCase
 
         $this->study = Project::create([]);
         $this->paper = Paper::create([]);
-        $this->user  = User::create([]);
+        $this->user  = User::create(['email' => rand(0, 9999) . '@gmail.com']);
 
         $this->study->addPaper( $this->paper );
     }

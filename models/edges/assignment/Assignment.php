@@ -6,7 +6,7 @@
  * Time: 12:01 PM
  */
 
-namespace Models\Edges\Assignment\Assignment;
+namespace Models\Edges\Assignment;
 
 
 use vector\ArangoORM\DB\DB;
@@ -14,6 +14,7 @@ use vector\ArangoORM\Models\Core\BaseModel;
 use vector\ArangoORM\Models\Core\EdgeModel;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
+use Models\Edges\PaperOf;
 use Models\Vertices\User;
 
 class Assignment extends EdgeModel

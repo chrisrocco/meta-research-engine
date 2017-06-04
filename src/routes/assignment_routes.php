@@ -2,7 +2,6 @@
 use Models\Vertices\Paper\Paper;
 use \Models\Vertices\User;
 use Models\Edges\Assignment\Assignment;
-
 /**
  * GET assignmentsIDGet
  * Summary: Returns a single assignment
@@ -10,7 +9,6 @@ use Models\Edges\Assignment\Assignment;
  * Output-Formats: [application/json]
  */
 $app->GET('/assignments/{key}', function ($request, $response, $args) {
-
     $assignment = Assignment::retrieve($args["key"]);
 
     return $response->write(json_encode($assignment->toArray(), JSON_PRETTY_PRINT));
