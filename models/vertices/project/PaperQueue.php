@@ -37,7 +37,7 @@ class PaperQueue {
             COLLECT
                 paper = pap,
                 assignmentCount = COUNT (assignments),
-                priority = paperOf.priority
+                priority = TO_NUMBER(paperOf.priority)
                 
             FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
@@ -65,7 +65,7 @@ class PaperQueue {
             COLLECT
                 paper = pap,
                 assignmentCount = COUNT (assignments),
-                priority = paperOf.priority
+                priority = TO_NUMBER(paperOf.priority)
                 
             FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC

@@ -5,10 +5,8 @@ use Models\Vertices\Domain;
 use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
-use Models\Edges\Assignment\Assignment;
 use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\User;
-use vector\ArangoORM\DB\DB;
 
 /*
  * GET projects/{projectname}/structure
@@ -125,23 +123,9 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
     $project = $project_result_set[0];
     $enroll_result = $project->addUser( $user, $registrationCode );
 
-    try {
-        $assignmentTarget = $project->getUserAssignmentCap();
-        $assignedPapers = AssignmentManager::assignUpTo($project, $user, $assignmentTarget);
-        foreach ($assignedPapers as $paper) {
-            $paper->updateStatus();
-        }
-    } catch (Exception $e) {
-        throw new Exception( "Caleb Code Exception" );
-    }
-
-
-    if( $enroll_result == 200 ){
-        return $response
-            ->write( json_encode( [ 'studyName' => $project->get( 'name' ) ], JSON_PRETTY_PRINT) );
-    }
-
     switch( $enroll_result ) {
+        case 200 :
+            break;
         case 400 :
             $message = "Project / registration code mismatch";
             return $response->withStatus( 400 )->write( $message );
@@ -155,6 +139,21 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
             $message = "No exception here! Just a 500";
             return $response->withStatus( 500 )->write( $message );
             break;
+    }
+
+    try {
+        $assignmentTarget = $project->getUserAssignmentCap();
+        $assignedPapers = AssignmentManager::assignUpTo($project, $user, $assignmentTarget);
+        foreach ($assignedPapers as $paper) {
+            $paper->updateStatus();
+        }
+    } catch (Exception $e) {
+        throw new Exception( "Caleb Code Exception" );
+    }
+
+    if( $enroll_result === 200 ){
+        return $response
+            ->write( json_encode( [ 'studyName' => $project->get( 'name' ) ], JSON_PRETTY_PRINT) );
     }
 });
 
