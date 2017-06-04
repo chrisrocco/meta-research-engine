@@ -5,7 +5,8 @@ use Models\Vertices\Domain;
 use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
+use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\User;
 use vector\ArangoORM\DB\DB;
 
@@ -119,71 +120,20 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 
     $project_result_set = Project::getByExample( [ "registrationCode" => $registrationCode ] );
 
-    if( count($project_result_set) == 0 ) return $response->withStatus( 404 )->write( "Project Not Found" );
+    if( count($project_result_set) === 0 ) return $response->withStatus( 404 )->write( "Project Not Found" );
 
     $project = $project_result_set[0];
     $enroll_result = $project->addUser( $user, $registrationCode );
 
-
-    /*------------ What was this mess about? --------------*/
-    /*-----------------------------------------------------*/
-//    $AQL = "FOR project IN @@project_collection
-//                FILTER project.registrationCode == @registrationCode
-//                RETURN project._key";
-//    $bindings = [
-//        'registrationCode' => $registrationCode,
-//        '@project_collection' => Project::$collection
-//    ];
-//    $projectKeys = DB::query( $AQL, $bindings )->getAll();
-//
-//    if (count ($projectKeys) === 0 ) {
-//        return $response
-//            ->write("Project not found")
-//            ->withStatus(404);
-//    }
-//    $projectKey = $projectKeys[0];
-//
-//    $project = Project::retrieve($projectKey);
-//    if (!$project) {
-//        return $response
-//            ->write("Project ".$projectKey. " not found")
-//            ->withStatus(404);
-//    }
-//    $projectName = $project->get('name');
-//
-//    if (!$user) {
-//        return $response
-//            ->write("User ".$userKey. " not found")
-//            ->withStatus(400);
-//    }
-//    if (!$user->get('active')) {
-//        return $response
-//            ->write("User not verified. Please verify your email.")
-//            ->withStatus(400);
-//    }
-//
-//    $status = $project->addUser ( $user, $registrationCode );
-
-
-    /*------------ This business logic needs refractored into a class --------------*/
-    /*------------------------------------------------------------------------------*/
-
-    // AssignmentManager->enrollmentAssignment( $user, $project );
-
     try {
-        $queueItems = $project->getNextPaper( 2 );              // Not performing as promised
-        foreach ($queueItems as $queueItem) {                   // How is anybody supposed to know what the contents of a "queue item" are?
-            if ($queueItem === false) { continue; }
-            $paper = Paper::retrieve( $queueItem['paperKey'] ); // Damnit, Caleb. AssignByKey? Really?
-            $assignment = Assignment::assign( $paper, $user );
-            $assignment->update( "version", $project->get("version"));
-            Paper::updateStatusByKey($queueItem['paperKey']);
+        $assignmentTarget = $project->getUserAssignmentCap();
+        $assignedPapers = AssignmentManager::assignUpTo($project, $user, $assignmentTarget);
+        foreach ($assignedPapers as $paper) {
+            $paper->updateStatus();
         }
-    } catch ( Exception $e ){
+    } catch (Exception $e) {
         throw new Exception( "Caleb Code Exception" );
     }
-
-
 
 
     if( $enroll_result == 200 ){
@@ -202,7 +152,6 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
             break;
         default:
             $status = 500;
-            $message = "Something went very, very wrong";
             $message = "No exception here! Just a 500";
             return $response->withStatus( 500 )->write( $message );
             break;

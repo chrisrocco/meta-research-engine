@@ -6,7 +6,7 @@
  * Time: 12:01 PM
  */
 
-namespace Models\Edges;
+namespace Models\Edges\Assignment;
 
 
 use vector\ArangoORM\DB\DB;

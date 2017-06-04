@@ -9,7 +9,7 @@
 namespace Models\Vertices\Project;
 
 use vector\ArangoORM\DB\DB;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Paper\Paper;
 
@@ -17,9 +17,17 @@ use Models\Vertices\Paper\Paper;
 class PaperQueue {
 
 
+    /**
+     * Note: the "paper" attribute is a Paper object that has had getAll() executed.
+     *  {
+     *      "paper" : array,
+     *      "assignmentCount" : int,
+     *      "priority" : int
+     *  }
+     * @return array
+     */
     public function getQueueRaw () {
-        $queue = DB::query('
-            LET project = DOCUMENT ( @projectID )
+        $aql = 'LET project = DOCUMENT ( @projectID )
             FOR paper, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
                     FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
@@ -27,37 +35,27 @@ class PaperQueue {
                         RETURN assignment
                 )
             COLLECT
-                paperKey = paper._key,
+                paper = paper,
                 assignmentCount = COUNT (assignments),
-                priority = paperOf.priority,
-                paperTitle = paper.title,
-                paperDescription = paper.description
+                priority = paperOf.priority
                 
             FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
-            RETURN {
-                "paperKey" : paperKey,
-                "paperDescription" : pmcID,
-                "assignments" : assignmentCount,
-                "priority" : priority,
-                "paperTitle" : paperTitle
-            }
-            ', [
-                'projectID' => $this->project->id(),
-                '@paper_to_project' => PaperOf::$collection,
-                '@paper_to_user' => Assignment::$collection
-            ], true
-        )->getAll();
-        return $queue;
+            RETURN {"paper" : paper, "assignmentCount" : assignmentCount, "priority" : priority}';
+        $bindVars = [
+            'projectID' => $this->project->id(),
+            '@paper_to_project' => PaperOf::$collection,
+            '@paper_to_user' => Assignment::$collection
+        ];
+        return DB::query($aql, $bindVars, true)->getAll();
     }
 
     /**
-     * Gets the next queueItem in the PaperQueue. Returns false if the queue is empty
-     * @return mixed
+     * @param int $numPapers
+     * @return Paper[]
      */
-    public function next ($queueLimit = 1) {
-        $result = DB::query('
-            LET project = DOCUMENT ( @projectID )
+    public function nextPapers ($numPapers = 1) {
+        $aql = 'LET project = DOCUMENT ( @projectID )
             FOR paper, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
                     FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
@@ -65,75 +63,40 @@ class PaperQueue {
                         RETURN assignment
                 )
             COLLECT
-                paperKey = paper._key,
+                paper = paper,
                 assignmentCount = COUNT (assignments),
-                priority = paperOf.priority,
-                paperTitle = paper.title,
-                paperDescription = paper.description
+                priority = paperOf.priority
                 
             FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
             LIMIT @queueLimit
-            RETURN {
-                "paperKey" : paperKey,
-                "paperDescription" : paperDescription,
-                "assignments" : assignmentCount,
-                "priority" : priority,
-                "paperTitle" : paperTitle
-            }
-            ', [
+            RETURN paper';
+        $bindVars = [
             'projectID' => $this->project->id(),
-            'queueLimit' => $queueLimit,
+            'queueLimit' => $numPapers,
             '@paper_to_project' => PaperOf::$collection,
             '@paper_to_user' => Assignment::$collection
-        ], true
-        )->getAll();
-        if (count($result) === 0) {
-            return false;
-        }
-        $dequeuedPapers = $result;
-        foreach ($dequeuedPapers as $dequeuedPaper) {
-            $this->updatePriority ($dequeuedPaper);
-        }
-        return $dequeuedPapers;
+        ];
+        return DB::queryModel($aql, $bindVars, Paper::class);
     }
+
 
     /**
-     * @param $paperKey string
-     * @param $newPriority int
-     * @return \Models\Edges\PaperOf
-     * @throws \Exception
+     * @param $paper Paper
      */
-    public function changePriority ($paperKey, $newPriority ) {
-        $example = [
-            '_from' => Paper::$collection."/".$paperKey,
-            '_to' => $this->project->id()
-        ];
-        $paperOfSet = PaperOf::getByExample($example);
-        if (!$paperOfSet) {
-            throw new \Exception(PaperOf::$collection . " edge not found : ".json_encode($example));
-        }
-        if (count($paperOfSet) > 1) {
-            throw new \Exception("Multiple identical edges in ".PaperOf::$collection." ".json_encode($example));
-        }
-        $paperOfSet[0]->update('priority', $newPriority);
-        return $paperOfSet[0];
+    public function decrementPriority ($paper) {
+        $priority = $paper->getPriority($this->project);
+        $newPriority = $priority > 0 ? $priority - 1 : $priority;
+        $paper->updatePriority($this->project, $newPriority);
     }
 
-    public function updatePriority ($queueItem) {
-        $priority = $queueItem['priority'];
-        if ($priority > 0) {
-            $this->changePriority($queueItem['paperKey'], $priority - 1);
-        }
-    }
 
     private $project;
 
-    public function __construct($projectKey) {
-        $project = Project::retrieve($projectKey);
-        if (!$project) {
-            throw new \Exception("Study not found");
-        }
+    /**
+     * @param $project Project
+     */
+    public function __construct($project) {
         $this->project = $project;
     }
 }

@@ -42,6 +42,23 @@ class Project extends VertexModel {
         return $version;
     }
 
+    public function getPaperAssignmentTarget() {
+        return intval($this->get('assignmentTarget'));
+    }
+
+    public function getUserAssignmentCap () {
+        //TODO
+        return 5;
+    }
+
+    public function setPaperAssignmentTarget($newTarget) {
+        $this->update('assignmentTarget', $newTarget);
+    }
+
+    public function setUserAssignmentCap ($newTarget) {
+        //TODO
+    }
+
     /**
      * @param $domain Domain
      */
@@ -123,17 +140,6 @@ class Project extends VertexModel {
             '@var_to_domain'     =>  VariableOf::$collection
         ];
         return DB::query($AQL, $bindings, true)->getAll();
-    }
-
-    public function getNextPaper($numPapers = 1){
-        $queue = new PaperQueue($this->key());
-        return $queue->next($numPapers);
-    }
-
-
-    public function getPaperQueue () {
-        $queue = new PaperQueue($this->key());
-        return $queue->getQueueRaw();           // Raw -> Flat
     }
 
     public function getPapersFlat(){

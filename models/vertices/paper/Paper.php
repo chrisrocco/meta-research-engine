@@ -35,6 +35,24 @@ class Paper extends VertexModel {
         return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
 
+    /**
+     * @param $project Project
+     */
+    public function getPaperOf ($project) {
+        $example = [
+            '_from' => $this->id(),
+            '_to' => $project->id()
+        ];
+        $paperOfSet = PaperOf::getByExample($example);
+        if (!$paperOfSet) {
+            throw new \Exception(PaperOf::$collection . " edge not found : ".json_encode($example));
+        }
+        if (count($paperOfSet) > 1) {
+            throw new \Exception("Multiple identical edges in ".PaperOf::$collection." ".json_encode($example));
+        }
+        return $paperOfSet[0];
+    }
+
     public function getAssignments() {
         return DB::queryModel(
             'FOR user, ass IN OUTBOUND @paperID @@assignments
@@ -117,5 +135,22 @@ class Paper extends VertexModel {
 
     }
 
+    /**
+     * @param $project Project
+     * @param $newPriority int
+     */
+    public function updatePriority ($project, $newPriority) {
+        $paperOf = $this->getPaperOf($project);
+        $paperOf->update('priority', $newPriority);
+    }
+
+    /**
+     * @param $project Project
+     * @return int
+     */
+    public function getPriority ($project) {
+        $paperOf = $this->getPaperOf($project);
+        return intval($paperOf->get('priority'));
+    }
 }
 
