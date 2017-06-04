@@ -8,6 +8,7 @@
 
 namespace Models\Vertices\Project;
 
+use Models\Vertices\User;
 use vector\ArangoORM\DB\DB;
 use Models\Edges\Assignment\Assignment;
 use Models\Edges\PaperOf;
@@ -52,27 +53,30 @@ class PaperQueue {
 
     /**
      * @param int $numPapers
+     * @param $excludeUser User
      * @return Paper[]
      */
-    public function nextPapers ($numPapers = 1) {
+    public function nextPapers ($numPapers = 1, $excludeUser = null) {
         $aql = 'LET project = DOCUMENT ( @projectID )
             FOR pap, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
                     FOR user, assignment IN OUTBOUND pap._id @@paper_to_user
                         //FILTER project.version == assignment.projectVersion
-                        RETURN assignment
+                        RETURN user._id == @excludeUserID
                 )
             COLLECT
                 paper = pap,
                 assignmentCount = COUNT (assignments),
-                priority = TO_NUMBER(paperOf.priority)
+                priority = TO_NUMBER(paperOf.priority),
+                exclude = assignments ANY == true
                 
-            FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
+            FILTER ((priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0) && !exclude
             SORT priority DESC, assignmentCount DESC
             LIMIT @queueLimit
             RETURN paper';
         $bindVars = [
             'projectID' => $this->project->id(),
+            'excludeUserID' => ($excludeUser instanceof User)? $excludeUser->id() : "dummyID",
             'queueLimit' => $numPapers,
             '@paper_to_project' => PaperOf::$collection,
             '@paper_to_user' => Assignment::$collection

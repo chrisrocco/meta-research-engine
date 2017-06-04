@@ -24,7 +24,7 @@ class AssignmentManager
      */
     public static function assignUpTo ($project, $user, $assignmentCap) {
         $queue = new PaperQueue($project);
-        $papers = $queue->nextPapers($assignmentCap);
+        $papers = $queue->nextPapers($assignmentCap, $user);
         foreach ($papers as $paper) {
             Assignment::assign($paper, $user);
             $queue->decrementPriority($paper);
