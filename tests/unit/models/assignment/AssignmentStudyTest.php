@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Models;
 
-use \Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;

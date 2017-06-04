@@ -11,7 +11,7 @@ namespace Models\Vertices\Paper;
 
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;

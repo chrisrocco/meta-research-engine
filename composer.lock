@@ -655,7 +655,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
-                "reference": "5671fa147860dfd53536098ce14d6d74f2994100"
+                "reference": "237bac983bb38878765994d3e129a7074773143c"
             },
             "require": {
                 "php": ">=5.4",
@@ -667,9 +667,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "vector\\ArangoORM\\": "src/",
-                    "vector\\ArangoORM\\DB\\": "src/database/",
-                    "vector\\ArangoORM\\Models\\Core\\": "src/models/core/"
+                    "vector\\ArangoORM\\": "src/"
                 }
             },
             "license": [
@@ -687,7 +685,7 @@
                 "package",
                 "template"
             ],
-            "time": "2017-06-03 05:43:23"
+            "time": "2017-06-04 07:49:36"
         }
     ],
     "packages-dev": [

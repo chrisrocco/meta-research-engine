@@ -5,7 +5,7 @@
  * Date: 5/13/2017
  * Time: 8:41 PM
  */
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use Models\Edges\EnrolledIn;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
@@ -26,7 +26,7 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $key = $queryParams['key'];
 
-    $assignment = \Models\Edges\Assignment::retrieve( $key );
+    $assignment = \Models\Edges\Assignment\Assignment::retrieve( $key );
     $paper = $assignment->getPaper();
     $project = $assignment->getProject();
     $questionsList = $project->getVariablesFlat();
@@ -183,7 +183,7 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
                     }';
     $bindings = [
         'root'  =>  $user->id(),
-        '@assignments'  =>  \Models\Edges\Assignment::$collection,
+        '@assignments'  =>  \Models\Edges\Assignment\Assignment::$collection,
         '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection
     ];
 
@@ -229,7 +229,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
         [
             'studyID' => $project->id(),
             '@paper_to_study' => \Models\Edges\PaperOf::$collection,
-            '@assignments' => \Models\Edges\Assignment::$collection
+            '@assignments' => \Models\Edges\Assignment\Assignment::$collection
         ],
         true
     )->getAll();

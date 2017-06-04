@@ -2,7 +2,7 @@
 namespace Models\Vertices;
 
 use Firebase\JWT\JWT;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 

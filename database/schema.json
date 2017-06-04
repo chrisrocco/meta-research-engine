@@ -1,0 +1,44 @@
+{
+  "users": {
+    "type": "vertex",
+    "indexes": [
+      {
+        "type" : "hash",
+        "fields" : ["email"],
+        "options" : {
+          "unique" : "true"
+        }
+      }
+    ]
+  },
+  "papers" : {
+    "type": "vertex"
+  },
+  "projects" : {
+    "type": "vertex"
+  },
+  "domains" : {
+    "type": "vertex"
+  },
+  "variables" : {
+    "type": "vertex"
+  },
+  "assignments" : {
+    "type": "edge"
+  },
+  "variable_of" : {
+    "type": "edge"
+  },
+  "subdomain_of" : {
+    "type": "edge"
+  },
+  "enrolled_in" : {
+    "type": "edge"
+  },
+  "merge_logs" : {
+    "type": "vertex"
+  },
+  "serialized_project_structures" : {
+    "type": "vertex"
+  }
+}

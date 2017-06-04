@@ -1,7 +1,7 @@
 <?php
 use Models\Vertices\Paper\Paper;
 use \Models\Vertices\User;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 
 /**
  * GET assignmentsIDGet

@@ -6,7 +6,7 @@
  * Time: 2:06 AM
  */
 
-namespace Models\Edges\Assignment;
+namespace Models\Edges\Assignment\Assignment;
 
 
 use Models\Vertices\Project\Project;
