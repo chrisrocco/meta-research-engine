@@ -28,14 +28,14 @@ class PaperQueue {
      */
     public function getQueueRaw () {
         $aql = 'LET project = DOCUMENT ( @projectID )
-            FOR paper, paperOf IN INBOUND project._id @@paper_to_project
+            FOR pap, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
-                    FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
+                    FOR user, assignment IN OUTBOUND pap._id @@paper_to_user
                         //FILTER project.version == assignment.projectVersion
                         RETURN assignment
                 )
             COLLECT
-                paper = paper,
+                paper = pap,
                 assignmentCount = COUNT (assignments),
                 priority = paperOf.priority
                 
@@ -56,14 +56,14 @@ class PaperQueue {
      */
     public function nextPapers ($numPapers = 1) {
         $aql = 'LET project = DOCUMENT ( @projectID )
-            FOR paper, paperOf IN INBOUND project._id @@paper_to_project
+            FOR pap, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
-                    FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
+                    FOR user, assignment IN OUTBOUND pap._id @@paper_to_user
                         //FILTER project.version == assignment.projectVersion
                         RETURN assignment
                 )
             COLLECT
-                paper = paper,
+                paper = pap,
                 assignmentCount = COUNT (assignments),
                 priority = paperOf.priority
                 
