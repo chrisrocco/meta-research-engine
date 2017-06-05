@@ -54,9 +54,8 @@
     "start":              "php -S localhost:8080 -t public public/index.php",
     "test":               "phpunit",
     "test-quick":         "phpunit tests/QuickTest.php",
-    "test-connection":    "phpunit tests/ConnectionTest.php",
     "db-init":            "php database/scripts/db-init.php",
     "db-nuke":            "php database/scripts/db-nuke.php",
-"db-truncate":            "php database/scripts/db-truncate.php"
+    "db-truncate":            "php database/scripts/db-truncate.php"
   }
 }
