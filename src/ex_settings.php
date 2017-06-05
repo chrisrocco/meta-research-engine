@@ -10,11 +10,11 @@ $settings = [
 
         // Database Connection
         "database_connection_options" => [
-            ConnectionOptions::OPTION_DATABASE => '',
-            ConnectionOptions::OPTION_ENDPOINT => '',
+            ConnectionOptions::OPTION_DATABASE => 'development',
+            ConnectionOptions::OPTION_ENDPOINT => 'tcp://localhost:8529',
             ConnectionOptions::OPTION_AUTH_TYPE => 'Basic',
-            ConnectionOptions::OPTION_AUTH_USER => '_username_',
-            ConnectionOptions::OPTION_AUTH_PASSWD => '_password_',
+            ConnectionOptions::OPTION_AUTH_USER => 'root',
+            ConnectionOptions::OPTION_AUTH_PASSWD => '',
             ConnectionOptions::OPTION_CONNECTION => 'Keep-Alive',
             ConnectionOptions::OPTION_TIMEOUT => 3,
             ConnectionOptions::OPTION_RECONNECT => true,

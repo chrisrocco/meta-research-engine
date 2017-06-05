@@ -655,7 +655,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
-                "reference": "237bac983bb38878765994d3e129a7074773143c"
+                "reference": "3769907fd7b5240b9a4d94da01d48e0e2ec20479"
             },
             "require": {
                 "php": ">=5.4",
@@ -685,7 +685,7 @@
                 "package",
                 "template"
             ],
-            "time": "2017-06-04 07:49:36"
+            "time": "2017-06-05 06:04:53"
         }
     ],
     "packages-dev": [
