@@ -43,45 +43,6 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
     return $response;
 });
 
-/*$app->GET('/loadConflictResolution', function($request, $response, $args) {
-    $queryParams = $request->getQueryParams();
-    $paperKey = $queryParams['paperKey'];
-    $paper = \Models\Vertices\Paper::retrieve($paperKey);
-
-    if (!$paper) {
-        return $response
-            ->write ("No paper with key ".$paperKey." found")
-            ->withStatus(409);
-    }
-
-    $result = \DB\DB::query(
-        'LET paper = DOCUMENT(@paperID)
-                    LET valueRecords = (
-                        FOR valueRecord IN masterEncoding.values
-                            LET question = DOCUMENT ( CONCAT(@@questions,"/", valueRecord.question) )
-                            RETURN MERGE (
-                                {question : UNSET (question, "_id", "_rev") }, 
-                                UNSET (valueRecord, "question")
-                            )
-                    )
-                    
-                    RETURN {
-                        values : valueRecords,
-                        scopes : masterEncoding.scopes,
-                        structure : masterEncoding.structure
-                    }',
-        [
-            'paperID' => \Models\Vertices\Paper::$collection."/".$paperKey,
-            '@questions' => \Models\Vertices\Variable::$collection
-        ],
-        true
-    )->getAll();
-
-    return $response
-        ->write(json_encode($result))
-        ->withStatus (200);
-});*/
-
 $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $userKey = $queryParams['userKey'];
@@ -161,12 +122,6 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     return $response->write(json_encode($data, JSON_PRETTY_PRINT));
 });
 
-/**
- * GET loadAssignmentsDashboardGet
- * Summary: Called from a users dashboard
- * Notes: Returns a list of assignments, their papers, and conflicts
-
- */
 $app->GET('/loadAssignments', function($request, $response, $args) {
 
     $queryParams = $request->getQueryParams();
