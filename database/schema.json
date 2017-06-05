@@ -14,6 +14,9 @@
   "papers" : {
     "type": "vertex"
   },
+  "paper_of" : {
+    "type": "vertex"
+  },
   "projects" : {
     "type": "vertex"
   },
