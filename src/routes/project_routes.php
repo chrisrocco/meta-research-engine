@@ -166,9 +166,49 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    $uploadData = $request->getParsedBody(  );
+    $paperData = $request->getParsedBody()['papers'];
 
-    var_dump( $uploadData );
+    //Is the file empty?
+    if (!isset($paperData[0])) {
+        return $response
+            ->write(json_encode([
+                'reason' => "emptyFileError",
+                'msg' => "Empty csv file given"
+            ]), JSON_PRETTY_PRINT)
+            ->withStatus(400);
+    }
+    //Are there exactly three columns?
+    foreach ( $paperData as $i => $row ){
+        if ( count($row) !== 3 ) {
+            return $response
+                ->write(json_encode([
+                    'reason' => "columnCountError",
+                    'row' => $i + 1,
+                    'msg' => "Incorrect number of columns specified: " . count( $row )
+                ]), JSON_PRETTY_PRINT)
+                ->withStatus(400);
+        }
+    }
+
+    foreach ( $paperData as $paperRow ) {
+        $paperModel = Paper::create([
+            'title' => $paperRow[0],
+            'description' => $paperRow[1],
+            'url' => $paperRow[2],
+            'status' => "pending",
+            'masterEncoding' => []
+        ]);
+        $project->addpaper( $paperModel );
+    }
+
+    $count = count( $paperData );
+    return $response
+        ->write(json_encode([
+            'reason' => "success",
+            'newPaperCount' => $count,
+            'msg' => "Added $count papers to project"
+        ]), JSON_PRETTY_PRINT)
+        ->withStatus(200);
 });
 
 $app->GET("/projects/{key}/papers", function( $request, $response, $args){
