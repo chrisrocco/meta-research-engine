@@ -166,9 +166,8 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    $uploadData = $request->getParsedBody(  );
 
-    var_dump( $uploadData );
+    var_dump( $request );
 });
 
 $app->GET("/projects/{key}/papers", function( $request, $response, $args){
