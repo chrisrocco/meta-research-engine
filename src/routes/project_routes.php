@@ -166,90 +166,9 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    $EXPECTED = "papersCSV";
+    $uploadData = $request->getParsedBody(  );
 
-    if (!$project) {
-        return $response
-            ->write ("No project with key ". $project_key." found.")
-            ->withStatus(404);
-    }
-
-    /* ----- Validation Steps -----
-     * 1.) File was posted
-     * 2.) File is of type .csv
-     * 3.) Structure of csv is valid
-     * */
-    if( !isset( $_FILES[$EXPECTED] ) ){
-        return $response
-            ->write(json_encode([
-                'reason' => "badFileNameError",
-                'msg' => "No file named ".$EXPECTED." uploaded"
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
-
-    //try to parse the csv
-    try {
-        $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
-    } catch (Exception $e) {
-        return $response
-            ->write(json_encode([
-                'reason' => "parseFailure",
-                'msg' => $e->getMessage()
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
-    //Is the file empty?
-    if (!isset($csv[0])) {
-        return $response
-            ->write(json_encode([
-                'reason' => "emptyFileError",
-                'msg' => "Empty csv file given"
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
-    //Are there exactly three columns?
-    foreach ( $csv as $i => $row ){
-        if ( count($row) !== 3 ) {
-            return $response
-                ->write(json_encode([
-                    'reason' => "columnCountError",
-                    'row' => $i + 1,
-                    'msg' => "Incorrect number of columns specified: " . count( $row )
-                ]), JSON_PRETTY_PRINT)
-                ->withStatus(400);
-        }
-    }
-
-    //Try to interpret the data
-    try {
-        foreach ($csv as $row) {
-            $paperModel = Paper::create([
-                'title' => $row[0],
-                'description' => $row[1],
-                'url' => $row[2],
-                'status' => "pending",
-                'masterEncoding' => []
-            ]);
-            $project->addpaper( $paperModel );
-        }
-    } catch (Exception $e) {
-        return $response
-            ->write(json_encode([
-                'reason' => "interpretFailure",
-                'msg' => $e->getMessage()
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
-
-    $count = count( $csv );
-    return $response
-        ->write(json_encode([
-            'reason' => "success",
-            'newPaperCount' => $count,
-            'msg' => "Added $count papers to project"
-        ]), JSON_PRETTY_PRINT)
-        ->withStatus(200);
+    var_dump( $uploadData );
 });
 
 $app->GET("/projects/{key}/papers", function( $request, $response, $args){
