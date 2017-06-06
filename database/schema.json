@@ -15,7 +15,7 @@
     "type": "vertex"
   },
   "paper_of" : {
-    "type": "vertex"
+    "type": "edge"
   },
   "projects" : {
     "type": "vertex"
