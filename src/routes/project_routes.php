@@ -7,6 +7,7 @@ use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
 use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\User;
+use vector\PMCAdapter\PMCAdapter;
 
 /*
  * GET projects/{projectname}/structure
@@ -168,6 +169,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project = Project::retrieve($project_key);
     $paperData = $request->getParsedBody()['papers'];
 
+
     //Is the file empty?
     if (!isset($paperData[0])) {
         return $response
@@ -189,7 +191,6 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
                 ->withStatus(400);
         }
     }
-
     foreach ( $paperData as $paperRow ) {
         $paperModel = Paper::create([
             'title' => $paperRow[0],
@@ -207,6 +208,41 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             'reason' => "success",
             'newPaperCount' => $count,
             'msg' => "Added $count papers to project"
+        ]), JSON_PRETTY_PRINT)
+        ->withStatus(200);
+});
+$app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
+    $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
+    $pmcIDs = $request->getParsedBody()['pmcIDs'];
+
+    $found = [];
+    $not_found = [];
+
+    $adapter = new PMCAdapter( "ResearchCoder", "chris.rocco7@gmail.com" );
+    foreach ( $pmcIDs as $pmcID ){
+        $result = $adapter->lookupPMCID( $pmcID );
+        if( $adapter->wasSuccessful() ){
+            $paperModel = Paper::create([
+                'title' => $result->getTitle(),
+                'description' => $result->getJournalName(),
+                'url' => "",
+                'status' => "pending",
+                'masterEncoding' => []
+            ]);
+            $project->addpaper( $paperModel );
+            $found[] = $pmcID;
+        } else {
+            $not_found[] = $pmcID;
+        }
+    }
+
+    return $response
+        ->write(json_encode([
+            'reason' => "success",
+            'newPaperCount' => count( $found ),
+            'succeeded'     =>  $found,
+            'failed'        =>  $not_found
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });

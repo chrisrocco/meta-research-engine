@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0194117bc35b46c9b0f74587417e9404",
+    "content-hash": "a840407fdea0244f9f169e4b3cef6d93",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -655,7 +655,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
-                "reference": "3769907fd7b5240b9a4d94da01d48e0e2ec20479"
+                "reference": "895ea33be2bbaf05e7d286daa478047d3837ede7"
             },
             "require": {
                 "php": ">=5.4",
@@ -685,7 +685,44 @@
                 "package",
                 "template"
             ],
-            "time": "2017-06-05 06:04:53"
+            "time": "2017-06-06 12:53:23"
+        },
+        {
+            "name": "vector/pmc-api-adapter",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vector-web-development/pmc-api-adapter.git",
+                "reference": "9e20a01c48df25972acee9fb02f0872524e9b647"
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "5.2.*"
+            },
+            "type": "project",
+            "autoload": {
+                "psr-4": {
+                    "vector\\PMCAdapter\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Chris Rocco",
+                    "email": "chris@vectorwebdevelopment.com"
+                }
+            ],
+            "description": "A PHP wrapper for consuming the PubMedCentral API. So you don't have to think about it!",
+            "keywords": [
+                "API",
+                "PubMed",
+                "api",
+                "package",
+                "php",
+                "wrapper"
+            ],
+            "time": "2017-06-06 20:45:15"
         }
     ],
     "packages-dev": [
@@ -1899,16 +1936,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.3.0",
+            "version": "v3.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "885db865f6b2b918404a1fae28f9ac640f71f994"
+                "reference": "9752a30000a8ca9f4b34b5227d15d0101b96b063"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/885db865f6b2b918404a1fae28f9ac640f71f994",
-                "reference": "885db865f6b2b918404a1fae28f9ac640f71f994",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/9752a30000a8ca9f4b34b5227d15d0101b96b063",
+                "reference": "9752a30000a8ca9f4b34b5227d15d0101b96b063",
                 "shasum": ""
             },
             "require": {
@@ -1950,7 +1987,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-05-28T10:56:20+00:00"
+            "time": "2017-06-02T22:05:06+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -2006,7 +2043,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "vector/arangodb-php-orm": 20
+        "vector/arangodb-php-orm": 20,
+        "vector/pmc-api-adapter": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
