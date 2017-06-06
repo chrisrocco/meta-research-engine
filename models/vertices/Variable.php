@@ -9,7 +9,7 @@
 namespace Models\Vertices;
 
 
-use Models\Core\VertexModel;
+use vector\ArangoORM\Models\Core\VertexModel;
 
 class Variable extends VertexModel
 {

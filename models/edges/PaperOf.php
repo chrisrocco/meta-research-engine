@@ -9,7 +9,7 @@
 namespace Models\Edges;
 
 
-use Models\Core\EdgeModel;
+use vector\ArangoORM\Models\Core\EdgeModel;
 
 class PaperOf extends EdgeModel
 {

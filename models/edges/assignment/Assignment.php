@@ -6,14 +6,15 @@
  * Time: 12:01 PM
  */
 
-namespace Models\Edges;
+namespace Models\Edges\Assignment;
 
 
-use DB\DB;
-use Models\Core\BaseModel;
-use Models\Core\EdgeModel;
+use vector\ArangoORM\DB\DB;
+use vector\ArangoORM\Models\Core\BaseModel;
+use vector\ArangoORM\Models\Core\EdgeModel;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
+use Models\Edges\PaperOf;
 use Models\Vertices\User;
 
 class Assignment extends EdgeModel
@@ -33,20 +34,10 @@ class Assignment extends EdgeModel
      * @return Assignment
      */
     public static function assign( $paper, $user ){
-        return static::create(
-            $user->id(),
-            $paper->id(),
+        return static::createEdge(
+            $user,
+            $paper,
             static::$blank
-        );
-    }
-
-    public static function assignByKey ($paperKey, $userKey, $version) {
-        $template = static::$blank;
-        $template['version'] = $version;
-       return static::create(
-            User::$collection."/".$userKey,
-            Paper::$collection."/".$paperKey,
-            $template
         );
     }
 

@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Models;
 
-use \Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
 use Models\Vertices\Paper\Paper;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;
@@ -38,7 +38,7 @@ class AssignmentTest extends \Tests\BaseTestCase
 
         $this->study = Project::create([]);
         $this->paper = Paper::create([]);
-        $this->user  = User::create([]);
+        $this->user  = User::create(['email' => rand(0, 9999) . '@gmail.com']);
 
         $this->study->addPaper( $this->paper );
     }
@@ -55,12 +55,4 @@ class AssignmentTest extends \Tests\BaseTestCase
         return $newAssignment;
     }
 
-    /**
-     * @depends testGetProject
-     */
-    public function testGetPaperCoderData( $assignmentModel ){
-        $response = $this->runApp("GET", "/loadAssignment?key=".$assignmentModel->key());
-
-        self::assertEquals(200, $response->getStatusCode());
-    }
 }

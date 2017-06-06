@@ -47,6 +47,9 @@ class RoccoMasterEncoding {
     }
 
     static function conflictedStatus ($masterEncoding) {
+        if (!is_array($masterEncoding)) {
+            return false;
+        }
         foreach ($masterEncoding as $record) {
             if (count($record['responses']) > 1 ) {
                 return true;

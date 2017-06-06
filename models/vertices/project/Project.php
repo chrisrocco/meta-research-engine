@@ -9,9 +9,8 @@
 namespace Models\Vertices\Project;
 
 
-use DB\DB;
-use Models\Core\VertexModel;
-use Models\Edges\Assignment;
+use vector\ArangoORM\DB\DB;
+use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Vertices\Variable;
 use Models\Vertices\Domain;
 use Models\Vertices\Paper\Paper;
@@ -29,8 +28,8 @@ class Project extends VertexModel {
      * @param $paper Paper
      */
     function addPaper( $paper , $priority = 0){
-        PaperOf::create(
-            $this->id(), $paper->id(), ['priority' => $priority]
+        PaperOf::createEdge(
+            $this, $paper, ['priority' => $priority]
         );
     }
 
@@ -43,12 +42,29 @@ class Project extends VertexModel {
         return $version;
     }
 
+    public function getPaperAssignmentTarget() {
+        return intval($this->get('assignmentTarget'));
+    }
+
+    public function getUserAssignmentCap () {
+        //TODO
+        return 5;
+    }
+
+    public function setPaperAssignmentTarget($newTarget) {
+        $this->update('assignmentTarget', $newTarget);
+    }
+
+    public function setUserAssignmentCap ($newTarget) {
+        //TODO
+    }
+
     /**
      * @param $domain Domain
      */
     function addDomain( $domain ){
-        SubdomainOf::create(
-            $this->id(), $domain->id(), []
+        SubdomainOf::createEdge(
+            $this, $domain, []
         );
     }
 
@@ -67,10 +83,7 @@ class Project extends VertexModel {
             return 409;
         }
 
-        $newEdge = EnrolledIn::create($this->id(), $user->id());
-        if (!$newEdge) {
-            return 500;
-        }
+        EnrolledIn::createEdge($this, $user);
 
         return 200;
     }
@@ -127,16 +140,6 @@ class Project extends VertexModel {
             '@var_to_domain'     =>  VariableOf::$collection
         ];
         return DB::query($AQL, $bindings, true)->getAll();
-    }
-
-    public function getNextPaper($numPapers = 1){
-        $queue = new PaperQueue($this->key());
-        return $queue->next($numPapers);
-    }
-
-    public function getPaperQueue () {
-        $queue = new PaperQueue($this->key());
-        return $queue->getQueueRaw();
     }
 
     public function getPapersFlat(){

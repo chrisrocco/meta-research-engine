@@ -8,8 +8,9 @@
 
 namespace Models\Vertices\Project;
 
-use DB\DB;
-use Models\Edges\Assignment;
+use Models\Vertices\User;
+use vector\ArangoORM\DB\DB;
+use Models\Edges\Assignment\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Paper\Paper;
 
@@ -17,123 +18,89 @@ use Models\Vertices\Paper\Paper;
 class PaperQueue {
 
 
-    public function getQueueRaw () {
-        $queue = DB::query('
-            LET project = DOCUMENT ( @projectID )
-            FOR paper, paperOf IN INBOUND project._id @@paper_to_project
-                LET assignments = (
-                    FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
-                        //FILTER project.version == assignment.projectVersion
-                        RETURN assignment
-                )
-            COLLECT
-                paperKey = paper._key,
-                assignmentCount = COUNT (assignments),
-                priority = paperOf.priority,
-                paperTitle = paper.title,
-                paperDescription = paper.description
-                
-            FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
-            SORT priority DESC, assignmentCount DESC
-            RETURN {
-                "paperKey" : paperKey,
-                "paperDescription" : pmcID,
-                "assignments" : assignmentCount,
-                "priority" : priority,
-                "paperTitle" : paperTitle
-            }
-            ', [
-                'projectID' => $this->project->id(),
-                '@paper_to_project' => PaperOf::$collection,
-                '@paper_to_user' => Assignment::$collection
-            ], true
-        )->getAll();
-        return $queue;
-    }
-
     /**
-     * Gets the next queueItem in the PaperQueue. Returns false if the queue is empty
-     * @return mixed
+     * Note: the "paper" attribute is a Paper object that has had getAll() executed.
+     *  {
+     *      "paper" : array,
+     *      "assignmentCount" : int,
+     *      "priority" : int
+     *  }
+     * @return array
      */
-    public function next ($queueLimit = 1) {
-        $result = DB::query('
-            LET project = DOCUMENT ( @projectID )
-            FOR paper, paperOf IN INBOUND project._id @@paper_to_project
+    public function getQueueRaw () {
+        $aql = 'LET project = DOCUMENT ( @projectID )
+            FOR pap, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (
-                    FOR user, assignment IN OUTBOUND paper._id @@paper_to_user
+                    FOR user, assignment IN OUTBOUND pap._id @@paper_to_user
                         //FILTER project.version == assignment.projectVersion
                         RETURN assignment
                 )
             COLLECT
-                paperKey = paper._key,
+                paper = pap,
                 assignmentCount = COUNT (assignments),
-                priority = paperOf.priority,
-                paperTitle = paper.title,
-                paperDescription = paper.description
+                priority = TO_NUMBER(paperOf.priority)
                 
             FILTER (priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0
             SORT priority DESC, assignmentCount DESC
-            LIMIT @queueLimit
-            RETURN {
-                "paperKey" : paperKey,
-                "paperDescription" : paperDescription,
-                "assignments" : assignmentCount,
-                "priority" : priority,
-                "paperTitle" : paperTitle
-            }
-            ', [
+            RETURN {"paper" : paper, "assignmentCount" : assignmentCount, "priority" : priority}';
+        $bindVars = [
             'projectID' => $this->project->id(),
-            'queueLimit' => $queueLimit,
             '@paper_to_project' => PaperOf::$collection,
             '@paper_to_user' => Assignment::$collection
-        ], true
-        )->getAll();
-        if (count($result) === 0) {
-            return false;
-        }
-        $dequeuedPapers = $result;
-        foreach ($dequeuedPapers as $dequeuedPaper) {
-            $this->updatePriority ($dequeuedPaper);
-        }
-        return $dequeuedPapers;
+        ];
+        return DB::query($aql, $bindVars, true)->getAll();
     }
 
     /**
-     * @param $paperKey string
-     * @param $newPriority int
-     * @return \Models\Edges\PaperOf
-     * @throws \Exception
+     * @param int $numPapers
+     * @param $excludeUser User
+     * @return Paper[]
      */
-    public function changePriority ($paperKey, $newPriority ) {
-        $example = [
-            '_from' => Paper::$collection."/".$paperKey,
-            '_to' => $this->project->id()
+    public function nextPapers ($numPapers = 1, $excludeUser = null) {
+        $aql = 'LET project = DOCUMENT ( @projectID )
+            FOR pap, paperOf IN INBOUND project._id @@paper_to_project
+                LET assignments = (
+                    FOR user, assignment IN OUTBOUND pap._id @@paper_to_user
+                        //FILTER project.version == assignment.projectVersion
+                        RETURN user._id == @excludeUserID
+                )
+            COLLECT
+                paper = pap,
+                assignmentCount = COUNT (assignments),
+                priority = TO_NUMBER(paperOf.priority),
+                exclude = assignments ANY == true
+                
+            FILTER ((priority == 0 && assignmentCount < project.assignmentTarget) || priority > 0) && !exclude
+            SORT priority DESC, assignmentCount DESC
+            LIMIT @queueLimit
+            RETURN paper';
+        $bindVars = [
+            'projectID' => $this->project->id(),
+            'excludeUserID' => ($excludeUser instanceof User)? $excludeUser->id() : "dummyID",
+            'queueLimit' => $numPapers,
+            '@paper_to_project' => PaperOf::$collection,
+            '@paper_to_user' => Assignment::$collection
         ];
-        $paperOfSet = PaperOf::getByExample($example);
-        if (!$paperOfSet) {
-            throw new \Exception(PaperOf::$collection . " edge not found : ".json_encode($example));
-        }
-        if (count($paperOfSet) > 1) {
-            throw new \Exception("Multiple identical edges in ".PaperOf::$collection." ".json_encode($example));
-        }
-        $paperOfSet[0]->update('priority', $newPriority);
-        return $paperOfSet[0];
+        return DB::queryModel($aql, $bindVars, Paper::class);
     }
 
-    public function updatePriority ($queueItem) {
-        $priority = $queueItem['priority'];
-        if ($priority > 0) {
-            $this->changePriority($queueItem['paperKey'], $priority - 1);
-        }
+
+    /**
+     * @param $paper Paper
+     */
+    public function decrementPriority ($paper) {
+        $priority = $paper->getPriority($this->project);
+        $newPriority = $priority > 0 ? $priority - 1 : $priority;
+        $paper->updatePriority($this->project, $newPriority);
     }
+
 
     private $project;
 
-    public function __construct($projectKey) {
-        $project = Project::retrieve($projectKey);
-        if (!$project) {
-            throw new \Exception("Study not found");
-        }
+    /**
+     * @param $project Project
+     */
+    public function __construct($project) {
         $this->project = $project;
     }
 }

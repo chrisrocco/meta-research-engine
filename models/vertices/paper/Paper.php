@@ -9,15 +9,13 @@
 namespace Models\Vertices\Paper;
 
 
-use DB\DB;
-use Models\Core\BaseModel;
-use Models\Core\VertexModel;
-use Models\Edges\Assignment;
+use vector\ArangoORM\DB\DB;
+use vector\ArangoORM\Models\Core\VertexModel;
+use Models\Edges\Assignment\Assignment;
 use Models\Edges\PaperOf;
 use Models\Vertices\Project\Project;
 use Models\Vertices\User;
 use triagens\ArangoDb\Document;
-use MasterEncoding\MasterEncoding;
 
 use triagens\ArangoDb\Exception;
 
@@ -35,6 +33,24 @@ class Paper extends VertexModel {
             '@paper_to_study' => PaperOf::$collection
         ];
         return DB::queryModel($AQL, $bindings, Project::class)[0];
+    }
+
+    /**
+     * @param $project Project
+     */
+    public function getPaperOf ($project) {
+        $example = [
+            '_from' => $this->id(),
+            '_to' => $project->id()
+        ];
+        $paperOfSet = PaperOf::getByExample($example);
+        if (!$paperOfSet) {
+            throw new \Exception(PaperOf::$collection . " edge not found : ".json_encode($example));
+        }
+        if (count($paperOfSet) > 1) {
+            throw new \Exception("Multiple identical edges in ".PaperOf::$collection." ".json_encode($example));
+        }
+        return $paperOfSet[0];
     }
 
     public function getAssignments() {
@@ -119,5 +135,22 @@ class Paper extends VertexModel {
 
     }
 
+    /**
+     * @param $project Project
+     * @param $newPriority int
+     */
+    public function updatePriority ($project, $newPriority) {
+        $paperOf = $this->getPaperOf($project);
+        $paperOf->update('priority', $newPriority);
+    }
+
+    /**
+     * @param $project Project
+     * @return int
+     */
+    public function getPriority ($project) {
+        $paperOf = $this->getPaperOf($project);
+        return intval($paperOf->get('priority'));
+    }
 }
 

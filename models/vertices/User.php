@@ -1,11 +1,10 @@
 <?php
 namespace Models\Vertices;
 
-use DB\DB;
 use Firebase\JWT\JWT;
-
-use Models\Core\VertexModel;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\Assignment;
+use vector\ArangoORM\DB\DB;
+use vector\ArangoORM\Models\Core\VertexModel;
 
 class User extends VertexModel
 {
@@ -105,7 +104,7 @@ class User extends VertexModel
         if($flat){
             return DB::query($AQL, $bindings)->getAll();
         }
-        return DB::queryModel($AQL, $bindings, Assignment::getClass());
+        return DB::queryModel($AQL, $bindings, Assignment::class);
     }
 
     public function validate($hash_code){
@@ -117,9 +116,7 @@ class User extends VertexModel
     }
     function rehash(){
         $hash_code = bin2hex(random_bytes(22));
-
         $this->update('hash_code', $hash_code);
-
         return $hash_code;
     }
     function checkHash($hash_code){

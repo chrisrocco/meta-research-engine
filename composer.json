@@ -1,6 +1,6 @@
 {
-  "name": "bigdata-server",
-  "description": "The RESTful web service for UAB's Big Data project",
+  "name": "research-engine",
+  "description": "The Back-end of a research engine powering UAB's Energetics department",
   "keywords": [
     "bigdata",
     "arangodb",
@@ -21,13 +21,25 @@
       "email": "caleb.falcione@gmail.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/vector-web-development/arangodb-php-orm.git"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/vector-web-development/pmc-api-adapter.git"
+    }
+  ],
   "require": {
     "php": ">=5.5.0",
     "slim/slim": "^3.1",
     "monolog/monolog": "^1.17",
     "tuupola/slim-jwt-auth": "^2.3",
     "triagens/arangodb": "^3.1",
-    "phpmailer/phpmailer": "^5.2"
+    "phpmailer/phpmailer": "^5.2",
+    "vector/arangodb-php-orm": "dev-master",
+    "vector/pmc-api-adapter": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": ">=4.8 < 6.0"
@@ -39,23 +51,16 @@
   },
   "autoload": {
     "psr-4": {
-      "Models\\Core\\": "models/core",
-      "Models\\Edges\\": "models/edges",
-      "Models\\Vertices\\": "models/vertices",
-      "Models\\Vertices\\Project\\" : "models/vertices/project",
-      "Models\\Vertices\\Paper\\" : "models/vertices/paper",
-      "DB\\": "data/",
-      "DB\\Queries\\": "data/queries",
-      "Email\\": "lib/email/",
-      "SlimRequestHandler\\": "lib/api"
+      "Models\\": "models/",
+      "Email\\": "lib/email/"
     }
   },
   "scripts": {
     "start":              "php -S localhost:8080 -t public public/index.php",
     "test":               "phpunit",
-    "test-connection":    "phpunit tests/unit/database/ConnectionTest.php",
     "test-quick":         "phpunit tests/QuickTest.php",
-    "db-init":            "php data/scripts/db-init.php",
-    "db-truncate":        "php data/scripts/db-truncate.php"
+    "db-init":            "php database/scripts/db-init.php",
+    "db-nuke":            "php database/scripts/db-nuke.php",
+    "db-truncate":            "php database/scripts/db-truncate.php"
   }
 }

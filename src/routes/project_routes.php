@@ -2,10 +2,12 @@
 
 use Models\Vertices\Project\Project;
 use Models\Vertices\Domain;
+use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
-use Models\Edges\Assignment;
+use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\User;
+use vector\PMCAdapter\PMCAdapter;
 
 /*
  * GET projects/{projectname}/structure
@@ -41,9 +43,11 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
+error_reporting( E_ALL );
+ini_set('display_errors', 1);
+
 $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
-    //var_dump( $formData );
     $projectKey = $args['key'];
     $structure = json_decode( $formData['structure'], true);
 
@@ -95,9 +99,9 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
 
     $newVersion = $project->updateVersion();
 
-    $serializedStructure = \Models\Vertices\SerializedProjectStructure::retrieve($projectKey);
+    $serializedStructure = SerializedProjectStructure::retrieve($projectKey);
     if (!$serializedStructure) {
-        $serializedStructure = \Models\Vertices\SerializedProjectStructure::create( ['_key' => $projectKey]);
+        $serializedStructure = SerializedProjectStructure::create( ['_key' => $projectKey]);
     }
     $serializedStructure->update('structure', $structure );
     $serializedStructure->update('version', $newVersion);
@@ -108,74 +112,50 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
 });
 
 $app->POST ('/projects/members', function ($request, $response, $args) {
-    $formData = $request->getParams();
-    $userKey = $formData['userKey'];
-    $registrationCode = $formData['registrationCode'];
+    $userKey = $request->getParam('userKey');
+    $registrationCode = $request->getParam('registrationCode');
+
     $user = User::retrieve($userKey);
 
-    /* Query Start */
-    $AQL = "FOR project IN @@project_collection
-                FILTER project.registrationCode == @registrationCode
-                RETURN project._key";
-    $bindings = [
-        'registrationCode' => $registrationCode,
-        '@project_collection' => Project::$collection
-    ];
-    $projectKey = \DB\DB::query( $AQL, $bindings )->getAll()[0];
-    /* End Query */
+    $project_result_set = Project::getByExample( [ "registrationCode" => $registrationCode ] );
 
-    $project = Project::retrieve($projectKey);
-    $projectName = $project->get('name');
+    if( count($project_result_set) === 0 ) return $response->withStatus( 404 )->write( "Project Not Found" );
 
-    if (!$user) {
-        return $response
-            ->write("User ".$userKey. " not found")
-            ->withStatus(400);
-    }
-    if (!$user->get('active')) {
-        return $response
-            ->write("User not verified. Please verify your email.")
-            ->withStatus(400);
-    }
-    if (!$project) {
-        return $response
-            ->write("Project ".$projectKey. " not found")
-            ->withStatus(404);
-    }
+    $project = $project_result_set[0];
+    $enroll_result = $project->addUser( $user, $registrationCode );
 
-    $status = $project->addUser ( $user, $registrationCode );
-
-    $queueItems = $project->getNextPaper($project->get('assignmentTarget'));
-//        echo PHP_EOL.json_encode($queueItems);   // Damnit, Caleb. This was corrupting the JSON output.
-    foreach ($queueItems as $queueItem) {
-        if ($queueItem === false) {continue;}
-        Assignment::assignByKey($queueItem['paperKey'], $user->key(), $project->get('version'));
-        Paper::updateStatusByKey($queueItem['paperKey']);
-    }
-
-    if( $status == 200 ){
-        return $response
-            ->write( json_encode([
-                'studyName' => $projectName
-            ], JSON_PRETTY_PRINT) );
-    }
-
-    switch($status) {
+    switch( $enroll_result ) {
+        case 200 :
+            break;
         case 400 :
             $message = "Project / registration code mismatch";
+            return $response->withStatus( 400 )->write( $message );
             break;
         case 409 :
             $message = "User already enrolled in Project. Aborting enrollment";
+            return $response->withStatus( 409 )->write( $message );
             break;
-        default :
+        default:
             $status = 500;
-            $message = "Something went very, very wrong";
+            $message = "No exception here! Just a 500";
+            return $response->withStatus( 500 )->write( $message );
             break;
     }
 
-    return $response
-        ->write($message)
-        ->withStatus($status);
+    try {
+        $assignmentTarget = $project->getUserAssignmentCap();
+        $assignedPapers = AssignmentManager::assignUpTo($project, $user, $assignmentTarget);
+        foreach ($assignedPapers as $paper) {
+            $paper->updateStatus();
+        }
+    } catch (Exception $e) {
+        throw new Exception( "Caleb Code Exception" );
+    }
+
+    if( $enroll_result === 200 ){
+        return $response
+            ->write( json_encode( [ 'studyName' => $project->get( 'name' ) ], JSON_PRETTY_PRINT) );
+    }
 });
 
 /**
@@ -187,41 +167,11 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    $EXPECTED = "papersCSV";
+    $paperData = $request->getParsedBody()['papers'];
 
-    if (!$project) {
-        return $response
-            ->write ("No project with key ". $project_key." found.")
-            ->withStatus(404);
-    }
 
-    /* ----- Validation Steps -----
-     * 1.) File was posted
-     * 2.) File is of type .csv
-     * 3.) Structure of csv is valid
-     * */
-    if( !isset( $_FILES[$EXPECTED] ) ){
-        return $response
-            ->write(json_encode([
-                'reason' => "badFileNameError",
-                'msg' => "No file named ".$EXPECTED." uploaded"
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
-
-    //try to parse the csv
-    try {
-        $csv = array_map('str_getcsv', file( $_FILES[$EXPECTED]['tmp_name'] ));
-    } catch (Exception $e) {
-        return $response
-            ->write(json_encode([
-                'reason' => "parseFailure",
-                'msg' => $e->getMessage()
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
-    }
     //Is the file empty?
-    if (!isset($csv[0])) {
+    if (!isset($paperData[0])) {
         return $response
             ->write(json_encode([
                 'reason' => "emptyFileError",
@@ -230,7 +180,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             ->withStatus(400);
     }
     //Are there exactly three columns?
-    foreach ( $csv as $i => $row ){
+    foreach ( $paperData as $i => $row ){
         if ( count($row) !== 3 ) {
             return $response
                 ->write(json_encode([
@@ -241,34 +191,58 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
                 ->withStatus(400);
         }
     }
-
-    //Try to interpret the data
-    try {
-        foreach ($csv as $row) {
-            $paperModel = Paper::create([
-                'title' => $row[0],
-                'description' => $row[1],
-                'url' => $row[2],
-                'status' => "pending",
-                'masterEncoding' => []
-            ]);
-            $project->addpaper( $paperModel );
-        }
-    } catch (Exception $e) {
-        return $response
-            ->write(json_encode([
-                'reason' => "interpretFailure",
-                'msg' => $e->getMessage()
-            ]), JSON_PRETTY_PRINT)
-            ->withStatus(400);
+    foreach ( $paperData as $paperRow ) {
+        $paperModel = Paper::create([
+            'title' => $paperRow[0],
+            'description' => $paperRow[1],
+            'url' => $paperRow[2],
+            'status' => "pending",
+            'masterEncoding' => []
+        ]);
+        $project->addpaper( $paperModel );
     }
 
-    $count = count( $csv );
+    $count = count( $paperData );
     return $response
         ->write(json_encode([
             'reason' => "success",
             'newPaperCount' => $count,
             'msg' => "Added $count papers to project"
+        ]), JSON_PRETTY_PRINT)
+        ->withStatus(200);
+});
+$app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
+    $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
+    $pmcIDs = $request->getParsedBody()['pmcIDs'];
+
+    $found = [];
+    $not_found = [];
+
+    $adapter = new PMCAdapter( "ResearchCoder", "chris.rocco7@gmail.com" );
+    foreach ( $pmcIDs as $pmcID ){
+        $result = $adapter->lookupPMCID( $pmcID );
+        if( $adapter->wasSuccessful() ){
+            $paperModel = Paper::create([
+                'title' => $result->getTitle(),
+                'description' => $result->getJournalName(),
+                'url' => "",
+                'status' => "pending",
+                'masterEncoding' => []
+            ]);
+            $project->addpaper( $paperModel );
+            $found[] = $pmcID;
+        } else {
+            $not_found[] = $pmcID;
+        }
+    }
+
+    return $response
+        ->write(json_encode([
+            'reason' => "success",
+            'newPaperCount' => count( $found ),
+            'succeeded'     =>  $found,
+            'failed'        =>  $not_found
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });
