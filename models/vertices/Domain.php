@@ -38,6 +38,7 @@ class Domain extends VertexModel
 
     function getVariables(){
         $AQL = "FOR var IN INBOUND @root @@to_root
+                    SORT var.name
                     RETURN var";
         $bindings = [
             'root'  =>  $this->id(),
@@ -48,6 +49,7 @@ class Domain extends VertexModel
 
     function getSubdomains(){
         $AQL = "FOR domain in INBOUND @root @@domain_to_domain
+                    SORT domain.name
                     RETURN domain";
         $bindings = [
             "root" => $this->id(),
