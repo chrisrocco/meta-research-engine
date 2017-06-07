@@ -154,6 +154,7 @@ class Project extends VertexModel {
 
     private function getTopLevelDomains(){
         $AQL = "FOR domain in INBOUND @root @@domain_to_domain
+                    SORT domain.name
                     RETURN domain";
         $bindings = [
             "root" => $this->id(),
