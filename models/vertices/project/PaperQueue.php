@@ -57,6 +57,7 @@ class PaperQueue {
      * @return Paper[]
      */
     public function nextPapers ($numPapers = 1, $excludeUser = null) {
+        if( is_numeric( $numPapers ) ) $numPapers = intval( $numPapers );
         $aql = 'LET project = DOCUMENT ( @projectID )
             FOR pap, paperOf IN INBOUND project._id @@paper_to_project
                 LET assignments = (

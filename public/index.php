@@ -75,6 +75,7 @@ function fatal_handler() {
     $error = error_get_last();
 
     if( $error !== NULL) {
+
         $errno   = $error["type"];
         $errfile = $error["file"];
         $errline = $error["line"];
@@ -100,6 +101,12 @@ function fatal_handler() {
 
         $mail->Subject = "Researchcoder.com Crash Report";
         $mail->Body = format_error( $errno, $errstr, $errfile, $errline);
+
+        $mail->send();
+
+        $error_log = fopen( "crash report", "w" );
+        fwrite( $error_log, format_error( $errno, $errstr, $errfile, $errline) );
+        fclose( $error_log );
     }
 }
 

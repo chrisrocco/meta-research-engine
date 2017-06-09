@@ -129,17 +129,29 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
 
     $user = User::retrieve( $userKey );
 
-    $AQL = 'FOR vertex, edge IN INBOUND @root @@assignments
-                FOR project IN OUTBOUND vertex @@paper_to_project
-                    return {
-                        "assignment": edge,
-                        "paper": vertex,
-                        "project": project
-                    }';
+    $AQL = 'LET user = @root
+            LET assignments = (
+                FOR vertex, edge IN INBOUND user @@assignments
+                    FOR project IN OUTBOUND vertex @@paper_to_project
+                        RETURN {
+                            "assignment": edge,
+                            "paper": vertex,
+                            "project": project
+                        }
+            )
+            LET projects = (
+                FOR vertex, edge IN ANY user @@enrollments
+                    RETURN vertex
+            )
+            RETURN {
+                assignments: assignments,
+                projects: projects
+            }';
     $bindings = [
         'root'  =>  $user->id(),
         '@assignments'  =>  \Models\Edges\Assignment\Assignment::$collection,
-        '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection
+        '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection,
+        '@enrollments'  =>  EnrolledIn::$collection
     ];
 
     $data = DB::query($AQL, $bindings)->getAll();
