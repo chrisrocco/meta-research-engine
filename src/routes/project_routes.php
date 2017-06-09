@@ -43,9 +43,6 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
-error_reporting( E_ALL );
-ini_set('display_errors', 1);
-
 $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     $projectKey = $args['key'];
@@ -283,4 +280,11 @@ $app->POST("/projects", function ($request, $response, $args) {
             "registrationCode" => $registrationCode
         ])
     );
+});
+
+// Check which projects a user is enrolled in
+$app->GET("/getEnrollments", function( $request, $response, $args){
+    $userKey = $request->getQueryParam("userKey");
+    $user = User::retrieve( $userKey );
+    // TODO - be right back. In case i forget about this.d
 });

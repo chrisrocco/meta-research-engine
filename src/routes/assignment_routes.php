@@ -1,5 +1,7 @@
 <?php
+use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\Paper\Paper;
+use Models\Vertices\Project\Project;
 use \Models\Vertices\User;
 use Models\Edges\Assignment\Assignment;
 /**
@@ -80,4 +82,24 @@ $app->POST('/assignments', function ($request, $response, $args) {
     Assignment::assign($paper, $user);
 
     $response->write("Created Assignment");
+});
+
+$app->POST('/moreAssignmentsPlease', function ($request, $response, $args) {
+
+    $howMany = $request->getParam("howMany");
+    $userKey = $request->getParam("userKey");
+    $projectKey = $request->getParam("projectKey");
+
+
+    $user = User::retrieve( $userKey );
+    $project = Project::retrieve( $projectKey );
+
+    if( $userKey == false || $project == false ) return $response->withStatus( 400 )->write( "You provided bad params" );
+
+    $assignedPapers = AssignmentManager::assignUpTo( $project, $user, $howMany);
+    foreach ($assignedPapers as $paper) {
+        $paper->updateStatus();
+    }
+
+    return $response->write("Created Assignments");
 });
