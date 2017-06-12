@@ -58,8 +58,6 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 
 
 try {
-    $something->nothing();
-
     // Run App
     $app->run();
 
