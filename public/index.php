@@ -64,13 +64,15 @@ try {
     $app->run();
 
 } catch ( Exception $e ) {
-    $message = "File : " . $e->getFile() . PHP_EOL;
-    $message .= "Message : " . $e->getMessage() . PHP_EOL;
-    $message .= "Line : " . $e->getLine() . PHP_EOL;
-    $message .= "Code : " . $e->getCode() . PHP_EOL;
-    $message .= "Trace : " . $e->getTraceAsString() . PHP_EOL;
+    $message = [
+        "file"  =>  $e->getFile(),
+        "msg"   =>  $e->getMessage(),
+        "line"  =>  $e->getLine(),
+        "code"  =>  $e->getCode(),
+        "trace" =>  $e->getTraceAsString()
+    ];
 
-    \Email\Email::errorReportEmail( $message );
+    \Email\Email::errorReportEmail( json_encode( $message ) );
 
-    var_dump( $message );
+    echo json_encode( $message, JSON_PRETTY_PRINT );
 }
