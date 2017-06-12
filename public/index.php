@@ -58,10 +58,11 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 
 
 try {
+    array()[asdf];
+    a
     // Run App
     $app->run();
 
-    array()[asdf];
 } catch ( Exception $e ) {
     $message = [
         "file"  =>  $e->getFile(),
