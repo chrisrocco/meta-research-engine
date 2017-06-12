@@ -58,13 +58,11 @@ require( __DIR__ . "/../src/routes/core_routes.php");
 require( __DIR__ . "/../src/routes/application_routes.php");
 
 // Run App
-$app->run();
-
-
-
-// Handle Errors
-
-register_shutdown_function( "fatal_handler" );
+try {
+    $app->run();
+} catch ( Exception $e ) {
+    fatal_handler();
+}
 
 function fatal_handler() {
     $errfile = "unknown file";
@@ -103,10 +101,6 @@ function fatal_handler() {
         $mail->Body = format_error( $errno, $errstr, $errfile, $errline);
 
         $mail->send();
-
-        $error_log = fopen( "crash report", "w" );
-        fwrite( $error_log, format_error( $errno, $errstr, $errfile, $errline) );
-        fclose( $error_log );
     }
 }
 
