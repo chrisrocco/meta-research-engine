@@ -58,7 +58,6 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 
 
 try {
-    throw new Exception( "test" );
     // Run App
     $app->run();
 
@@ -72,9 +71,6 @@ try {
     ];
 
     \Email\Email::errorReportEmail( json_encode( $message ) );
-
-    echo "testing";
-    exit();
 
     echo json_encode( $message, JSON_PRETTY_PRINT );
 }

@@ -14,10 +14,10 @@ $app->GET('/secure', function ($request, $response, $args) {
         ->withStatus(200);
 
 });
-//
-//$app->POST ('/reportError', function ($request, $response, $args) {
-//    $formData = $request->getParams();
-//    $error = json_encode($formData,JSON_PRETTY_PRINT);
-//    $email = \Email\Email::errorReportEmail($error);
-//    $email->send();
-//});
+
+$app->POST ('/reportError', function ($request, $response, $args) {
+    $formData = $request->getParams();
+    $error = json_encode($formData,JSON_PRETTY_PRINT);
+    $email = \Email\Email::errorReportEmail($error);
+    $email->send();
+});
