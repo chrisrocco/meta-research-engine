@@ -58,8 +58,7 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 
 
 try {
-    array()[asdf];
-    a
+    throw new Exception( "test" );
     // Run App
     $app->run();
 
