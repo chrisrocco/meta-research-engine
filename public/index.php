@@ -61,32 +61,13 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 try {
     $app->run();
 } catch ( Exception $e ) {
-    $mail = new \PHPMailer();
-    $mail->isSMTP();
-    $mail->Host         =   $settings['smtp']['host'];
-    $mail->SMTPAuth     =   $settings['smtp']['smtp_auth'];
-    $mail->Username     =   $settings['smtp']['username'];
-    $mail->Password     =   $settings['smtp']['password'];
-    $mail->SMTPSecure   =   $settings['smtp']['smtp_secure'];
-    $mail->Port         =   $settings['smtp']['port'];
-
-    $mail->From         =   "error_reporting@researchcoder.com";
-    $mail->FromName     =   "Crash Reporter";
-
-    $mail->addAddress("chris.rocco7@gmail.com", "Chris Rocco");
-    $mail->addAddress("caleb.falcione@gmail.com", "Caleb Falcione");
-    $mail->isHTML(true);
-
-    $mail->Subject = "Researchcoder.com Crash Report";
-
     $message = "File : " . $e->getFile() . PHP_EOL;
-    $message = "Message : " . $e->getMessage() . PHP_EOL;
-    $message = "Line : " . $e->getLine() . PHP_EOL;
-    $message = "Code : " . $e->getCode() . PHP_EOL;
-    $message = "Trace : " . $e->getTraceAsString() . PHP_EOL;
+    $message .= "Message : " . $e->getMessage() . PHP_EOL;
+    $message .= "Line : " . $e->getLine() . PHP_EOL;
+    $message .= "Code : " . $e->getCode() . PHP_EOL;
+    $message .= "Trace : " . $e->getTraceAsString() . PHP_EOL;
 
-    $mail->Body = $message;
-    $mail->send();
+    \Email\Email::errorReportEmail( $message );
 
     var_dump( $message );
 }
