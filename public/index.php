@@ -62,6 +62,7 @@ try {
     $app->run();
 } catch ( Exception $e ) {
     fatal_handler();
+    var_dump( $e );
 }
 
 function fatal_handler() {
