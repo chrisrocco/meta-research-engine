@@ -61,7 +61,7 @@ try {
     // Run App
     $app->run();
 
-    array()[-1];
+    array()[asdf];
 } catch ( Exception $e ) {
     $message = [
         "file"  =>  $e->getFile(),
