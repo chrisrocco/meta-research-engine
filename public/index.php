@@ -61,7 +61,6 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 try {
     $app->run();
 } catch ( Exception $e ) {
-    fatal_handler();
     $mail = new \PHPMailer();
     $mail->isSMTP();
     $mail->Host         =   $settings['smtp']['host'];
