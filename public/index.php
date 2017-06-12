@@ -1,11 +1,8 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-$settings = require __DIR__ . '/../src/settings.php';
-
-
-// Run App
 try {
+    $settings = require __DIR__ . '/../src/settings.php';
     require __DIR__ . '/../database/db_connect.php';
 
     // Instantiate the Slim App
@@ -60,6 +57,7 @@ try {
     require( __DIR__ . "/../src/routes/core_routes.php");
     require( __DIR__ . "/../src/routes/application_routes.php");
 
+    // Run App
     $app->run();
 } catch ( Exception $e ) {
     $message = "File : " . $e->getFile() . PHP_EOL;
