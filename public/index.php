@@ -60,6 +60,8 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 try {
     // Run App
     $app->run();
+
+    $something->nothing();
 } catch ( Exception $e ) {
     $message = "File : " . $e->getFile() . PHP_EOL;
     $message .= "Message : " . $e->getMessage() . PHP_EOL;
