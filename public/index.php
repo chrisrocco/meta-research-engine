@@ -87,4 +87,6 @@ try {
 
     $mail->Body = $message;
     $mail->send();
+
+    var_dump( $message );
 }
