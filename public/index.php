@@ -9,6 +9,7 @@ require __DIR__ . '/../database/db_connect.php';
 $app = new \Slim\App($settings);
 
 /* CORS Support */
+header("Access-Control-Allow-Origin: *");
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
