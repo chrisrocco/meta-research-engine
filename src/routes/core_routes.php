@@ -25,10 +25,7 @@ $app->POST ('/reportError', function ($request, $response, $args) {
 });
 
 $app->POST ('/renewToken', function ( $req, $res ){
-    $decoded = $req->getAttribute("jwt");
-    var_dump( (array)$decoded );
-    return;
-
+    $decoded = (array)$req->getAttribute("jwt");
     // TODO: move this login into another class. It's being duplicated right now.
 
     // Building the JWT
@@ -40,7 +37,7 @@ $app->POST ('/renewToken', function ( $req, $res ){
         'jti' => $tokenId,          // Json Token Id: an unique identifier for the token
         'iss' => "dev",       // Issuer
         'exp' => $expire,           // Expire
-        'data' => $decoded
+        'data' => $decoded['data']
     ];
 
     $settings = require __DIR__ . '/../settings.php';
