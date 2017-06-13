@@ -23,5 +23,5 @@ $app->POST ('/reportError', function ($request, $response, $args) {
 });
 
 $app->POST ('/renewToken', function ( $req, $res ){
-    var_dump( $req['token'] );
+    var_dump( $req->getAttribute("jwt") );
 });
