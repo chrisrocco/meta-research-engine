@@ -14,10 +14,6 @@ class Email {
     public static $app_name = 'Big Data';
     public $mail;
 
-    private static function test(){
-
-    }
-
     /*------------------------------*/
     /* Functions to build the email */
     /*------------------------------*/

@@ -21,3 +21,7 @@ $app->POST ('/reportError', function ($request, $response, $args) {
     $email = \Email\Email::errorReportEmail($error);
     $email->send();
 });
+
+$app->POST ('/renewToken', function ( $req, $res ){
+    var_dump( $req['token'] );
+});
