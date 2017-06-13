@@ -7,6 +7,8 @@
  */
 
 
+use Firebase\JWT\JWT;
+
 $app->GET('/secure', function ($request, $response, $args) {
 
     return $response
@@ -23,5 +25,23 @@ $app->POST ('/reportError', function ($request, $response, $args) {
 });
 
 $app->POST ('/renewToken', function ( $req, $res ){
-    var_dump( $req->getAttribute("jwt") );
+    $decoded = $req->getAttribute("jwt");
+    // TODO: move this login into another class. It's being duplicated right now.
+
+    // Building the JWT
+    $tokenId = base64_encode(random_bytes(64));
+    $issuedAt = time();
+    $expire = $issuedAt + 60 * 30;            // Adding 60 seconds
+    $data = [
+        'iat' => $issuedAt,         // Issued at: time when the token was generated
+        'jti' => $tokenId,          // Json Token Id: an unique identifier for the token
+        'iss' => "dev",       // Issuer
+        'exp' => $expire,           // Expire
+        'data' => $decoded['data']
+    ];
+
+    $settings = require __DIR__ . '/../settings.php';
+    $token = JWT::encode($data, $settings['settings']['JWT_secret']);
+
+    return $res->write( json_encode( [ 'token' => $token ], JSON_PRETTY_PRINT ));
 });
