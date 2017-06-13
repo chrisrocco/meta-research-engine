@@ -26,7 +26,7 @@ $app->POST ('/reportError', function ($request, $response, $args) {
 
 $app->POST ('/renewToken', function ( $req, $res ){
     $decoded = $req->getAttribute("jwt");
-    var_dump( $decoded->data );
+    var_dump( $decoded->data-> );
     return;
 
     // TODO: move this login into another class. It's being duplicated right now.
