@@ -1,5 +1,5 @@
 <?php
-use Settings\Config;
+use uab\MRE\Config\Config;
 
 require __DIR__ . '/../vendor/autoload.php';
 
