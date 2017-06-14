@@ -19,12 +19,12 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project = Project::retrieve($project_key);
     if (!$project) {
         return $response
-            ->write("Project ".$project_key." not found")
+            ->write("Project " . $project_key . " not found")
             ->withStatus(409);
     }
 
     $structure = $project->getStructureFlat();
-    if(!$structure) return $response->write("No Domains")->withStatus(400);
+    if (!$structure) return $response->write("No Domains")->withStatus(400);
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
@@ -37,24 +37,24 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $variables = $project->getVariablesFlat();
-    if(!$variables) return $response->write("No Domains")->withStatus(400);
+    if (!$variables) return $response->write("No Domains")->withStatus(400);
 
     return $response
         ->write(json_encode($variables, JSON_PRETTY_PRINT))
         ->withStatus(200);
 });
 
-$app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
+$app->POST('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     $projectKey = $args['key'];
-    $structure = json_decode( $formData['structure'], true);
+    $structure = json_decode($formData['structure'], true);
 
     //TODO: check that the user of the token is an admin for the project
 
     $project = Project::retrieve($projectKey);
     if (!$project) {
         return $response
-            ->write("No project found with key ". $projectKey)
+            ->write("No project found with key " . $projectKey)
             ->withStatus(404);
     }
 
@@ -77,10 +77,9 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
     //Connect the domain_to_domain edges
     foreach ($structure['domains'] as $newDom) {
         if ($newDom['parent'] === "#") {
-            $project->addDomain( $tempDomIDMap[$newDom['id']] );
-        }
-        else {
-            $tempDomIDMap[$newDom['parent']]->addSubdomain( $tempDomIDMap[$newDom['id']] );
+            $project->addDomain($tempDomIDMap[$newDom['id']]);
+        } else {
+            $tempDomIDMap[$newDom['parent']]->addSubdomain($tempDomIDMap[$newDom['id']]);
         }
     }
 
@@ -91,7 +90,7 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
         $tempParent = $newQuestion['parent'];
         $newQuestion['_key'] = $newQuestion['id'];
         unset($newQuestion['id'], $newQuestion['parent'], $newQuestion['$$hashKey']);
-        $question = Variable::create( $newQuestion );
+        $question = Variable::create($newQuestion);
         $tempDomIDMap[$tempParent]->addVariable($question);
     }
 
@@ -99,44 +98,70 @@ $app->POST ('/projects/{key}/structure', function ($request, $response, $args) {
 
     $serializedStructure = SerializedProjectStructure::retrieve($projectKey);
     if (!$serializedStructure) {
-        $serializedStructure = SerializedProjectStructure::create( ['_key' => $projectKey]);
+        $serializedStructure = SerializedProjectStructure::create(['_key' => $projectKey]);
     }
-    $serializedStructure->update('structure', $structure );
+    $serializedStructure->update('structure', $structure);
     $serializedStructure->update('version', $newVersion);
 
     return $response
         ->write("Successfully updated project structure")
         ->withStatus(200);
 });
+$app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
+    // security: you must be an owner of the project you are given access to
+    $give_to_email = $request->getParam("userEmail");
+    $project_key = $args['key'];
+    $user_set = User::getByExample( ['email'=>$give_to_email] );
 
-$app->POST ('/projects/members', function ($request, $response, $args) {
+    if( count($user_set) !== 1 ) throw new Exception( "Invalid email count. There are ".count($user_set)." users with email ".$give_to_email );
+
+    $user = $user_set[0];
+    $project = Project::retrieve($project_key);
+
+    $exist_check = AdminOf::getByExample( [
+        "_to"   =>  $project->id(),
+        "_from" =>  $user->id()
+    ] );
+    if( count( $exist_check ) > 0 ) return $response->withStatus( 409 )->write("that user is already an owner");
+
+    AdminOf::createEdge( $project, $user );
+
+    return $response->write(
+        json_encode([
+            "projectKey" => $project->key(),
+            "new_owner"  => $user->key()
+        ])
+    );
+});
+
+$app->POST('/projects/members', function ($request, $response, $args) {
     $userKey = $request->getParam('userKey');
     $registrationCode = $request->getParam('registrationCode');
 
     $user = User::retrieve($userKey);
 
-    $project_result_set = Project::getByExample( [ "registrationCode" => $registrationCode ] );
+    $project_result_set = Project::getByExample(["registrationCode" => $registrationCode]);
 
-    if( count($project_result_set) === 0 ) return $response->withStatus( 404 )->write( "Project Not Found" );
+    if (count($project_result_set) === 0) return $response->withStatus(404)->write("Project Not Found");
 
     $project = $project_result_set[0];
-    $enroll_result = $project->addUser( $user, $registrationCode );
+    $enroll_result = $project->addUser($user, $registrationCode);
 
-    switch( $enroll_result ) {
+    switch ($enroll_result) {
         case 200 :
             break;
         case 400 :
             $message = "Project / registration code mismatch";
-            return $response->withStatus( 400 )->write( $message );
+            return $response->withStatus(400)->write($message);
             break;
         case 409 :
             $message = "User already enrolled in Project. Aborting enrollment";
-            return $response->withStatus( 409 )->write( $message );
+            return $response->withStatus(409)->write($message);
             break;
         default:
             $status = 500;
             $message = "No exception here! Just a 500";
-            return $response->withStatus( 500 )->write( $message );
+            return $response->withStatus(500)->write($message);
             break;
     }
 
@@ -147,12 +172,12 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
             $paper->updateStatus();
         }
     } catch (Exception $e) {
-        throw new Exception( "Caleb Code Exception" );
+        throw new Exception("Caleb Code Exception");
     }
 
-    if( $enroll_result === 200 ){
+    if ($enroll_result === 200) {
         return $response
-            ->write( json_encode( [ 'studyName' => $project->get( 'name' ) ], JSON_PRETTY_PRINT) );
+            ->write(json_encode(['studyName' => $project->get('name')], JSON_PRETTY_PRINT));
     }
 });
 
@@ -162,7 +187,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * FailCodes: badFileNameError, parseFailure, emptyFileError, columnCountError, interpretFailure
  * SuccessCode: success
  */
-$app->POST( "/projects/{key}/papers", function ($request, $response, $args) {
+$app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $paperData = $request->getParsedBody()['papers'];
@@ -178,18 +203,18 @@ $app->POST( "/projects/{key}/papers", function ($request, $response, $args) {
             ->withStatus(400);
     }
     //Are there exactly three columns?
-    foreach ( $paperData as $i => $row ){
-        if ( count($row) !== 3 ) {
+    foreach ($paperData as $i => $row) {
+        if (count($row) !== 3) {
             return $response
                 ->write(json_encode([
                     'reason' => "columnCountError",
                     'row' => $i + 1,
-                    'msg' => "Incorrect number of columns specified: " . count( $row )
+                    'msg' => "Incorrect number of columns specified: " . count($row)
                 ]), JSON_PRETTY_PRINT)
                 ->withStatus(400);
         }
     }
-    foreach ( $paperData as $paperRow ) {
+    foreach ($paperData as $paperRow) {
         $paperModel = Paper::create([
             'title' => $paperRow[0],
             'description' => $paperRow[1],
@@ -197,10 +222,10 @@ $app->POST( "/projects/{key}/papers", function ($request, $response, $args) {
             'status' => "pending",
             'masterEncoding' => []
         ]);
-        $project->addpaper( $paperModel );
+        $project->addpaper($paperModel);
     }
 
-    $count = count( $paperData );
+    $count = count($paperData);
     return $response
         ->write(json_encode([
             'reason' => "success",
@@ -209,7 +234,7 @@ $app->POST( "/projects/{key}/papers", function ($request, $response, $args) {
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });
-$app->POST( "/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
+$app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $pmcIDs = $request->getParsedBody()['pmcIDs'];
@@ -217,10 +242,10 @@ $app->POST( "/projects/{key}/papers/byPMCID", function ($request, $response, $ar
     $found = [];
     $not_found = [];
 
-    $adapter = new PMCAdapter( "ResearchCoder", "chris.rocco7@gmail.com" );
-    foreach ( $pmcIDs as $pmcID ){
-        $result = $adapter->lookupPMCID( $pmcID );
-        if( $adapter->wasSuccessful() ){
+    $adapter = new PMCAdapter("ResearchCoder", "chris.rocco7@gmail.com");
+    foreach ($pmcIDs as $pmcID) {
+        $result = $adapter->lookupPMCID($pmcID);
+        if ($adapter->wasSuccessful()) {
             $paperModel = Paper::create([
                 'title' => $result->getTitle(),
                 'description' => $result->getJournalName(),
@@ -228,7 +253,7 @@ $app->POST( "/projects/{key}/papers/byPMCID", function ($request, $response, $ar
                 'status' => "pending",
                 'masterEncoding' => []
             ]);
-            $project->addpaper( $paperModel );
+            $project->addpaper($paperModel);
             $found[] = $pmcID;
         } else {
             $not_found[] = $pmcID;
@@ -238,17 +263,17 @@ $app->POST( "/projects/{key}/papers/byPMCID", function ($request, $response, $ar
     return $response
         ->write(json_encode([
             'reason' => "success",
-            'newPaperCount' => count( $found ),
-            'succeeded'     =>  $found,
-            'failed'        =>  $not_found
+            'newPaperCount' => count($found),
+            'succeeded' => $found,
+            'failed' => $not_found
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });
-$app->GET(  "/projects/{key}/papers", function( $request, $response, $args){
+$app->GET("/projects/{key}/papers", function ($request, $response, $args) {
     $projectKey = $args['key'];
-    $project = Project::retrieve( $projectKey );
+    $project = Project::retrieve($projectKey);
     $papersArray = $project->getPapersFlat();
-    return $response->write( json_encode($papersArray) );
+    return $response->write(json_encode($papersArray));
 });
 
 /**
@@ -268,15 +293,15 @@ $app->POST("/projects", function ($request, $response, $args) {
     }
 
     $project = Project::create([
-        'name'  =>  $formData['name'],
-        'description'   =>  $formData['description'],
+        'name' => $formData['name'],
+        'description' => $formData['description'],
         'registrationCode' => $registrationCode,
         'version' => 1,
         'assignmentTarget' => 2
     ]);
 
-    $user = User::retrieve( $user_data['_key'] );
-    AdminOf::createEdge( $project, $user );
+    $user = User::retrieve($user_data['_key']);
+    AdminOf::createEdge($project, $user);
 
     return $response->write(
         json_encode([
@@ -287,8 +312,8 @@ $app->POST("/projects", function ($request, $response, $args) {
 });
 
 // Check which projects a user is enrolled in
-$app->GET("/getEnrollments", function( $request, $response, $args){
+$app->GET("/getEnrollments", function ($request, $response, $args) {
     $userKey = $request->getQueryParam("userKey");
-    $user = User::retrieve( $userKey );
+    $user = User::retrieve($userKey);
     // TODO - be right back. In case i forget about this.d
 });
