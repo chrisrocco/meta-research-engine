@@ -8,7 +8,6 @@
 
 namespace Models\Vertices\Project;
 
-
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 use Models\Vertices\Variable;
@@ -23,6 +22,13 @@ use Models\Edges\VariableOf;
 class Project extends VertexModel {
 
     static $collection = "projects";
+    static $schema = [
+        "name"              =>  "string",
+        "description"       =>  "string",
+        "registrationCode"  =>  "string",
+        "version"           =>  "number",
+        "assignmentTarget"  =>  "number"
+    ];
 
     /**
      * @param $paper Paper

@@ -7,6 +7,7 @@ use Models\Vertices\Variable;
 use Models\Vertices\Paper\Paper;
 use Models\Edges\Assignment\AssignmentManager;
 use Models\Vertices\User;
+use uab\MRE\Models\Project\AdminOf;
 use vector\PMCAdapter\PMCAdapter;
 
 /*
@@ -257,6 +258,9 @@ $app->GET("/projects/{key}/papers", function( $request, $response, $args){
  */
 $app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
+    $decoded_token = $request->getAttribute("jwt");
+    var_dump( $decoded_token );
+    return;
 
     $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
     $registrationCode = '';
@@ -273,6 +277,8 @@ $app->POST("/projects", function ($request, $response, $args) {
         'version' => 1,
         'assignmentTarget' => 2
     ]);
+    $user = $decoded_token['data']['id'];
+    AdminOf::createEdge( $user, $project );
 
     return $response->write(
         json_encode([

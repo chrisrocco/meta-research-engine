@@ -1,0 +1,49 @@
+<?php
+use triagens\ArangoDb\ConnectionOptions;
+
+$settings = [
+    'settings' => [
+        // JWT secret
+        'JWT_secret' => '{{jwt_secret}}',
+
+        //Google API key
+        'google_api_token' => "{{google_api_key}}",
+
+        // Database Connection
+        "database_connection_options" => [
+            ConnectionOptions::OPTION_DATABASE => '{{db_name}}',
+            ConnectionOptions::OPTION_ENDPOINT => '{{db_endpoint}}',
+            ConnectionOptions::OPTION_AUTH_TYPE => 'Basic',
+            ConnectionOptions::OPTION_AUTH_USER => '{{db_user}}',
+            ConnectionOptions::OPTION_AUTH_PASSWD => '{{db_password}}',
+            ConnectionOptions::OPTION_CONNECTION => 'Keep-Alive',
+            ConnectionOptions::OPTION_TIMEOUT => 3,
+            ConnectionOptions::OPTION_RECONNECT => true,
+            ConnectionOptions::OPTION_CREATE => true,
+            ConnectionOptions::OPTION_UPDATE_POLICY => \triagens\ArangoDb\UpdatePolicy::LAST,
+        ],
+
+        // Slim Project Settings
+        'displayErrorDetails' => true, // set to false in production
+        'addContentLengthHeader' => false, // Allow the web server to send the content-length header
+
+        // Monolog settings
+        'logger' => [
+            'name' => 'slim-lib',
+            'path' => __DIR__ . '/../logs/lib.log',
+            'level' => \Monolog\Logger::DEBUG,
+        ],
+
+        // Mail Server
+        'smtp'  =>  [
+            'host'          =>  '{{mail_server_host}}',
+            'smtp_auth'     =>  true,
+            'username'      =>  '{{mail_server_username}}',
+            'password'      =>  '{{mail_server_password}}',
+            'smtp_secure'   =>  '{{smtp_secure}}',
+            'port'          =>  {{port}}
+        ]
+    ]
+];
+
+return $settings;

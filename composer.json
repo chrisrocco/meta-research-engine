@@ -52,7 +52,8 @@
   "autoload": {
     "psr-4": {
       "Models\\": "models/",
-      "Email\\": "lib/email/"
+      "Email\\": "lib/email/",
+      "uab\\MRE\\": "src/"
     }
   },
   "scripts": {

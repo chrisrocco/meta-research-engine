@@ -6,6 +6,6 @@ $app->add( new \Slim\Middleware\JwtAuthentication([
     "passthrough" => ["/users/", "/reportError"],
     "attribute" => "jwt",
     "secure" => true,
-    "relaxed" => ["localhost", "dev.researchcoder.com"],
+    "relaxed" => [ "localhost", "dev.researchcoder.com" ],
     "secret" => $app->getContainer()->get("settings")['JWT_secret'],
 ]) );
