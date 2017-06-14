@@ -25,4 +25,3 @@ try {
 } catch ( \triagens\ArangoDb\ServerException $e ) {
     print "Graph " . GRAPH_NAME . " already exists";
 }
-

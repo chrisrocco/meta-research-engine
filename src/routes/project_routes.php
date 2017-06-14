@@ -113,7 +113,11 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
     $project_key = $args['key'];
     $user_set = User::getByExample( ['email'=>$give_to_email] );
 
-    if( count($user_set) !== 1 ) throw new Exception( "Invalid email count. There are ".count($user_set)." users with email ".$give_to_email );
+    if( count($user_set) === 0 ){
+        return $response->withStatus( 400 )->write( json_encode( [
+            "status"    =>  "NO_USER"
+        ], JSON_PRETTY_PRINT ) );
+    }
 
     $user = $user_set[0];
     $project = Project::retrieve($project_key);
@@ -128,8 +132,8 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
 
     return $response->write(
         json_encode([
-            "projectKey" => $project->key(),
-            "new_owner"  => $user->key()
+            "projectName" => $project->get('name'),
+            "newOwner"  => $user->get('first_name')
         ])
     );
 });
