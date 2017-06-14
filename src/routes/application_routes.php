@@ -12,6 +12,7 @@ use Models\Vertices\Project\Project;
 use Models\Vertices\SerializedProjectStructure;
 use Models\Vertices\User;
 use Models\Vertices\Variable;
+use uab\MRE\Models\Project\AdminOf;
 use vector\ArangoORM\DB\DB;
 
 
@@ -219,17 +220,19 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
 });
 
 $app->GET('/loadProjects', function($request, $response, $args) {
-    $queryParams = $request->getQueryParams();
+    $user_data = (array)($request->getAttribute("jwt")->data);
 
-    $cursor = DB::getAll( \Models\Vertices\Project\Project::$collection );
-    $documents = $cursor->getAll();
-    $flat = [];
-    foreach ( $documents as $doc ){
-        $flat[] = $doc->getAll();
-    }
+    $AQL = "FOR project IN OUTBOUND @user @@admin_of
+                RETURN project";
+    $bindings = [
+        "user"      =>  User::$collection."/".$user_data['_key'],
+        "@admin_of" =>  AdminOf::$collection
+    ];
+
+    $result_set = DB::query( $AQL, $bindings, true )->getAll();
 
     $data = [
-        'projects' => $flat
+        'projects' => $result_set
     ];
 
     $response->write(json_encode( $data, JSON_PRETTY_PRINT ));

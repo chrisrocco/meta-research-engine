@@ -162,7 +162,7 @@ $app->POST ('/projects/members', function ($request, $response, $args) {
  * FailCodes: badFileNameError, parseFailure, emptyFileError, columnCountError, interpretFailure
  * SuccessCode: success
  */
-$app->POST("/projects/{key}/papers", function ($request, $response, $args) {
+$app->POST( "/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $paperData = $request->getParsedBody()['papers'];
@@ -209,7 +209,7 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });
-$app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
+$app->POST( "/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
     $pmcIDs = $request->getParsedBody()['pmcIDs'];
@@ -244,8 +244,7 @@ $app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $arg
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
 });
-
-$app->GET("/projects/{key}/papers", function( $request, $response, $args){
+$app->GET(  "/projects/{key}/papers", function( $request, $response, $args){
     $projectKey = $args['key'];
     $project = Project::retrieve( $projectKey );
     $papersArray = $project->getPapersFlat();
@@ -258,9 +257,7 @@ $app->GET("/projects/{key}/papers", function( $request, $response, $args){
  */
 $app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
-    $decoded_token = $request->getAttribute("jwt");
-    var_dump( $decoded_token );
-    return;
+    $user_data = (array)($request->getAttribute("jwt")->data);
 
     $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
     $registrationCode = '';
@@ -277,8 +274,9 @@ $app->POST("/projects", function ($request, $response, $args) {
         'version' => 1,
         'assignmentTarget' => 2
     ]);
-    $user = $decoded_token['data']['id'];
-    AdminOf::createEdge( $user, $project );
+
+    $user = User::retrieve( $user_data['_key'] );
+    AdminOf::createEdge( $project, $user );
 
     return $response->write(
         json_encode([

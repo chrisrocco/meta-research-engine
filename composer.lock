@@ -655,7 +655,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/arangodb-php-orm.git",
-                "reference": "895ea33be2bbaf05e7d286daa478047d3837ede7"
+                "reference": "7d75383d91098ed899baea5ead01fb546a4f93a4"
             },
             "require": {
                 "php": ">=5.4",
@@ -685,7 +685,7 @@
                 "package",
                 "template"
             ],
-            "time": "2017-06-06 12:53:23"
+            "time": "2017-06-10 19:19:05"
         },
         {
             "name": "vector/pmc-api-adapter",
@@ -693,7 +693,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vector-web-development/pmc-api-adapter.git",
-                "reference": "9e20a01c48df25972acee9fb02f0872524e9b647"
+                "reference": "3598cb7f4cdd19d8ac8e11ad4d3c456f5a8e3ece"
             },
             "require": {
                 "php": ">=5.4"
@@ -722,7 +722,7 @@
                 "php",
                 "wrapper"
             ],
-            "time": "2017-06-06 20:45:15"
+            "time": "2017-06-14 02:42:51"
         }
     ],
     "packages-dev": [

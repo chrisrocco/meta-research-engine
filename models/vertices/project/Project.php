@@ -22,6 +22,7 @@ use Models\Edges\VariableOf;
 class Project extends VertexModel {
 
     static $collection = "projects";
+
     static $schema = [
         "name"              =>  "string",
         "description"       =>  "string",

@@ -64,7 +64,6 @@ require( __DIR__ . "/../src/routes/application_routes.php");
 try {
     // Run App
     $app->run();
-
 } catch ( Exception $e ) {
     $message = [
         "file"  =>  $e->getFile(),
