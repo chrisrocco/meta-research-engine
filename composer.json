@@ -54,7 +54,6 @@
       "Models\\": "models/",
       "Email\\": "lib/email/",
       "uab\\MRE\\": "src/",
-      // how to specify multiple paths
       "uab\\MRE\\Models\\Project\\": "models/project"
     }
   },
