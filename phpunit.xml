@@ -1,11 +1,7 @@
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
-        <testsuite name="UnitTests">
-            <directory>tests/unit</directory>
-        </testsuite>
-        <testsuite name="IntegrationTests">
-            <file>tests/integration/BaseIntegrationTest.php</file>
-            <file>tests/integration/StudyDomainVariablePaperUserAssignment.php</file>
+        <testsuite name="Tests">
+            <directory>tests/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
