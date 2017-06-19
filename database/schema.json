@@ -46,5 +46,17 @@
   },
   "serialized_project_structures" : {
     "type": "vertex"
+  },
+  "said": {
+    "type": "edge"
+  },
+  "response": {
+    "type": "vertex"
+  },
+  "about": {
+    "type": "edge"
+  },
+  "in_paper": {
+    "type": "edge"
   }
 }
