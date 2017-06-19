@@ -59,7 +59,7 @@ class Email {
         return $email;
     }
     public static function errorReportEmail ($error_body) {
-        $settings = require __DIR__ . '/../../src/settings.php';
+        $settings = require __DIR__ . '/../../app/settings.php';
         $smtp_settings = $settings['settings']['smtp'];
 
         $mail = new \PHPMailer();
@@ -87,7 +87,7 @@ class Email {
     }
 
     function __construct($to_email, $to_name){
-        $settings = require __DIR__ . '/../../src/settings.php';
+        $settings = require __DIR__ . '/../../app/settings.php';
         $smtp_settings = $settings['settings']['smtp'];
 
         $mail = new \PHPMailer();

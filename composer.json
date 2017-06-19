@@ -53,7 +53,7 @@
     "psr-4": {
       "Models\\": "models/",
       "Email\\": "lib/email/",
-      "uab\\MRE\\": "src/",
+      "uab\\MRE\\": "app/",
       "uab\\MRE\\Models\\Project\\": "models/project"
     }
   },

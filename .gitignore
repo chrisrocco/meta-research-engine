@@ -2,6 +2,6 @@
 
 !/logs/README.md
 /vendor/
-/src/settings.php
+/app/settings.php
 *desktop.ini
 *bash.exe.stackdump*
