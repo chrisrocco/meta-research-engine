@@ -9,6 +9,13 @@ use vector\ArangoORM\Models\Core\VertexModel;
 class User extends VertexModel
 {
     static $collection = "users";
+    static $schema = [
+        'first_name'    =>  "string",
+        'last_name'     =>  "string",
+        'email'         =>  "string",
+        'password'      =>  "string",
+        'active'        =>  "boolean"
+    ];
 
     const EXISTS = 20;
     const INVALID = 25;

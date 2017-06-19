@@ -286,6 +286,7 @@ $app->GET("/projects/{key}/papers", function ($request, $response, $args) {
  */
 $app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
+    // TODO: put this into middleware - else it's untestable!
     $user_data = (array)($request->getAttribute("jwt")->data);
 
     $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
