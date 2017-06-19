@@ -6,14 +6,9 @@
  * Time: 2:30 PM
  */
 
-namespace Models\Vertices\Project;
+namespace uab\MRE\dao;
 
-use Models\Vertices\User;
 use vector\ArangoORM\DB\DB;
-use Models\Edges\Assignment\Assignment;
-use Models\Edges\PaperOf;
-use Models\Vertices\Paper\Paper;
-
 
 class PaperQueue {
 

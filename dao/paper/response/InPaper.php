@@ -6,12 +6,11 @@
  * Time: 1:21 AM
  */
 
-namespace uab\MRE\Response;
-
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\Models\Core\EdgeModel;
 
-class About extends EdgeModel
+class InPaper extends EdgeModel
 {
 
 }

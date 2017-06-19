@@ -1,5 +1,5 @@
 <?php
-namespace uab\MRE\Models\Project;
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\Models\Core\EdgeModel;
 

@@ -6,16 +6,11 @@
  * Time: 12:01 PM
  */
 
-namespace Models\Edges\Assignment;
-
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\BaseModel;
 use vector\ArangoORM\Models\Core\EdgeModel;
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\Project\Project;
-use Models\Edges\PaperOf;
-use Models\Vertices\User;
 
 class Assignment extends EdgeModel
 {

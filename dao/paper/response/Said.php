@@ -6,8 +6,7 @@
  * Time: 1:21 AM
  */
 
-namespace uab\MRE\Response;
-
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\Models\Core\EdgeModel;
 

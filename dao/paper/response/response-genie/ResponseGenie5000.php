@@ -6,11 +6,7 @@
  * Time: 1:04 AM
  */
 
-namespace uab\MRE\Paper\ResponseGenie5000;
-
-
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\User;
+namespace uab\MRE\dao;
 
 class ResponseGenie5000
 {

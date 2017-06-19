@@ -6,24 +6,16 @@
  * Time: 11:59 PM
  */
 
-namespace Models\Vertices\Paper;
-
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
-use Models\Edges\Assignment\Assignment;
-use Models\Edges\PaperOf;
-use Models\Vertices\Project\Project;
-use Models\Vertices\User;
-use triagens\ArangoDb\Document;
-
-use triagens\ArangoDb\Exception;
 
 class Paper extends VertexModel {
     static $collection = 'papers';
 
     /**
-     * @return \Models\Vertices\Project\Project
+     * @return Project
      */
     public function getProject() {
         $AQL = "FOR project IN OUTBOUND @paperID @@paper_to_study
@@ -71,11 +63,8 @@ class Paper extends VertexModel {
     public function roccoMerge( $assignment ){
         $masterEncodingObject = $this->get('masterEncoding');
         $assignmentObject = $assignment->toArray();
-        $mergeLog = RoccoMasterEncoding::merge( $assignmentObject, $masterEncodingObject );
+        RoccoMasterEncoding::merge( $assignmentObject, $masterEncodingObject );
         $this->update( 'masterEncoding', $masterEncodingObject );
-
-        $arango_doc = Document::createFromArray( $mergeLog );
-        DB::create( "merge_logs", $arango_doc );
     }
 
     public function getCollaborators(){

@@ -1,5 +1,4 @@
 <?php
-use Models\Vertices\User as User;
 
 /**
  * POST usersLoginPost
@@ -7,6 +6,8 @@ use Models\Vertices\User as User;
  * Notes:
  * Output-Formats: [application/json]
  */
+use uab\MRE\dao\User;
+
 $app->POST('/users/login', function ($request, $response, $args) {
     $formData = $request->getParams();
 

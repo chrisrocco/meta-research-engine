@@ -9,7 +9,7 @@
 namespace Tests;
 
 
-use Models\Vertices\User;
+use uab\MRE\dao\User;
 use vector\ArangoORM\DB\DB;
 
 class RegistrationTest extends BaseTestCase

@@ -1,13 +1,9 @@
 <?php
 
-use Models\Vertices\Project\Project;
-use Models\Vertices\Domain;
-use Models\Vertices\SerializedProjectStructure;
-use Models\Vertices\Variable;
-use Models\Vertices\Paper\Paper;
-use Models\Edges\Assignment\AssignmentManager;
-use Models\Vertices\User;
-use uab\MRE\Models\Project\AdminOf;
+use uab\MRE\dao\AdminOf;
+use uab\MRE\dao\AssignmentManager;
+use uab\MRE\dao\Project;
+use uab\MRE\dao\User;
 use vector\PMCAdapter\PMCAdapter;
 
 /*

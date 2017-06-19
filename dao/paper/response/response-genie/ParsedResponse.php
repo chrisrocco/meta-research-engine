@@ -6,10 +6,9 @@
  * Time: 1:05 AM
  */
 
-namespace uab\MRE\Paper\ResponseGenie5000;
+namespace uab\MRE\dao;
 
-
-class Response
+class ParsedResponse
 {
     public $question_key;
     public $scope;

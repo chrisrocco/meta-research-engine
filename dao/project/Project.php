@@ -6,18 +6,10 @@
  * Time: 3:49 PM
  */
 
-namespace Models\Vertices\Project;
+namespace uab\MRE\dao;
 
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
-use Models\Vertices\Variable;
-use Models\Vertices\Domain;
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\User;
-use Models\Edges\EnrolledIn;
-use Models\Edges\PaperOf;
-use Models\Edges\SubdomainOf;
-use Models\Edges\VariableOf;
 
 class Project extends VertexModel {
 

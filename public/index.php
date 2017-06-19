@@ -1,10 +1,7 @@
 <?php
-use uab\MRE\Config\Config;
-
 require __DIR__ . '/../vendor/autoload.php';
 
 $settings = require __DIR__ . '/../app/settings.php';
-Config::initSettings( $settings );
 require __DIR__ . '/../database/db_connect.php';
 
 // Instantiate the Slim App

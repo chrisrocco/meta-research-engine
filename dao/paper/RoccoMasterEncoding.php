@@ -9,7 +9,7 @@
  * master response users: array
  * */
 
-namespace Models\Vertices\Paper;
+namespace uab\MRE\dao;
 
 class RoccoMasterEncoding {
     static function merge( $assignment, &$masterEncoding ){

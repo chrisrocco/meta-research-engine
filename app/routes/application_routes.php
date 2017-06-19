@@ -1,33 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Chris Rocco
- * Date: 5/13/2017
- * Time: 8:41 PM
- */
-use Models\Edges\Assignment\Assignment;
-use Models\Edges\EnrolledIn;
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\Project\Project;
-use Models\Vertices\SerializedProjectStructure;
-use Models\Vertices\User;
-use Models\Vertices\Variable;
-use uab\MRE\Models\Project\AdminOf;
+use uab\MRE\dao\AdminOf;
+use uab\MRE\dao\Assignment;
+use uab\MRE\dao\EnrolledIn;
+use uab\MRE\dao\Paper;
+use uab\MRE\dao\PaperOf;
+use uab\MRE\dao\Project;
+use uab\MRE\dao\SerializedProjectStructure;
+use uab\MRE\dao\User;
+use uab\MRE\dao\Variable;
 use vector\ArangoORM\DB\DB;
 
-
-/**
- * GET loadAssignmentGet
- * Summary: Called in the Paper Coder activity
- * Notes: Returns the assignment, the associated structure, and question list
-
- */
 $app->GET('/loadPaperCoder', function($request, $response, $args) {
 
     $queryParams = $request->getQueryParams();
     $key = $queryParams['key'];
 
-    $assignment = \Models\Edges\Assignment\Assignment::retrieve( $key );
+    $assignment = Assignment::retrieve( $key );
     $paper = $assignment->getPaper();
     $project = $assignment->getProject();
     $questionsList = $project->getVariablesFlat();
@@ -47,7 +35,7 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
 $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $userKey = $queryParams['userKey'];
-    $user = \Models\Vertices\User::retrieve($userKey);
+    $user = User::retrieve($userKey);
     if (!$user) {
         return $response
             ->write("No user with key ". $userKey." found")
@@ -150,8 +138,8 @@ $app->GET('/loadAssignments', function($request, $response, $args) {
             }';
     $bindings = [
         'root'  =>  $user->id(),
-        '@assignments'  =>  \Models\Edges\Assignment\Assignment::$collection,
-        '@paper_to_project'   =>  \Models\Edges\PaperOf::$collection,
+        '@assignments'  =>  Assignment::$collection,
+        '@paper_to_project'   =>  PaperOf::$collection,
         '@enrollments'  =>  EnrolledIn::$collection
     ];
 
@@ -165,7 +153,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $projectKey = $queryParams['projectKey'];
 
-    $project = \Models\Vertices\Project\Project::retrieve($projectKey);
+    $project = Project::retrieve($projectKey);
     if (!$project) {
         return $response->write ('No project with key '.$projectKey.' found')
             ->withStatus(409);
@@ -196,8 +184,8 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
     }',
         [
             'studyID' => $project->id(),
-            '@paper_to_study' => \Models\Edges\PaperOf::$collection,
-            '@assignments' => \Models\Edges\Assignment\Assignment::$collection
+            '@paper_to_study' => PaperOf::$collection,
+            '@assignments' => Assignment::$collection
         ],
         true
     )->getAll();

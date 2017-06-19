@@ -6,13 +6,12 @@
  * Time: 1:05 AM
  */
 
-namespace uab\MRE\Paper\ResponseGenie5000;
-
+namespace uab\MRE\dao;
 
 class ParsedAssignment
 {
     /**
-     * @var Response[]
+     * @var ParsedResponse[]
      */
     public $responses;
     public $user_key;
@@ -22,7 +21,7 @@ class ParsedAssignment
         $this->user_key = $user_key;
     }
 
-    function addResponse( Response $response ){
+    function addResponse( ParsedResponse $response ){
         array_push( $this->responses, $response );
     }
 }

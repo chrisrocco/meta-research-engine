@@ -1,15 +1,11 @@
 <?php
-use Models\Edges\Assignment\AssignmentManager;
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\Project\Project;
-use \Models\Vertices\User;
-use Models\Edges\Assignment\Assignment;
-/**
- * GET assignmentsIDGet
- * Summary: Returns a single assignment
- * Notes:
- * Output-Formats: [application/json]
- */
+
+use uab\MRE\dao\Assignment;
+use uab\MRE\dao\AssignmentManager;
+use uab\MRE\dao\Paper;
+use uab\MRE\dao\Project;
+use uab\MRE\dao\User;
+
 $app->GET('/assignments/{key}', function ($request, $response, $args) {
     $assignment = Assignment::retrieve($args["key"]);
 

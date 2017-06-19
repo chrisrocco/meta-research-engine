@@ -6,12 +6,12 @@
  * Time: 3:57 PM
  */
 
-namespace Models\Edges;
+namespace uab\MRE\dao;
 
 
 use vector\ArangoORM\Models\Core\EdgeModel;
 
-class PaperOf extends EdgeModel
+class SubdomainOf extends EdgeModel
 {
-    static $collection = "paper_of";
+    static $collection = "subdomain_of";
 }

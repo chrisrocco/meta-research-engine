@@ -6,13 +6,7 @@
  * Time: 2:06 AM
  */
 
-namespace Models\Edges\Assignment;
-
-
-use Models\Vertices\Project\Project;
-use Models\Vertices\User;
-use Models\Vertices\Paper\Paper;
-use Models\Vertices\Project\PaperQueue;
+namespace uab\MRE\dao;
 
 class AssignmentManager
 {

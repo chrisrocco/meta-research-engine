@@ -6,11 +6,8 @@
  * Time: 4:05 PM
  */
 
-namespace Models\Vertices;
+namespace uab\MRE\dao;
 
-
-use Models\Edges\VariableOf;
-use Models\Edges\SubdomainOf;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 

@@ -6,7 +6,7 @@
  * Time: 3:57 PM
  */
 
-namespace Models\Edges;
+namespace uab\MRE\dao;
 
 
 use vector\ArangoORM\Models\Core\EdgeModel;

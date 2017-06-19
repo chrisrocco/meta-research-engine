@@ -1,8 +1,7 @@
 <?php
-namespace Models\Vertices;
+namespace uab\MRE\dao;
 
 use Firebase\JWT\JWT;
-use Models\Edges\Assignment\Assignment;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 
@@ -129,6 +128,4 @@ class User extends VertexModel
     function checkHash($hash_code){
         return ( $this->get('hash_code')  === $hash_code );
     }
-
-
 }

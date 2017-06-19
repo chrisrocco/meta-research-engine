@@ -6,7 +6,7 @@
  * Time: 10:07 PM
  */
 
-namespace Models\Vertices;
+namespace uab\MRE\dao;
 
 
 use vector\ArangoORM\Models\Core\VertexModel;
