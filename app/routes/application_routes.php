@@ -274,3 +274,23 @@ $app->GET('/loadConflictResolution', function($request, $response, $args) {
     return $response
         ->write( json_encode($output, JSON_PRETTY_PRINT) );
 });
+
+$app->GET('/activities/report', function($request, $response, $args) {
+    $paperKey = $request->getQueryParam("paperKey");
+    $thePaper       = Paper::retrieve( $paperKey );
+
+    /* Inject actual question objects */
+    $masterEncodingArr = $thePaper->get( 'masterEncoding' );
+    foreach ( $masterEncodingArr as &$record ){
+        $questionKey = $record['question'];
+        $questionModel = Variable::retrieve( $questionKey );
+        $record['question'] = $questionModel->toArray();
+    }
+    $paperObj = $thePaper->toArray();
+    $paperObj['masterEncoding'] = $masterEncodingArr;
+
+    $output = [];
+    $output['paper']        = $paperObj;
+
+    return $response->withJson( $output );
+});

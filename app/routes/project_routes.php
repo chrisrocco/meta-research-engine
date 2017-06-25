@@ -2,8 +2,12 @@
 
 use uab\MRE\dao\AdminOf;
 use uab\MRE\dao\AssignmentManager;
+use uab\MRE\dao\Domain;
+use uab\MRE\dao\Paper;
 use uab\MRE\dao\Project;
+use uab\MRE\dao\SerializedProjectStructure;
 use uab\MRE\dao\User;
+use uab\MRE\dao\Variable;
 use vector\PMCAdapter\PMCAdapter;
 
 /*
@@ -276,10 +280,6 @@ $app->GET("/projects/{key}/papers", function ($request, $response, $args) {
     return $response->write(json_encode($papersArray));
 });
 
-/**
- * POST projects
- * Summary: Creates a project
- */
 $app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
     // TODO: put this into middleware - else it's untestable!
