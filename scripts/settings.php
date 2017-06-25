@@ -1,7 +1,7 @@
 <?php
 
 $template = file_get_contents( __DIR__ . "/settings-template" );
-$generated = fopen( __DIR__ . '/../src/settings.php', "w" );
+$generated = fopen( __DIR__ . '/../app/settings.php', "w" );
 
 $handle = fopen ("php://stdin","r");
 

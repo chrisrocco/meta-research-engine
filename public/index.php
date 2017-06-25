@@ -1,10 +1,7 @@
 <?php
-use uab\MRE\Config\Config;
-
 require __DIR__ . '/../vendor/autoload.php';
 
-$settings = require __DIR__ . '/../src/settings.php';
-Config::initSettings( $settings );
+$settings = require __DIR__ . '/../app/settings.php';
 require __DIR__ . '/../database/db_connect.php';
 
 // Instantiate the Slim App
@@ -48,17 +45,17 @@ $app->add(function($request, $response, $next) {
 /* End CORS Support */
 
 // Set up dependencies
-require __DIR__ . '/../src/dependencies.php';
+require __DIR__ . '/../app/dependencies.php';
 
 // Register middleware
-require __DIR__ . '/../src/middleware.php';
+require __DIR__ . '/../app/middleware.php';
 
 // Register routes
-require( __DIR__ . "/../src/routes/user_routes.php");
-require( __DIR__ . "/../src/routes/assignment_routes.php");
-require( __DIR__ . "/../src/routes/project_routes.php");
-require( __DIR__ . "/../src/routes/core_routes.php");
-require( __DIR__ . "/../src/routes/application_routes.php");
+require(__DIR__ . "/../app/routes/user_routes.php");
+require(__DIR__ . "/../app/routes/assignment_routes.php");
+require(__DIR__ . "/../app/routes/project_routes.php");
+require(__DIR__ . "/../app/routes/core_routes.php");
+require(__DIR__ . "/../app/routes/application_routes.php");
 
 
 try {
