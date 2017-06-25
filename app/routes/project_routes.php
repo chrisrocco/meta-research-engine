@@ -140,7 +140,7 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
 
 $app->POST('/projects/members', function ($request, $response, $args) {
     $userKey = $request->getParam('userKey');
-    $registrationCode = $request->getParam('registrationCode');
+    $registrationCode = strtoupper($request->getParam('registrationCode'));
 
     $user = User::retrieve($userKey);
 
