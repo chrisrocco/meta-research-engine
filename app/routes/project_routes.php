@@ -253,7 +253,7 @@ $app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $arg
             $paperModel = Paper::create([
                 'title' => $result->getTitle(),
                 'description' => $result->getJournalName(),
-                'url' => "",
+                'url' => PMCAdapter::getEmbeddingURL($pmcID),
                 'status' => "pending",
                 'masterEncoding' => []
             ]);
