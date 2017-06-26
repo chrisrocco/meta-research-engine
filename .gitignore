@@ -3,5 +3,6 @@
 !/logs/README.md
 /vendor/
 /app/settings.php
+/composer.lock
 *desktop.ini
 *bash.exe.stackdump*
