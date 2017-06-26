@@ -284,7 +284,9 @@ $app->GET('/activities/report', function($request, $response, $args) {
     foreach ( $masterEncodingArr as &$record ){
         $questionKey = $record['question'];
         $questionModel = Variable::retrieve( $questionKey );
-        $record['question'] = $questionModel->toArray();
+        if( $questionModel !== false ){
+            $record['question'] = $questionModel->toArray();
+        }
     }
     $paperObj = $thePaper->toArray();
     $paperObj['masterEncoding'] = $masterEncodingArr;
