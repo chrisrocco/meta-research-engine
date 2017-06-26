@@ -140,7 +140,7 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
 
 $app->POST('/projects/members', function ($request, $response, $args) {
     $userKey = $request->getParam('userKey');
-    $registrationCode = $request->getParam('registrationCode');
+    $registrationCode = strtoupper( trim($request->getParam('registrationCode')) );
 
     $user = User::retrieve($userKey);
 
@@ -253,7 +253,7 @@ $app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $arg
             $paperModel = Paper::create([
                 'title' => $result->getTitle(),
                 'description' => $result->getJournalName(),
-                'url' => "",
+                'url' => PMCAdapter::getEmbeddingURL($pmcID),
                 'status' => "pending",
                 'masterEncoding' => []
             ]);
