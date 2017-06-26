@@ -50,4 +50,8 @@ class Assignment extends EdgeModel
     public function getPaper () {
         return Paper::retrieve( BaseModel::idToKey( $this->getFrom() ) );
     }
+
+    public function isDone() {
+        return boolval($this->get('done'));
+    }
 }
