@@ -156,7 +156,7 @@ $app->GET('/loadManageProject', function ($request, $response, $args) {
     $project = Project::retrieve($projectKey);
     if (!$project) {
         return $response->write ('No project with key '.$projectKey.' found')
-            ->withStatus(409);
+            ->withStatus(400);
     }
 
     $papers = DB::query(
