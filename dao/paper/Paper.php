@@ -8,6 +8,7 @@
 
 namespace uab\MRE\dao;
 
+use triagens\ArangoDb\Exception;
 use vector\ArangoORM\DB\DB;
 use vector\ArangoORM\Models\Core\VertexModel;
 
@@ -45,6 +46,9 @@ class Paper extends VertexModel {
         return $paperOfSet[0];
     }
 
+    /**
+     * @return Assignment[]
+     */
     public function getAssignments() {
         return DB::queryModel(
             'FOR user, ass IN OUTBOUND @paperID @@assignments
@@ -78,6 +82,14 @@ class Paper extends VertexModel {
         return $users;
     }
 
+    public function getMasterEncoding () {
+        try {
+            return $this->get('masterEncoding');
+        } catch (\OutOfBoundsException $e) {
+            return [];
+        }
+    }
+
     public static function updateStatusByKey ($paperKey) {
         $paper = Paper::retrieve($paperKey);
         if (!$paper) {
@@ -87,40 +99,31 @@ class Paper extends VertexModel {
     }
 
     public function updateStatus () {
-        $masterEncoding = $this->get('masterEncoding');
-        $conflicted = RoccoMasterEncoding::conflictedStatus($masterEncoding);
+        try {
+            $masterEncoding = $this->getMasterEncoding();
+            $conflicted = RoccoMasterEncoding::conflictedStatus($masterEncoding);
 
-        if ($conflicted) {
-            $status = "conflicted";
-            $this->update('status', $status);
-            return $status;
-        }
-
+            if ($conflicted) {
+                return $this->setStatus("conflicted");
+            }
+        } catch (Exception $e) {}
 
         $assignments = $this->getAssignments();
         $assignmentCount = count($assignments);
         if ($assignmentCount === 0) {
-            $status = "pending";
-            $this->update('status', $status);
-            return $status;
+            return $this->setStatus("pending");
         }
 
         foreach ($assignments as $assignment) {
-            if ($assignment->get('done') == false) {
-                $status = "active";
-                $this->update('status', $status);
-                return $status;
+            if (!$assignment->isDone()) {
+                return $this->setStatus("active");
             }
         }
         $project = $this->getProject();
-        if ($project && $assignmentCount < $project->get('assignmentTarget')) {
-            $status = "clean";
-            $this->update('status', $status);
-            return $status;
+        if ($project && $assignmentCount < $project->getPaperAssignmentTarget()) {
+            return $this->setStatus("clean");
         }
-        $status = "complete";
-        $this->update('status', $status);
-        return $status;
+        return $this->setStatus("complete");
 
     }
 
@@ -140,6 +143,11 @@ class Paper extends VertexModel {
     public function getPriority ($project) {
         $paperOf = $this->getPaperOf($project);
         return intval($paperOf->get('priority'));
+    }
+
+    public function setStatus($status) {
+        $this->update('status', $status);
+        return $status;
     }
 }
 
