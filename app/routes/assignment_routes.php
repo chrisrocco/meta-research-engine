@@ -21,8 +21,8 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $assignment = Assignment::retrieve($args['key']);
-    $assignment->update('done', $formData['done']);
-    $assignment->update('completion', $formData['completion']);
+    $assignment->update('done', boolval($formData['done']));
+    $assignment->update('completion', floatval($formData['completion']));
     $assignment->update('encoding', $formData['encoding']);
 
 

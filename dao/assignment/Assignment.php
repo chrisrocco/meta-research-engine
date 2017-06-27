@@ -47,11 +47,14 @@ class Assignment extends EdgeModel
         return DB::queryModel($AQL, $bindings, Project::class)[0];
     }
 
+    /**
+     * @return Paper
+     */
     public function getPaper () {
         return Paper::retrieve( BaseModel::idToKey( $this->getFrom() ) );
     }
 
     public function isDone() {
-        return boolval($this->get('done'));
+        return !( $this->get('done') === false || $this->get('done') === 'false' );
     }
 }
