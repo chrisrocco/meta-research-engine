@@ -124,8 +124,9 @@ class Paper extends VertexModel {
         if ($project && $assignmentCount < $project->getPaperAssignmentTarget()) {
             return $this->setStatus("clean");
         }
-        return $this->setStatus("complete");
-
+        $status = "complete";
+        $this->update('status', $status);
+        return $status;
     }
 
     /**
