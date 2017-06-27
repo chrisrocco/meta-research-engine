@@ -55,6 +55,6 @@ class Assignment extends EdgeModel
     }
 
     public function isDone() {
-        return boolval($this->get('done'));
+        return !( $this->get('done') == false || $this->get('done') == 'false' );
     }
 }
