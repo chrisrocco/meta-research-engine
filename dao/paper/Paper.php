@@ -106,18 +106,21 @@ class Paper extends VertexModel {
         }
 
         foreach ($assignments as $assignment) {
-            if ($assignment->get('done') == false) {
+            if ($assignment->get('done') == false
+                || $assignment->get('done') == 'false' ) {
                 $status = "active";
                 $this->update('status', $status);
                 return $status;
             }
         }
+
         $project = $this->getProject();
         if ($project && $assignmentCount < $project->get('assignmentTarget')) {
             $status = "clean";
             $this->update('status', $status);
             return $status;
         }
+
         $status = "complete";
         $this->update('status', $status);
         return $status;
