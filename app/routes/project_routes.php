@@ -66,7 +66,7 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
     //Create each of the new domains
     foreach ($structure['domains'] as $newDom) {
         $domain = Domain::create([
-            '_key' => $newDom['id'],
+//            '_key' => $newDom['id'],
             'name' => $newDom['name'],
             'description' => $newDom['description'],
             'tooltip' => $newDom['tooltip'],
@@ -88,7 +88,7 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
     //Create the new questions and connect them to parent domains
     foreach ($structure['questions'] as $newQuestion) {
         $tempParent = $newQuestion['parent'];
-        $newQuestion['_key'] = $newQuestion['id'];
+        //$newQuestion['_key'] = $newQuestion['id'];
         unset($newQuestion['id'], $newQuestion['parent'], $newQuestion['$$hashKey']);
         $question = Variable::create($newQuestion);
         $tempDomIDMap[$tempParent]->addVariable($question);
