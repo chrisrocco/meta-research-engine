@@ -120,6 +120,35 @@ class Project extends VertexModel {
     }
 
     /**
+     * @return User[]
+     */
+    public function getAdmins () {
+        $aql = '
+            FOR admin IN INBOUND @projectID @@admin_to_market
+                RETURN admin
+        ';
+        $bindVars = [
+            'projectID' => $this->id(),
+            '@admin_to_market' => AdminOf::$collection
+        ];
+        return DB::queryModel($aql, $bindVars, User::class);
+    }
+
+    /**
+     * @param $user User
+     * @return bool
+     */
+    public function isAdmin ($user) {
+        $admins = $this->getAdmins();
+        foreach ($admins as $admin) {
+            if ($admin->key() === $user->key()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return array
      */
     public function getStructureFlat(){
@@ -181,5 +210,19 @@ class Project extends VertexModel {
         ];
 
         return array_merge( $d, $v );
+    }
+
+    /**
+     * @param $length int
+     * @return string
+     */
+    public static function generateRegistrationCode ($length) {
+        $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
+        $registrationCode = '';
+        $max = strlen($characters) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $registrationCode .= $characters[mt_rand(0, $max)];
+        }
+        return $registrationCode;
     }
 }

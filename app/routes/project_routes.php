@@ -9,10 +9,14 @@ use uab\MRE\dao\SerializedProjectStructure;
 use uab\MRE\dao\User;
 use uab\MRE\dao\Variable;
 use vector\PMCAdapter\PMCAdapter;
+use vector\MRE\Middleware\MRERoleValidator;
+use vector\MRE\Middleware\RequireProjectAdmin;
+
+$container = $app->getContainer();
 
 /*
- * GET projects/{projectname}/structure
- * Summary: Gets the domain / field structure of the specified research project
+ * GET projects/{key}/structure
+ * Summary: Gets the domain / field structure of the specified project
  */
 $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project_key = $args['key'];
@@ -30,8 +34,8 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
 });
 
 /**
- * GET projects/{projectname}/variables
- * Summary: Gets a list of every field's name
+ * GET projects/{key}/variables
+ * Summary: Gets a list of every question in the project
  */
 $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
@@ -48,8 +52,6 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
     $formData = $request->getParams();
     $projectKey = $args['key'];
     $structure = json_decode($formData['structure'], true);
-
-    //TODO: check that the user of the token is an admin for the project
 
     $project = Project::retrieve($projectKey);
     if (!$project) {
@@ -106,11 +108,17 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
     return $response
         ->write("Successfully updated project structure")
         ->withStatus(200);
-});
+})->add(new RequireProjectAdmin($container));
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
-    // security: you must be an owner of the project you are given access to
     $give_to_email = $request->getParam("userEmail");
     $project_key = $args['key'];
+    $project = Project::retrieve($project_key);
+
+    $user = $this['user'];
+    if (!$project->isAdmin($user)) {
+        return $response->write("You are not an admin of this project.")->withStatus(403);
+    }
+
     $user_set = User::getByExample( ['email'=>$give_to_email] );
 
     if( count($user_set) === 0 ){
@@ -119,14 +127,11 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
         ], JSON_PRETTY_PRINT ) );
     }
 
-    $user = $user_set[0];
-    $project = Project::retrieve($project_key);
+    $newAdmin = $user_set[0];
 
-    $exist_check = AdminOf::getByExample( [
-        "_to"   =>  $project->id(),
-        "_from" =>  $user->id()
-    ] );
-    if( count( $exist_check ) > 0 ) return $response->withStatus( 409 )->write("that user is already an owner");
+    if ($project->isAdmin($newAdmin)) {
+        return $response->withStatus( 409 )->write("that user is already an owner");
+    }
 
     AdminOf::createEdge( $project, $user );
 
@@ -136,13 +141,11 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
             "newOwner"  => $user->get('first_name')
         ])
     );
-});
+})->add(new RequireProjectAdmin($container));
 
 $app->POST('/projects/members', function ($request, $response, $args) {
-    $userKey = $request->getParam('userKey');
     $registrationCode = strtoupper( trim($request->getParam('registrationCode')) );
-
-    $user = User::retrieve($userKey);
+    $user = $this['user'];
 
     $project_result_set = Project::getByExample(["registrationCode" => $registrationCode]);
 
@@ -186,7 +189,7 @@ $app->POST('/projects/members', function ($request, $response, $args) {
 });
 
 /**
- * POST projects/{projectname}/papers
+ * POST projects/{key}/papers
  * Summary: Adds a paper to a project
  * FailCodes: badFileNameError, parseFailure, emptyFileError, columnCountError, interpretFailure
  * SuccessCode: success
@@ -194,8 +197,12 @@ $app->POST('/projects/members', function ($request, $response, $args) {
 $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
+    $user = $this['user'];
     $paperData = $request->getParsedBody()['papers'];
 
+    if (!$project->isAdmin($user)) {
+        return $response->write("You are not an admin of this project.")->withStatus(403);
+    }
 
     //Is the file empty?
     if (!isset($paperData[0])) {
@@ -237,11 +244,16 @@ $app->POST("/projects/{key}/papers", function ($request, $response, $args) {
             'msg' => "Added $count papers to project"
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
-});
+})->add(new RequireProjectAdmin($container));
 $app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
+    $user = $this['user'];
     $pmcIDs = $request->getParsedBody()['pmcIDs'];
+
+    if (!$project->isAdmin($user)) {
+        return $response->write("You are not an admin of this project.")->withStatus(403);
+    }
 
     $found = [];
     $not_found = [];
@@ -272,26 +284,18 @@ $app->POST("/projects/{key}/papers/byPMCID", function ($request, $response, $arg
             'failed' => $not_found
         ]), JSON_PRETTY_PRINT)
         ->withStatus(200);
-});
+})->add(new RequireProjectAdmin($container));
 $app->GET("/projects/{key}/papers", function ($request, $response, $args) {
     $projectKey = $args['key'];
     $project = Project::retrieve($projectKey);
     $papersArray = $project->getPapersFlat();
     return $response->write(json_encode($papersArray));
-});
+})->add(new RequireProjectAdmin($container));
 
 $app->POST("/projects", function ($request, $response, $args) {
     $formData = $request->getParams();
-    // TODO: put this into middleware - else it's untestable!
-    $user_data = (array)($request->getAttribute("jwt")->data);
 
-    $characters = 'ABCDEFGHIJKLMNOPQRZTUVWXYZ123456789';
-    $registrationCode = '';
-    $random_string_length = 6;
-    $max = strlen($characters) - 1;
-    for ($i = 0; $i < $random_string_length; $i++) {
-        $registrationCode .= $characters[mt_rand(0, $max)];
-    }
+    $registrationCode = Project::generateRegistrationCode(6);
 
     $project = Project::create([
         'name' => $formData['name'],
@@ -301,7 +305,7 @@ $app->POST("/projects", function ($request, $response, $args) {
         'assignmentTarget' => 2
     ]);
 
-    $user = User::retrieve($user_data['_key']);
+    $user = $this['user'];
     AdminOf::createEdge($project, $user);
 
     return $response->write(
@@ -310,11 +314,10 @@ $app->POST("/projects", function ($request, $response, $args) {
             "registrationCode" => $registrationCode
         ])
     );
-});
+})->add(new MRERoleValidator(['manager']));
 
 // Check which projects a user is enrolled in
 $app->GET("/getEnrollments", function ($request, $response, $args) {
-    $userKey = $request->getQueryParam("userKey");
-    $user = User::retrieve($userKey);
+    $user = $this['user'];
     // TODO - be right back. In case i forget about this.d
 });
