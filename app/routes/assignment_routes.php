@@ -5,6 +5,10 @@ use uab\MRE\dao\AssignmentManager;
 use uab\MRE\dao\Paper;
 use uab\MRE\dao\Project;
 use uab\MRE\dao\User;
+use vector\MRE\Middleware\MRERoleValidator;
+use vector\MRE\Middleware\RequireAssignmentOwner;
+
+$container = $app->getContainer();
 
 $app->GET('/assignments/{key}', function ($request, $response, $args) {
     $assignment = Assignment::retrieve($args["key"]);
@@ -50,7 +54,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
             'status' => $status
         ]))
         ->withStatus(200);
-});
+})->add(new RequireAssignmentOwner($container));
 
 /**
  * GET studentsIDAssignmentsGet
@@ -78,7 +82,7 @@ $app->POST('/assignments', function ($request, $response, $args) {
     Assignment::assign($paper, $user);
 
     $response->write("Created Assignment");
-});
+})->add(new MRERoleValidator(['manager']));
 
 $app->POST('/moreAssignmentsPlease', function ($request, $response, $args) {
 
