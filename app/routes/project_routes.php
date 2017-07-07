@@ -143,6 +143,7 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     //Copy the structure over
     foreach ($structure as $rawTopDomain) {
         $topDomain = Domain::createFromRaw($rawTopDomain);
+        $project->addDomain($topDomain);
         $topDomain->addRawVariables($rawTopDomain['variables']);
         $topDomain->addRawSubdomainsRecursive($rawTopDomain['subdomains']);
     }
