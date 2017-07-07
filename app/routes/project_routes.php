@@ -109,6 +109,53 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
         ->write("Successfully updated project structure")
         ->withStatus(200);
 })->add(new RequireProjectAdmin($container));
+
+$app->POST("/projects/{key}/fork", function ($request, $response, $args) {
+    $projectKey = $args['key'];
+    $formData = $request->getParams();
+
+    $oldProject = Project::retrieve($projectKey);
+    if (!$oldProject) {
+        return $response
+            ->write("No project found with key " . $projectKey)
+            ->withStatus(404);
+    }
+
+    $name = isset($formData['name']) ? $formData['name'] : $oldProject->get('name');
+    $description = isset($formData['description']) ? $formData['description'] : $oldProject->get('description');
+    $assignmentTarget = isset($formData['assignmentTarget']) ? abs(intval($formData['assignmentTarget'])) : $oldProject->get('assignmentTarget');
+
+    //Create the new project
+    $project = Project::create([
+        'name' => $name,
+        'description' => $description,
+        'registrationCode' => Project::generateRegistrationCode(6),
+        'version' => 1,
+        'assignmentTarget' => $assignmentTarget
+    ]);
+
+    $user = $this['user'];
+    AdminOf::createEdge($project, $user);
+
+    //Get the old project's structure
+    $structure = $oldProject->getStructureFlat();
+
+    //Copy the structure over
+    foreach ($structure as $rawTopDomain) {
+        $topDomain = Domain::createFromRaw($rawTopDomain);
+        $topDomain->addRawVariables($rawTopDomain['variables']);
+        $topDomain->addRawSubdomainsRecursive($rawTopDomain['subdomains']);
+    }
+
+
+    return $response
+        ->write(json_encode($project, JSON_PRETTY_PRINT))
+        ->withStatus(200);
+})->add(new RequireProjectAdmin($container));
+
+
+
+
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
     $give_to_email = $request->getParam("userEmail");
     $project_key = $args['key'];
