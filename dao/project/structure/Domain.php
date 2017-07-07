@@ -33,6 +33,9 @@ class Domain extends VertexModel
         );
     }
 
+    /**
+     * @return Variable[]
+     */
     function getVariables(){
         $AQL = "FOR var IN INBOUND @root @@to_root
                     SORT var.name

@@ -151,13 +151,21 @@ class Project extends VertexModel {
     /**
      * @return array
      */
-    public function getStructureFlat(){
+    public function getStructure(){
         $domains = [];
         foreach( $this->getTopLevelDomains() as $subdomain ){
             $domains[] = $this->recursiveGetDomain( $subdomain );
         }
         return $domains;
     }
+
+    /**
+     * @return array as seen in /loadProjectBuilder
+     */
+    public function getStructureFlat () {
+        return SerializedProjectStructure::generate($this);
+    }
+
     public function getVariablesFlat(){
         $AQL = "FOR domain IN 0..3 INBOUND @study_root @@domain_to_domain
                     FOR var IN INBOUND domain @@var_to_domain
@@ -180,7 +188,10 @@ class Project extends VertexModel {
         return DB::query( $AQL, $bindings, true)->getAll();
     }
 
-    private function getTopLevelDomains(){
+    /**
+     * @return Domain[]
+     */
+    public function getTopLevelDomains(){
         $AQL = "FOR domain in INBOUND @root @@domain_to_domain
                     SORT domain.name
                     RETURN domain";

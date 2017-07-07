@@ -98,17 +98,19 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
     $queryParams = $request->getQueryParams();
     $projectKey = $queryParams['projectKey'];
     $project = Project::retrieve($projectKey);
-    $result_set_structure = SerializedProjectStructure::getByExample([ "_key" => $projectKey ]);
 
-    $data = [];
-    if( count( $result_set_structure ) == 1 ){
-        $structure = $result_set_structure[0];
-        $data['structure'] = $structure->get('structure');
-    } else {
-        $data['structure'] = false;
+    if (!$project) {
+        return $response->write("No project with key $projectKey found.")->withStatus(404);
     }
-    $data['projectName'] = $project->get('name');
-    return $response->write(json_encode($data, JSON_PRETTY_PRINT));
+
+    $serializedStructure = SerializedProjectStructure::getByProject($project);
+
+    $result = [
+        'structure' => $serializedStructure->get('structure'),
+        'projectName' => $project->get('name')
+    ];
+
+    return $response->write(json_encode($result, JSON_PRETTY_PRINT));
 });
 
 $app->GET('/loadAssignments', function($request, $response, $args) {

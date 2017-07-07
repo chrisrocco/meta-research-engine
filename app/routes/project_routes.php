@@ -27,7 +27,7 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
             ->withStatus(409);
     }
 
-    $structure = $project->getStructureFlat();
+    $structure = $project->getStructure();
     if (!$structure) return $response->write("No Domains")->withStatus(400);
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
@@ -98,10 +98,7 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
 
     $newVersion = $project->updateVersion();
 
-    $serializedStructure = SerializedProjectStructure::retrieve($projectKey);
-    if (!$serializedStructure) {
-        $serializedStructure = SerializedProjectStructure::create(['_key' => $projectKey]);
-    }
+    $serializedStructure = SerializedProjectStructure::getByProject($project);
     $serializedStructure->update('structure', $structure);
     $serializedStructure->update('version', $newVersion);
 
@@ -138,7 +135,7 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     AdminOf::createEdge($project, $user);
 
     //Get the old project's structure
-    $structure = $oldProject->getStructureFlat();
+    $structure = $oldProject->getStructure();
 
     //Copy the structure over
     foreach ($structure as $rawTopDomain) {
@@ -148,13 +145,29 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
         $topDomain->addRawSubdomainsRecursive($rawTopDomain['subdomains']);
     }
 
+    $serializedStructure = SerializedProjectStructure::getByProject($project);
+    $serializedStructure->refresh();
+
 
     return $response
         ->write(json_encode($project, JSON_PRETTY_PRINT))
         ->withStatus(200);
 })->add(new RequireProjectAdmin($container));
 
+$app->get('/projects/{key}/structure/flat', function($req, $res, $args) {
+    $project = Project::retrieve( $args['key'] );
 
+    $serializedStructure = SerializedProjectStructure::getByProject($project);
+    $serializedStructure->refresh();
+
+    $result = [
+        'structure' => $serializedStructure->get('structure'),
+        'version' => $serializedStructure->get('version')
+    ];
+
+    return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
+
+});
 
 
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
