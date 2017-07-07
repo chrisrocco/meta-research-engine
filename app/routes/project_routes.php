@@ -33,6 +33,21 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
+$app->GET('/projects/{key}/structure/flat', function($req, $res, $args) {
+    $project = Project::retrieve( $args['key'] );
+
+    $serializedStructure = SerializedProjectStructure::getByProject($project);
+    $serializedStructure->refresh();
+
+    $result = [
+        'structure' => $serializedStructure->get('structure'),
+        'version' => $serializedStructure->get('version')
+    ];
+
+    return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
+
+});
+
 /**
  * GET projects/{key}/variables
  * Summary: Gets a list of every question in the project
@@ -154,20 +169,6 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
         ->withStatus(200);
 })->add(new RequireProjectAdmin($container));
 
-$app->get('/projects/{key}/structure/flat', function($req, $res, $args) {
-    $project = Project::retrieve( $args['key'] );
-
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
-    $serializedStructure->refresh();
-
-    $result = [
-        'structure' => $serializedStructure->get('structure'),
-        'version' => $serializedStructure->get('version')
-    ];
-
-    return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
-
-});
 
 
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
