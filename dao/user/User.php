@@ -41,6 +41,7 @@ class User extends VertexModel
             'email'         =>  $email,
             'password'      =>  $passhash,
             'active'        =>  false,
+            'role'          =>  "user",
             'hash_code'     =>  null
         ]);
 

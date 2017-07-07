@@ -33,6 +33,9 @@ class Domain extends VertexModel
         );
     }
 
+    /**
+     * @return Variable[]
+     */
     function getVariables(){
         $AQL = "FOR var IN INBOUND @root @@to_root
                     SORT var.name
@@ -54,4 +57,43 @@ class Domain extends VertexModel
         ];
         return DB::queryModel($AQL, $bindings, Domain::class);
     }
+
+
+    public function addRawSubdomainsRecursive ($rawSubdomains) {
+        foreach ($rawSubdomains as $rawSubdomain) {
+            $domain = self::createFromRaw($rawSubdomain);
+            $this->addSubdomain($domain);
+
+            $domain->addRawVariables($rawSubdomain['variables']);
+
+            $domain->addRawSubdomainsRecursive($rawSubdomain['subdomains']);
+        }
+    }
+
+    public function addRawVariables($rawVariables){
+        foreach ($rawVariables as $rawVariable) {
+            $variable = Variable::createFromRaw($rawVariable);
+            $this->addVariable($variable);
+        }
+    }
+
+    public static function createFromRaw ($rawDomain) {
+        $prospect = [];
+        foreach ($rawDomain as $key=>$value) {
+            if (in_array($key, self::ignored_raw_keys)) {
+                continue;
+            }
+            $prospect[$key] = $value;
+        }
+        return Domain::create($prospect);
+    }
+
+    const ignored_raw_keys = [
+        '_key',
+        '_id',
+        '_rev',
+        'subdomains',
+        'date_created',
+        'variables',
+    ];
 }
