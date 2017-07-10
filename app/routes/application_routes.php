@@ -19,7 +19,7 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
     $paper = $assignment->getPaper();
     $project = $assignment->getProject();
     $questionsList = $project->getVariablesFlat();
-    $structure = $project->getStructureFlat();
+    $structure = $project->getStructure();
 
     $data = [
         "assignment" => $assignment->toArray(),
@@ -238,7 +238,7 @@ $app->GET('/loadCodeBook', function($request, $response, $args) {
     foreach ( $projects as $project ){
         $output[] = [
             "project" => $project->toArray(),
-            "structure" => $project->getStructureFlat()
+            "structure" => $project->getStructure()
         ];
     }
 

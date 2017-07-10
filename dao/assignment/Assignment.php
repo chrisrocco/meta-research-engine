@@ -36,7 +36,9 @@ class Assignment extends EdgeModel
         );
     }
 
-    // Project == Study
+    /**
+     * @return Project
+     */
     public function getProject(){
         $AQL = "FOR project IN OUTBOUND @paperID @@paper_to_study
                     RETURN project";
