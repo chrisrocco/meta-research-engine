@@ -195,8 +195,7 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     return $response
         ->write(json_encode($project, JSON_PRETTY_PRINT))
         ->withStatus(200);
-});
-//    ->add(new RequireProjectAdmin($container));
+})->add(new RequireProjectAdmin($container));
 
 
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
