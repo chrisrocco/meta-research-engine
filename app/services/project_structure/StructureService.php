@@ -10,6 +10,7 @@ namespace uab\mre\app;
 
 
 use triagens\ArangoDb\Document;
+use triagens\ArangoDb\Exception;
 use uab\MRE\dao\Domain;
 use uab\MRE\dao\Project;
 use uab\MRE\dao\SubdomainOf;
@@ -49,5 +50,67 @@ class StructureService
                 DB::createEdge( VariableOf::$collection, $id, $parent, []);
             }
         }
+    }
+    public static function getStructureAdj( Project $project ){
+        $AQL = "
+            LET domains = (
+                FOR domain, edge IN 1..6 INBOUND @project @@domain_to_domain
+                    RETURN MERGE( {parent:edge._to}, domain )
+            )
+            LET questions = (
+                FOR domain IN 1..6 INBOUND @project @@domain_to_domain
+                    FOR question, edge IN INBOUND domain @@question_to_domain
+                        RETURN MERGE( {parent:edge._to}, question )
+            )
+            RETURN {
+                domains: domains,
+                questions: questions
+            }
+        ";
+        $bindings = [
+            "project"   =>  $project->id(),
+            "@domain_to_domain" => SubdomainOf::$collection,
+            "@question_to_domain"   =>  VariableOf::$collection
+        ];
+        try {
+            return DB::queryFirst( $AQL, $bindings );
+        } catch ( Exception $e ){
+            return false;
+        }
+    }
+    public static function getStructureNested( Project $project ){
+        $domains = [];
+        foreach( self::getTopLevelDomains( $project ) as $subdomain ){
+            $domains[] = self::recursiveGetDomain( $subdomain );
+        }
+        return $domains;
+    }
+
+    private function getTopLevelDomains( Project $project ){
+        $AQL = "FOR domain in INBOUND @root @@domain_to_domain
+                SORT domain.name
+                RETURN domain";
+        $bindings = [
+            "root" => $project->id(),
+            "@domain_to_domain" => SubdomainOf::$collection
+        ];
+        return DB::queryModel($AQL, $bindings, Domain::class);
+    }
+    private function recursiveGetDomain( $domain ){
+        $variables  = $domain->getVariables();
+        $subdomains = [];
+        foreach ( $domain->getSubdomains() as $subdomain) {
+            $subdomains[] = self::recursiveGetDomain($subdomain);
+        }
+        $flat_vars = [];
+        foreach ($variables as $var ){
+            $flat_vars[] = $var->toArray();
+        }
+        $d = $domain->toArray();
+        $v = [
+            'variables'     =>  $flat_vars,
+            'subdomains'    =>  $subdomains
+        ];
+        return array_merge( $d, $v );
     }
 }

@@ -23,25 +23,20 @@ use vector\MRE\Middleware\RequireProjectAdmin;
 
 $container = $app->getContainer();
 
-/*
- * GET projects/{key}/structure
- * Summary: Gets the domain / field structure of the specified project
+/**
+ * Legacy
+ * ==================
  */
 $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    if (!$project) {
-        return $response
-            ->write("Project " . $project_key . " not found")
-            ->withStatus(409);
-    }
+    if (!$project) return $response->withStatus(404)->write("Project not found");
 
     $structure = $project->getStructure();
-    if (!$structure) return $response->write("No Domains")->withStatus(400);
+    if (!$structure) return $response->write("No Domains")->withStatus(404);
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
-
 $app->GET('/projects/{key}/structure/flat', function ($req, $res, $args) {
     $project = Project::retrieve($args['key']);
 
@@ -54,11 +49,32 @@ $app->GET('/projects/{key}/structure/flat', function ($req, $res, $args) {
 
     return $res->write(json_encode($result, JSON_PRETTY_PRINT));
 });
-
 /**
- * GET projects/{key}/variables
- * Summary: Gets a list of every question in the project
+ * ==================
+ * Legacy
  */
+
+$app->GET("/projects/{key}/structure/nested", function ($request, $response, $args) {
+    $project = Project::retrieve($args['key']);
+    if (!$project) return $response->withStatus(404)->write("Project not found");
+
+    $structure = StructureService::getStructureNested( $project );
+
+    return $response->withJson($structure);
+});
+$app->GET('/projects/{key}/structure/adjacent', function ($req, $res, $args) {
+    $project = Project::retrieve($args['key']);
+
+    $structure = StructureService::getStructureAdj( $project );
+
+    $result = [
+        'structure' => $structure,
+        'version' => $project->get('version')
+    ];
+
+    return $res->write(json_encode($result, JSON_PRETTY_PRINT));
+});
+
 $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
@@ -76,7 +92,9 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
  * This route accepts a project structure in an adjacency list format
  * to replace the existing structure.
  *
- *
+ * 1.) Parses the user input as adjacency list, validating it
+ * 2.) Hands off the constructed adjacency list to a service for upload
+ * 3.) Descriptive exception handling
  */
 $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
 
@@ -204,7 +222,6 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
         ->write(json_encode($project, JSON_PRETTY_PRINT))
         ->withStatus(200);
 })->add(new RequireProjectAdmin($container));
-
 
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
     $give_to_email = $request->getParam("userEmail");
@@ -412,9 +429,3 @@ $app->POST("/projects", function ($request, $response, $args) {
         ])
     );
 })->add(new MRERoleValidator(['manager']));
-
-// Check which projects a user is enrolled in
-$app->GET("/getEnrollments", function ($request, $response, $args) {
-    $user = $this['user'];
-    // TODO - be right back. In case i forget about this.d
-});
