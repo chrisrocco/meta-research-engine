@@ -14,7 +14,7 @@ class AdjList implements \JsonSerializable
     /**
      * @var AdjNode[]
      */
-    private $nodes = [];
+    protected $nodes = [];
 
     public function addNode( AdjNode $adj_node ){
         if( isset(
