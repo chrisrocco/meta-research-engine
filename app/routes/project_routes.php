@@ -70,21 +70,29 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
+/**
+ * UPDATE A PROJECT'S STRUCTURE
+ *
+ * This route accepts a project structure in an adjacency list format
+ * to replace the existing structure.
+ *
+ *
+ */
 $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
 
-    $formData = $request->getParams();
     $projectKey = $args['key'];
-    $structure = json_decode($formData['structure'], true);
+    $structure = json_decode( $request->getParam('structure'), true );
 
     /**
      * Chris Code Start
      * ===================
      */
     try {
-        ObjValidator::forceSchema($structure, ['domains', 'questions']);            // make sure we get domains and questions
+        $structure_schema = ['domains', 'questions'];                               // first thing's first..
+        $node_schema = ['name', 'tooltip', 'icon', 'parent', 'id'];                 // shared by both domains & questions
+        ObjValidator::forceSchema($structure, $structure_schema);                   // make sure we get domains and questions
         $arr_domains = $structure['domains'];                                       // - the domains
         $arr_questions = $structure['questions'];                                   // - the questions
-        $node_schema = ['name', 'tooltip', 'icon', 'parent', 'id'];                 // shared by both domains & questions
         $adj_list = new AdjListStructure();                                         // start a new structure adjacency list
         foreach ($arr_domains as $domain) {                                         // parse the domains
             ObjValidator::forceSchema($domain, $node_schema);                           // enforce schema
