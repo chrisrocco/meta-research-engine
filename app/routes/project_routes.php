@@ -36,16 +36,14 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
 $app->GET('/projects/{key}/structure/flat', function($req, $res, $args) {
     $project = Project::retrieve( $args['key'] );
 
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
-    $serializedStructure->refresh();
+    $serializedStructure = SerializedProjectStructure::generate($project);
 
     $result = [
-        'structure' => $serializedStructure->get('structure'),
-        'version' => $serializedStructure->get('version')
+        'structure' => $serializedStructure,
+        'version' => $project->get('version')
     ];
 
     return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
-
 });
 
 /**
