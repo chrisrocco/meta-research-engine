@@ -82,60 +82,60 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
      */
     try {
         ObjValidator::forceSchema($structure, ['domains', 'questions']);            // make sure we get domains and questions
-        $arr_domains = $structure['domains'];                                       // the domains
-        $arr_questions = $structure['questions'];                                   // the questions
+        $arr_domains = $structure['domains'];                                       // - the domains
+        $arr_questions = $structure['questions'];                                   // - the questions
         $node_schema = ['name', 'tooltip', 'icon', 'parent', 'id'];                 // shared by both domains & questions
         $adj_list = new AdjListStructure();                                         // start a new structure adjacency list
         foreach ($arr_domains as $domain) {                                         // parse the domains
             ObjValidator::forceSchema($domain, $node_schema);                           // enforce schema
-            $parent = AdjNode::ROOT;                                                    // default to root
-            if ($domain['parent'] != "#") $parent = $domain['parent'];                  // else parse parent
+            $parent = AdjNode::ROOT;                                                    // default parent to root
+            if ($domain['parent'] != "#") $parent = $domain['parent'];                  // ~ else parse parent
             $node = new AdjNode($domain['id'], $parent, Domain::$collection, [          // make node object
                 'name' => $domain['name'],
                 'description' => $domain['description'],
                 'tooltip' => $domain['tooltip'],
                 'icon' => $domain['icon'],
             ]);
-            $adj_list->addNode($node);                                                  //
+            $adj_list->addNode($node);                                                  // add it to the structure adjacency list
         }
         foreach ($arr_questions as $question) {                                     // parse the questions
-            ObjValidator::forceSchema($question, $node_schema);
-            $id = $question['id'];
-            $parent = $question['parent'];
-            unset($question['id'], $question['parent'], $question['$$hashKey']);
-            $node = new AdjNode($id, $parent, Variable::$collection, $question);
-            $adj_list->addNode($node);
-    }
-        $adj_list->validateParents();
-
-        $project = Project::retrieve($projectKey);
-        if (!$project) return $response->withStats(404)->write("Project not found");
-        StructureService::replaceStructure($project, $adj_list);
-        $project->updateVersion();
+            ObjValidator::forceSchema($question, $node_schema);                         // enforce schema
+            $id = $question['id'];                                                      // temp id
+            $parent = $question['parent'];                                              // temp parent
+            unset($question['id'], $question['parent'], $question['$$hashKey']);        // dynamic attributes prevent using schema. careful here!
+            $node = new AdjNode($id, $parent, Variable::$collection, $question);        // make node object
+            $adj_list->addNode($node);                                                  // add it to the structure adjacency list
+        }
+        $adj_list->validateParents();                                               // guarantees that all nodes have a valid parent
+        $project = Project::retrieve($projectKey);                                  // get the project
+        if (!$project) return $response                                             // ~ if it exists
+            ->withStatus(404)->write("Project not found");
+        StructureService::replaceStructure($project, $adj_list);                    // with a confirmed good structure, a service provider handles the upload
+        $project->updateVersion();                                                  // increment the version after a structural change
         return $response->withJson([
             "status"    =>  "OK",
             "current_version"   =>  $project->get('version')
         ]);
-    } catch ( BadNodeException $bne ) {
+    } catch ( BadNodeException $bne ) {                             // Thrown when a malformed node is provided.
         return $response->withStatus(400)->withJson([
             "status"    =>  BadNodeException::class,
             "collection"    =>  $bne->collection,
             "msg"       =>  $bne->getMessage()
         ]);
-    } catch ( DuplicateIdException $die ){
+    } catch ( DuplicateIdException $die ){                          // Thrown when duplicate ID's are provided
         return $response->withStatus(400)->withJson([
             "status"    =>  DuplicateIdException::class,
             "duplicate_id"  =>  $die->id,
             "msg"   =>  $die->getMessage()
         ]);
     } catch ( NoParentException $npe ){
-        return $response->withStatus(400)->withJson([
+        return $response->withStatus(400)->withJson([               // Thrown when a node claims a parent that does not exist
             "status"    =>  NoParentException::class,
             "node_id"   =>  $npe->node,
             "parent_id" =>  $npe->parent_id,
             "msg"   =>  $npe->getMessage()
         ]);
-    } catch ( SchemaValidatorException $sve ){
+    } catch ( SchemaValidatorException $sve ){                      // Thrown when anything is missing required properties
         return $response->withStatus(400)->withJson([
             "status"    =>  SchemaValidatorException::class,
             "required"   =>  $sve->required,
@@ -148,7 +148,7 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
      * ===================
      * Chris Code End
      */
-});//->add(new RequireProjectAdmin($container));
+});->add(new RequireProjectAdmin($container));
 
 $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     $projectKey = $args['key'];
