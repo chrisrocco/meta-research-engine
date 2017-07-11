@@ -148,7 +148,7 @@ $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
      * ===================
      * Chris Code End
      */
-});->add(new RequireProjectAdmin($container));
+})->add(new RequireProjectAdmin($container));
 
 $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     $projectKey = $args['key'];
