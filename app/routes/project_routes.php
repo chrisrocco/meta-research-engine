@@ -1,5 +1,7 @@
 <?php
 
+use uab\mre\app\AdjListStructure;
+use uab\mre\app\StructureService;
 use uab\MRE\dao\AdminOf;
 use uab\MRE\dao\AssignmentManager;
 use uab\MRE\dao\Domain;
@@ -8,6 +10,13 @@ use uab\MRE\dao\Project;
 use uab\MRE\dao\SerializedProjectStructure;
 use uab\MRE\dao\User;
 use uab\MRE\dao\Variable;
+use uab\mre\lib\AdjList;
+use uab\mre\lib\AdjNode;
+use uab\mre\lib\BadNodeException;
+use uab\mre\lib\DuplicateIdException;
+use uab\mre\lib\NoParentException;
+use uab\mre\lib\ObjValidator;
+use uab\mre\lib\SchemaValidatorException;
 use vector\PMCAdapter\PMCAdapter;
 use vector\MRE\Middleware\MRERoleValidator;
 use vector\MRE\Middleware\RequireProjectAdmin;
@@ -33,8 +42,8 @@ $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
 
-$app->GET('/projects/{key}/structure/flat', function($req, $res, $args) {
-    $project = Project::retrieve( $args['key'] );
+$app->GET('/projects/{key}/structure/flat', function ($req, $res, $args) {
+    $project = Project::retrieve($args['key']);
 
     $serializedStructure = SerializedProjectStructure::generate($project);
 
@@ -43,7 +52,7 @@ $app->GET('/projects/{key}/structure/flat', function($req, $res, $args) {
         'version' => $project->get('version')
     ];
 
-    return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
+    return $res->write(json_encode($result, JSON_PRETTY_PRINT));
 });
 
 /**
@@ -62,63 +71,84 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
 });
 
 $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
+
     $formData = $request->getParams();
     $projectKey = $args['key'];
     $structure = json_decode($formData['structure'], true);
 
-    $project = Project::retrieve($projectKey);
-    if (!$project) {
-        return $response
-            ->write("No project found with key " . $projectKey)
-            ->withStatus(404);
-    }
-
-    $tempDomIDMap = []; // temporary domain id => Domain
-
-    //Remove the project's old structure
-    $project->removeStructure(4);
-
-    //Create each of the new domains
-    foreach ($structure['domains'] as $newDom) {
-        $domain = Domain::create([
-//            '_key' => $newDom['id'],
-            'name' => $newDom['name'],
-            'description' => $newDom['description'],
-            'tooltip' => $newDom['tooltip'],
-            'icon' => $newDom['icon']
-        ]);
-        $tempDomIDMap[$newDom['id']] = $domain;
-    }
-    //Connect the domain_to_domain edges
-    foreach ($structure['domains'] as $newDom) {
-        if ($newDom['parent'] === "#") {
-            $project->addDomain($tempDomIDMap[$newDom['id']]);
-        } else {
-            $tempDomIDMap[$newDom['parent']]->addSubdomain($tempDomIDMap[$newDom['id']]);
+    /**
+     * Chris Code Start
+     * ===================
+     */
+    try {
+        ObjValidator::forceSchema($structure, ['domains', 'questions']);            // make sure we get domains and questions
+        $arr_domains = $structure['domains'];                                       // the domains
+        $arr_questions = $structure['questions'];                                   // the questions
+        $node_schema = ['name', 'tooltip', 'icon', 'parent', 'id'];                 // shared by both domains & questions
+        $adj_list = new AdjListStructure();                                         // start a new structure adjacency list
+        foreach ($arr_domains as $domain) {                                         // parse the domains
+            ObjValidator::forceSchema($domain, $node_schema);                           // enforce schema
+            $parent = AdjNode::ROOT;                                                    // default to root
+            if ($domain['parent'] != "#") $parent = $domain['parent'];                  // else parse parent
+            $node = new AdjNode($domain['id'], $parent, Domain::$collection, [          // make node object
+                'name' => $domain['name'],
+                'description' => $domain['description'],
+                'tooltip' => $domain['tooltip'],
+                'icon' => $domain['icon'],
+            ]);
+            $adj_list->addNode($node);                                                  //
         }
+        foreach ($arr_questions as $question) {                                     // parse the questions
+            ObjValidator::forceSchema($question, $node_schema);
+            $id = $question['id'];
+            $parent = $question['parent'];
+            unset($question['id'], $question['parent'], $question['$$hashKey']);
+            $node = new AdjNode($id, $parent, Variable::$collection, $question);
+            $adj_list->addNode($node);
     }
+        $adj_list->validateParents();
 
-//    var_dump($tempDomIDMap);
-
-    //Create the new questions and connect them to parent domains
-    foreach ($structure['questions'] as $newQuestion) {
-        $tempParent = $newQuestion['parent'];
-        //$newQuestion['_key'] = $newQuestion['id'];
-        unset($newQuestion['id'], $newQuestion['parent'], $newQuestion['$$hashKey']);
-        $question = Variable::create($newQuestion);
-        $tempDomIDMap[$tempParent]->addVariable($question);
+        $project = Project::retrieve($projectKey);
+        if (!$project) return $response->withStats(404)->write("Project not found");
+        StructureService::replaceStructure($project, $adj_list);
+        $project->updateVersion();
+        return $response->withJson([
+            "status"    =>  "OK",
+            "current_version"   =>  $project->get('version')
+        ]);
+    } catch ( BadNodeException $bne ) {
+        return $response->withStatus(400)->withJson([
+            "status"    =>  BadNodeException::class,
+            "collection"    =>  $bne->collection,
+            "msg"       =>  $bne->getMessage()
+        ]);
+    } catch ( DuplicateIdException $die ){
+        return $response->withStatus(400)->withJson([
+            "status"    =>  DuplicateIdException::class,
+            "duplicate_id"  =>  $die->id,
+            "msg"   =>  $die->getMessage()
+        ]);
+    } catch ( NoParentException $npe ){
+        return $response->withStatus(400)->withJson([
+            "status"    =>  NoParentException::class,
+            "node_id"   =>  $npe->node,
+            "parent_id" =>  $npe->parent_id,
+            "msg"   =>  $npe->getMessage()
+        ]);
+    } catch ( SchemaValidatorException $sve ){
+        return $response->withStatus(400)->withJson([
+            "status"    =>  SchemaValidatorException::class,
+            "required"   =>  $sve->required,
+            "missing"   =>  $sve->missing,
+            "from"      =>  $sve->from,
+            "msg"   =>  $sve->getMessage()
+        ]);
     }
-
-    $newVersion = $project->updateVersion();
-
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
-    $serializedStructure->update('structure', $structure);
-    $serializedStructure->update('version', $newVersion);
-
-    return $response
-        ->write("Successfully updated project structure")
-        ->withStatus(200);
-})->add(new RequireProjectAdmin($container));
+    /**
+     * ===================
+     * Chris Code End
+     */
+});//->add(new RequireProjectAdmin($container));
 
 $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     $projectKey = $args['key'];
@@ -165,8 +195,8 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
     return $response
         ->write(json_encode($project, JSON_PRETTY_PRINT))
         ->withStatus(200);
-})->add(new RequireProjectAdmin($container));
-
+});
+//    ->add(new RequireProjectAdmin($container));
 
 
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
@@ -179,32 +209,32 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
         return $response->write("You are not an admin of this project.")->withStatus(403);
     }
 
-    $user_set = User::getByExample( ['email'=>$give_to_email] );
+    $user_set = User::getByExample(['email' => $give_to_email]);
 
-    if( count($user_set) === 0 ){
-        return $response->withStatus( 400 )->write( json_encode( [
-            "status"    =>  "NO_USER"
-        ], JSON_PRETTY_PRINT ) );
+    if (count($user_set) === 0) {
+        return $response->withStatus(400)->write(json_encode([
+            "status" => "NO_USER"
+        ], JSON_PRETTY_PRINT));
     }
 
     $newAdmin = $user_set[0];
 
     if ($project->isAdmin($newAdmin)) {
-        return $response->withStatus( 409 )->write("that user is already an owner");
+        return $response->withStatus(409)->write("that user is already an owner");
     }
 
-    AdminOf::createEdge( $project, $user );
+    AdminOf::createEdge($project, $user);
 
     return $response->write(
         json_encode([
             "projectName" => $project->get('name'),
-            "newOwner"  => $user->get('first_name')
+            "newOwner" => $user->get('first_name')
         ])
     );
 })->add(new RequireProjectAdmin($container));
 
 $app->POST('/projects/members', function ($request, $response, $args) {
-    $registrationCode = strtoupper( trim($request->getParam('registrationCode')) );
+    $registrationCode = strtoupper(trim($request->getParam('registrationCode')));
     $user = $this['user'];
 
     $project_result_set = Project::getByExample(["registrationCode" => $registrationCode]);
