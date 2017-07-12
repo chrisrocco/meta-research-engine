@@ -103,10 +103,10 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
         return $response->write("No project with key $projectKey found.")->withStatus(404);
     }
 
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
+    $serializedStructure = SerializedProjectStructure::generate($project);
 
     $result = [
-        'structure' => $serializedStructure->get('structure'),
+        'structure' => $serializedStructure,
         'projectName' => $project->get('name')
     ];
 

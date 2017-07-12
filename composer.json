@@ -53,7 +53,9 @@
     "psr-4": {
       "Email\\": "lib/email/",
       "uab\\MRE\\": "app/",
+      "uab\\mre\\app\\": "app/",
       "uab\\MRE\\dao\\": "dao/",
+      "uab\\mre\\lib\\": "lib/",
       "vector\\MRE\\Middleware\\" : "lib/middleware/"
     }
   },

@@ -1,5 +1,7 @@
 <?php
 
+use uab\mre\app\AdjListStructure;
+use uab\mre\app\StructureService;
 use uab\MRE\dao\AdminOf;
 use uab\MRE\dao\AssignmentManager;
 use uab\MRE\dao\Domain;
@@ -8,50 +10,71 @@ use uab\MRE\dao\Project;
 use uab\MRE\dao\SerializedProjectStructure;
 use uab\MRE\dao\User;
 use uab\MRE\dao\Variable;
+use uab\mre\lib\AdjList;
+use uab\mre\lib\AdjNode;
+use uab\mre\lib\BadNodeException;
+use uab\mre\lib\DuplicateIdException;
+use uab\mre\lib\NoParentException;
+use uab\mre\lib\ObjValidator;
+use uab\mre\lib\SchemaValidatorException;
 use vector\PMCAdapter\PMCAdapter;
 use vector\MRE\Middleware\MRERoleValidator;
 use vector\MRE\Middleware\RequireProjectAdmin;
 
 $container = $app->getContainer();
 
-/*
- * GET projects/{key}/structure
- * Summary: Gets the domain / field structure of the specified project
+/**
+ * Legacy
+ * ==================
  */
 $app->GET("/projects/{key}/structure", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
-    if (!$project) {
-        return $response
-            ->write("Project " . $project_key . " not found")
-            ->withStatus(409);
-    }
+    if (!$project) return $response->withStatus(404)->write("Project not found");
 
     $structure = $project->getStructure();
-    if (!$structure) return $response->write("No Domains")->withStatus(400);
+    if (!$structure) return $response->write("No Domains")->withStatus(404);
 
     return $response->write(json_encode($structure, JSON_PRETTY_PRINT));
 });
+$app->GET('/projects/{key}/structure/flat', function ($req, $res, $args) {
+    $project = Project::retrieve($args['key']);
 
-$app->GET('/projects/{key}/structure/flat', function($req, $res, $args) {
-    $project = Project::retrieve( $args['key'] );
-
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
-    $serializedStructure->refresh();
+    $serializedStructure = SerializedProjectStructure::generate($project);
 
     $result = [
-        'structure' => $serializedStructure->get('structure'),
-        'version' => $serializedStructure->get('version')
+        'structure' => $serializedStructure,
+        'version' => $project->get('version')
     ];
 
-    return $res->write( json_encode($result, JSON_PRETTY_PRINT) );
+    return $res->write(json_encode($result, JSON_PRETTY_PRINT));
+});
+/**
+ * ==================
+ * Legacy
+ */
 
+$app->GET("/projects/{key}/structure/nested", function ($request, $response, $args) {
+    $project = Project::retrieve($args['key']);
+    if (!$project) return $response->withStatus(404)->write("Project not found");
+
+    $structure = StructureService::getStructureNested( $project );
+
+    return $response->withJson($structure);
+});
+$app->GET('/projects/{key}/structure/adjacent', function ($req, $res, $args) {
+    $project = Project::retrieve($args['key']);
+
+    $structure = StructureService::getStructureAdj( $project );
+
+    $result = [
+        'structure' => $structure,
+        'version' => $project->get('version')
+    ];
+
+    return $res->write(json_encode($result, JSON_PRETTY_PRINT));
 });
 
-/**
- * GET projects/{key}/variables
- * Summary: Gets a list of every question in the project
- */
 $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
     $project_key = $args['key'];
     $project = Project::retrieve($project_key);
@@ -63,63 +86,94 @@ $app->GET("/projects/{key}/variables", function ($request, $response, $args) {
         ->withStatus(200);
 });
 
+/**
+ * UPDATE A PROJECT'S STRUCTURE
+ *
+ * This route accepts a project structure in an adjacency list format
+ * to replace the existing structure.
+ *
+ * 1.) Parses the user input as adjacency list, validating it
+ * 2.) Hands off the constructed adjacency list to a service for upload
+ * 3.) Descriptive exception handling
+ */
 $app->POST('/projects/{key}/structure', function ($request, $response, $args) {
-    $formData = $request->getParams();
+
     $projectKey = $args['key'];
-    $structure = json_decode($formData['structure'], true);
+    $structure = json_decode( $request->getParam('structure'), true );
 
-    $project = Project::retrieve($projectKey);
-    if (!$project) {
-        return $response
-            ->write("No project found with key " . $projectKey)
-            ->withStatus(404);
-    }
-
-    $tempDomIDMap = []; // temporary domain id => Domain
-
-    //Remove the project's old structure
-    $project->removeStructure(4);
-
-    //Create each of the new domains
-    foreach ($structure['domains'] as $newDom) {
-        $domain = Domain::create([
-//            '_key' => $newDom['id'],
-            'name' => $newDom['name'],
-            'description' => $newDom['description'],
-            'tooltip' => $newDom['tooltip'],
-            'icon' => $newDom['icon']
-        ]);
-        $tempDomIDMap[$newDom['id']] = $domain;
-    }
-    //Connect the domain_to_domain edges
-    foreach ($structure['domains'] as $newDom) {
-        if ($newDom['parent'] === "#") {
-            $project->addDomain($tempDomIDMap[$newDom['id']]);
-        } else {
-            $tempDomIDMap[$newDom['parent']]->addSubdomain($tempDomIDMap[$newDom['id']]);
+    /**
+     * Chris Code Start
+     * ===================
+     */
+    try {
+        $structure_schema = ['domains', 'questions'];                               // first thing's first..
+        $node_schema = ['name', 'tooltip', 'icon', 'parent', 'id'];                 // shared by both domains & questions
+        ObjValidator::forceSchema($structure, $structure_schema);                   // make sure we get domains and questions
+        $arr_domains = $structure['domains'];                                       // - the domains
+        $arr_questions = $structure['questions'];                                   // - the questions
+        $adj_list = new AdjListStructure();                                         // start a new structure adjacency list
+        foreach ($arr_domains as $domain) {                                         // parse the domains
+            ObjValidator::forceSchema($domain, $node_schema);                           // enforce schema
+            $parent = AdjNode::ROOT;                                                    // default parent to root
+            if ($domain['parent'] != "#") $parent = $domain['parent'];                  // ~ else parse parent
+            $node = new AdjNode($domain['id'], $parent, Domain::$collection, [          // make node object
+                'name' => $domain['name'],
+                'description' => $domain['description'],
+                'tooltip' => $domain['tooltip'],
+                'icon' => $domain['icon'],
+            ]);
+            $adj_list->addNode($node);                                                  // add it to the structure adjacency list
         }
+        foreach ($arr_questions as $question) {                                     // parse the questions
+            ObjValidator::forceSchema($question, $node_schema);                         // enforce schema
+            $id = $question['id'];                                                      // temp id
+            $parent = $question['parent'];                                              // temp parent
+            unset($question['id'], $question['parent'], $question['$$hashKey']);        // dynamic attributes prevent using schema. careful here!
+            $node = new AdjNode($id, $parent, Variable::$collection, $question);        // make node object
+            $adj_list->addNode($node);                                                  // add it to the structure adjacency list
+        }
+        $adj_list->validateParents();                                               // guarantees that all nodes have a valid parent
+        $project = Project::retrieve($projectKey);                                  // get the project
+        if (!$project) return $response                                             // ~ if it exists
+            ->withStatus(404)->write("Project not found");
+        StructureService::replaceStructure($project, $adj_list);                    // with a confirmed good structure, a service provider handles the upload
+        $project->updateVersion();                                                  // increment the version after a structural change
+        return $response->withJson([
+            "status"    =>  "OK",
+            "current_version"   =>  $project->get('version')
+        ]);
+    } catch ( BadNodeException $bne ) {                             // Thrown when a malformed node is provided.
+        return $response->withStatus(400)->withJson([
+            "status"    =>  BadNodeException::class,
+            "collection"    =>  $bne->collection,
+            "msg"       =>  $bne->getMessage()
+        ]);
+    } catch ( DuplicateIdException $die ){                          // Thrown when duplicate ID's are provided
+        return $response->withStatus(400)->withJson([
+            "status"    =>  DuplicateIdException::class,
+            "duplicate_id"  =>  $die->id,
+            "msg"   =>  $die->getMessage()
+        ]);
+    } catch ( NoParentException $npe ){
+        return $response->withStatus(400)->withJson([               // Thrown when a node claims a parent that does not exist
+            "status"    =>  NoParentException::class,
+            "node_id"   =>  $npe->node,
+            "parent_id" =>  $npe->parent_id,
+            "msg"   =>  $npe->getMessage()
+        ]);
+    } catch ( SchemaValidatorException $sve ){                      // Thrown when anything is missing required properties
+        return $response->withStatus(400)->withJson([
+            "status"    =>  SchemaValidatorException::class,
+            "required"   =>  $sve->required,
+            "missing"   =>  $sve->missing,
+            "from"      =>  $sve->from,
+            "msg"   =>  $sve->getMessage()
+        ]);
     }
-
-//    var_dump($tempDomIDMap);
-
-    //Create the new questions and connect them to parent domains
-    foreach ($structure['questions'] as $newQuestion) {
-        $tempParent = $newQuestion['parent'];
-        //$newQuestion['_key'] = $newQuestion['id'];
-        unset($newQuestion['id'], $newQuestion['parent'], $newQuestion['$$hashKey']);
-        $question = Variable::create($newQuestion);
-        $tempDomIDMap[$tempParent]->addVariable($question);
-    }
-
-    $newVersion = $project->updateVersion();
-
-    $serializedStructure = SerializedProjectStructure::getByProject($project);
-    $serializedStructure->update('structure', $structure);
-    $serializedStructure->update('version', $newVersion);
-
-    return $response
-        ->write("Successfully updated project structure")
-        ->withStatus(200);
+    /**
+     * ===================
+     * Chris Code End
+     */
 })->add(new RequireProjectAdmin($container));
 
 $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
@@ -169,8 +223,6 @@ $app->POST("/projects/{key}/fork", function ($request, $response, $args) {
         ->withStatus(200);
 })->add(new RequireProjectAdmin($container));
 
-
-
 $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
     $give_to_email = $request->getParam("userEmail");
     $project_key = $args['key'];
@@ -181,32 +233,32 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
         return $response->write("You are not an admin of this project.")->withStatus(403);
     }
 
-    $user_set = User::getByExample( ['email'=>$give_to_email] );
+    $user_set = User::getByExample(['email' => $give_to_email]);
 
-    if( count($user_set) === 0 ){
-        return $response->withStatus( 400 )->write( json_encode( [
-            "status"    =>  "NO_USER"
-        ], JSON_PRETTY_PRINT ) );
+    if (count($user_set) === 0) {
+        return $response->withStatus(400)->write(json_encode([
+            "status" => "NO_USER"
+        ], JSON_PRETTY_PRINT));
     }
 
     $newAdmin = $user_set[0];
 
     if ($project->isAdmin($newAdmin)) {
-        return $response->withStatus( 409 )->write("that user is already an owner");
+        return $response->withStatus(409)->write("that user is already an owner");
     }
 
-    AdminOf::createEdge( $project, $user );
+    AdminOf::createEdge($project, $user);
 
     return $response->write(
         json_encode([
             "projectName" => $project->get('name'),
-            "newOwner"  => $user->get('first_name')
+            "newOwner" => $user->get('first_name')
         ])
     );
 })->add(new RequireProjectAdmin($container));
 
 $app->POST('/projects/members', function ($request, $response, $args) {
-    $registrationCode = strtoupper( trim($request->getParam('registrationCode')) );
+    $registrationCode = strtoupper(trim($request->getParam('registrationCode')));
     $user = $this['user'];
 
     $project_result_set = Project::getByExample(["registrationCode" => $registrationCode]);
@@ -377,9 +429,3 @@ $app->POST("/projects", function ($request, $response, $args) {
         ])
     );
 })->add(new MRERoleValidator(['manager']));
-
-// Check which projects a user is enrolled in
-$app->GET("/getEnrollments", function ($request, $response, $args) {
-    $user = $this['user'];
-    // TODO - be right back. In case i forget about this.d
-});
