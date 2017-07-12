@@ -20,7 +20,7 @@ use uab\mre\lib\NoParentException;
  * Class AdjListStructure
  * @package uab\mre\app
  *
- * Garuntees an adjacency list of nodes with the following criteria:
+ * Guarantees an adjacency list of nodes with the following criteria:
  *  1.) No duplicate ID's
  *  2.) Collection type of Domain::$collection || Variable::$collection
  *  3.) Valid parent reference to another node, or is a root node
