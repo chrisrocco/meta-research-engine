@@ -30,10 +30,7 @@ class StructureService
         foreach ( $adjList->getNodes() as $adjNode ){
             $doc = Document::createFromArray( $adjNode->getData() );
             $doc->setInternalKey($adjNode->getId());
-            if( $dh->has( $adjNode->getCollection(), $doc->getId() )){
-                $dh->removeById( $adjNode->getCollection(), $doc->getId() );
-            }
-            $dh->save( $adjNode->getCollection(), $doc );
+            $dh->store( $doc, $adjNode->getCollection() );
         }
         foreach ( $adjList->getNodes() as $adjNode ){
             $col = $adjNode->getCollection();
