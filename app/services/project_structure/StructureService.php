@@ -8,7 +8,6 @@
 
 namespace uab\mre\app;
 
-
 use triagens\ArangoDb\Document;
 use triagens\ArangoDb\Exception;
 use uab\MRE\dao\Domain;
@@ -16,13 +15,14 @@ use uab\MRE\dao\Project;
 use uab\MRE\dao\SubdomainOf;
 use uab\MRE\dao\Variable;
 use uab\MRE\dao\VariableOf;
-use uab\mre\lib\AdjList;
 use uab\mre\lib\AdjNode;
 use vector\ArangoORM\DB\DB;
 
 class StructureService
 {
     public static function replaceStructure( Project $project, AdjListStructure $adjList ){
+        BackupService::backup( Project::$collection, $project->key() );
+
         $adjList->validateParents();
         $project->removeStructure(5);
 
