@@ -252,7 +252,7 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
     return $response->write(
         json_encode([
             "projectName" => $project->get('name'),
-            "newOwner" => $user->get('first_name')
+            "newOwner" => $newAdmin->get('first_name')
         ])
     );
 })->add(new RequireProjectAdmin($container));
