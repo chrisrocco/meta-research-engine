@@ -33,7 +33,7 @@ class BackupService {
 
     public static function backupProject( Project $project ){
         $structure = StructureService::getStructureAdj( $project );
-        self::backup( Project::$collection, $project, ["structure" => $structure] );
+        self::backup( Project::$collection, $project->key(), ["structure" => $structure] );
     }
 
 }
