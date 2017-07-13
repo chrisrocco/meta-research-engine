@@ -21,7 +21,7 @@ use vector\ArangoORM\DB\DB;
 class StructureService
 {
     public static function replaceStructure( Project $project, AdjListStructure $adjList ){
-        BackupService::backup( Project::$collection, $project->key() );
+        BackupService::backupProject( $project );
 
         $adjList->validateParents();
         $project->removeStructure(5);
