@@ -22,7 +22,7 @@ class BackupService {
             ]);
 
             if($extra_data){
-                $backup->extra_data = $extra_data;
+                $backup->set("extra_data", $extra_data);
             }
 
             $dh->store( $backup, "backups" );
