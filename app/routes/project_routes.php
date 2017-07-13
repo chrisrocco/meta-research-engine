@@ -247,7 +247,7 @@ $app->POST("/projects/{key}/makeOwner", function ($request, $response, $args) {
         return $response->withStatus(409)->write("that user is already an owner");
     }
 
-    AdminOf::createEdge($project, $user);
+    AdminOf::createEdge($project, $newAdmin);
 
     return $response->write(
         json_encode([
