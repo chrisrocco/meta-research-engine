@@ -16,7 +16,8 @@ class BackupService {
             $backup = Document::createFromArray([
                 "from_collection"   => $from_collection,
                 "document_key"      =>  $document_key,
-                "data"              =>  $doc->getAll()
+                "data"              =>  $doc->getAll(),
+                "date"              =>  date("l jS \of F Y h:i:s A")
             ]);
 
             $dh->store( $backup, "backups" );
