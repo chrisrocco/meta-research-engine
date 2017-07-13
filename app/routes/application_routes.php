@@ -107,7 +107,7 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
 
     $result = [
         'structure' => $serializedStructure,
-        'projectName' => $project->get('name')
+        'project' => $project->toArray()
     ];
 
     return $response->write(json_encode($result, JSON_PRETTY_PRINT));
