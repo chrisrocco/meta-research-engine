@@ -25,10 +25,11 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $assignment = Assignment::retrieve($args['key']);
-    $assignment->update('done', boolval($formData['done']));
+    $formData['done'] === "true" ?
+        $d = true : $d = false;
+    $assignment->update('done', $d);
     $assignment->update('completion', floatval($formData['completion']));
     $assignment->update('encoding', $formData['encoding']);
-
 
     try {
         $paper = $assignment->getPaper();
