@@ -25,7 +25,8 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
         "assignment" => $assignment->toArray(),
         "paper"     => $paper->toArray(),
         "questions" =>  $questionsList,
-        "structure" =>  $structure
+        "structure" =>  $structure,
+        'done'      =>  $assignment->get('done')
     ];
 
     return $response->withJson($data);
