@@ -28,8 +28,7 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
         "structure" =>  $structure
     ];
 
-    $response->write(json_encode($data, JSON_PRETTY_PRINT));
-    return $response;
+    return $response->withJson($data);
 });
 
 $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
