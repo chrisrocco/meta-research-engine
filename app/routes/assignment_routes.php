@@ -27,7 +27,6 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment = Assignment::retrieve($args['key']);
     $formData['done'] === "true" ?
         $d = true : $d = false;
-    var_dump($d);
     $assignment->update('done', $d);
     $assignment->update('completion', floatval($formData['completion']));
     $assignment->update('encoding', $formData['encoding']);
@@ -53,7 +52,8 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     return $response
         ->write( json_encode([
             'msg' => "Assignment successfully updated.",
-            'status' => $status
+            'status' => $status,
+            'done'  =>  $assignment->get('done')
         ]))
         ->withStatus(200);
 })->add(new RequireAssignmentOwner($container));
