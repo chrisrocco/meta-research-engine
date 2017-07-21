@@ -58,5 +58,8 @@
   },
   "in_paper": {
     "type": "edge"
+  },
+  "backups": {
+    "type": "vertex"
   }
 }
