@@ -448,7 +448,9 @@ $app->GET("/projects/{id}/rectangle", function ($request, $response, $args) {
                                         paper: paper.title,
                                         user: user._id,
                                         inputs: assignment.encoding.constants[*]
-                                    }", $project->id() )->getAll();
+                                    }", [
+                                        "project" => $project->id()
+                                    ] )->getAll();
 
 // define columns
     $columns = [ 'user', 'paper' ];
