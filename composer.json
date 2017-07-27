@@ -41,9 +41,6 @@
     "vector/arangodb-php-orm": "dev-master",
     "vector/pmc-api-adapter": "dev-master"
   },
-  "require-dev": {
-    "phpunit/phpunit": ">=4.8 < 6.0"
-  },
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/"
@@ -62,9 +59,11 @@
   "scripts": {
     "start":              "php -S localhost:8080 -t public public/index.php",
     "test":               "phpunit",
-    "test-quick":         "phpunit tests/QuickTest.php",
     "db-init":            "php database/scripts/db-init.php",
     "db-nuke":            "php database/scripts/db-nuke.php",
     "db-truncate":            "php database/scripts/db-truncate.php"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.2"
   }
 }

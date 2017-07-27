@@ -1,0 +1,342 @@
+{
+  "_key": "7174278",
+  "done": false,
+  "completion": "50",
+  "encoding": {
+    "constants": [
+      {
+        "question": "88544",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "36918",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "9578",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "7378",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "94821",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "31890",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "51886",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "1081",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "91591",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "45113",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "99329",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "33875",
+        "data": {
+          "value": "Yes",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "14390",
+        "data": {
+          "value": "No",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "79936",
+        "data": {
+          "value": "Yes",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "48937",
+        "data": {
+          "value": "No",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "77478",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "54836",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "68536",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "41013",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "4027",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "70827",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "49265",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "74903",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "48128",
+        "data": {
+          "value": "boob",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "93173",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "10671",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "97934",
+        "data": {
+          "value": "Yes",
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "51253",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "5721192.JbZNy",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      },
+      {
+        "question": "97826",
+        "data": {
+          "value": null,
+          "selections": [],
+          "min": null,
+          "max": null,
+          "lowerBound": null,
+          "upperBound": null
+        }
+      }
+    ],
+    "branches": [
+      []
+    ]
+  }
+}

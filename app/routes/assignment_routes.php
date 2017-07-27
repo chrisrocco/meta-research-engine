@@ -22,20 +22,24 @@ $app->GET('/assignments/{key}', function ($request, $response, $args) {
  * Notes:
  */
 $app->PUT('/assignments/{key}', function ($request, $response, $args) {
-    $formData = $request->getParsedBody();
+    $_assignment = \uab\mre\app\Assignment::parse([
+        "done" => $request->getParam('done'),
+        "completion" => $request->getParam('completion'),
+        "encoding" => $request->getParam('encoding')
+    ])->toArray();
 
     $assignment = Assignment::retrieve($args['key']);
-    $assignment->update('done', $formData['done']);
-    $assignment->update('completion', $formData['completion']);
-    $assignment->update('encoding', $formData['encoding']);
+    $assignment->update('done', $_assignment['done']);
+    $assignment->update('completion', $_assignment['completion']);
+    $assignment->update('encoding', $_assignment['encoding']);
 
     try {
         $paper = $assignment->getPaper();
         if (!$paper) return $response->write("Could not get Paper from assignment. Not merging into masterEncoding.")->withStatus(400);
-        if (json_decode($formData['done']) == true) {
+        if ($assignment->get('done') == true) {
             $paper->roccoMerge($assignment);
         }
-        $status = $paper->updateStatus();
+        $paper_status = $paper->updateStatus();
     } catch ( Exception $e ){
         return $response->withJson([ 'error' => $e ]);
     }
