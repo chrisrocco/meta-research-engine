@@ -25,13 +25,9 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $formData = $request->getParsedBody();
 
     $assignment = Assignment::retrieve($args['key']);
-    $formData['done'] === "true" ?
-        $d = true : $d = false;
-    $assignment->update('done', $d);
-    $assignment->update('completion', floatval($formData['completion']));
+    $assignment->update('done', $formData['done']);
+    $assignment->update('completion', $formData['completion']);
     $assignment->update('encoding', $formData['encoding']);
-
-//    var_dump( uab\mre\app\Assignment::parseFromJson($formData['encoding']));
 
     try {
         $paper = $assignment->getPaper();
