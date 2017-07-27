@@ -17,6 +17,8 @@ use uab\mre\lib\DuplicateIdException;
 use uab\mre\lib\NoParentException;
 use uab\mre\lib\ObjValidator;
 use uab\mre\lib\SchemaValidatorException;
+use uab\mre\RectangleService;
+use vector\ArangoORM\DB\DB;
 use vector\PMCAdapter\PMCAdapter;
 use vector\MRE\Middleware\MRERoleValidator;
 use vector\MRE\Middleware\RequireProjectAdmin;
@@ -429,3 +431,49 @@ $app->POST("/projects", function ($request, $response, $args) {
         ])
     );
 })->add(new MRERoleValidator(['manager']));
+
+
+$app->GET("/projects/{id}/rectangle", function ($request, $response, $args) {
+    $project = Project::retrieve($args['id']);
+
+    // results of table headers query
+//    $project_questions = json_decode( file_get_contents(__DIR__.'/th.json'), true );
+    $project_questions = $project->getVariablesFlat();
+
+// results of table rows query
+    $query_rows = DB::query("FOR paper IN INBOUND @project paper_of
+                                FOR user, assignment IN ANY paper assignments
+                                    RETURN {
+                                        project: 123,
+                                        paper: paper.title,
+                                        user: user._id,
+                                        inputs: assignment.encoding.constants[*]
+                                    }", $project->id() )->getAll();
+
+// define columns
+    $columns = [ 'user', 'paper' ];
+    foreach ( $project_questions as $var ){
+        $columns[] = $var['_key'];
+    }
+// start a rectangle
+    $rect = new Rectangle( $columns );
+    foreach ( $query_rows as $row ){
+        $responses = [];
+        foreach( $row['inputs'] as $input ){
+            $responses[$input['question']] = RectangleService::toString($input['data']);
+        }
+        $out = $responses;
+        $out['paper'] = $row['paper'];
+        $out['user'] = $row['user'];
+        $rect->recordRow( $out );
+    }
+
+// pretty headers
+    $headers = ['user', 'paper'];
+    foreach ( $project_questions as $var ){
+        $headers[] = $var['name'];
+    }
+    $rect->setHeaders( $headers );
+
+    return $response->write($rect->exportCSV());
+});

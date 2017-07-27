@@ -25,11 +25,11 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
         "assignment" => $assignment->toArray(),
         "paper"     => $paper->toArray(),
         "questions" =>  $questionsList,
-        "structure" =>  $structure
+        "structure" =>  $structure,
+        'done'      =>  $assignment->get('done')
     ];
 
-    $response->write(json_encode($data, JSON_PRETTY_PRINT));
-    return $response;
+    return $response->withJson($data);
 });
 
 $app->GET ('/loadEncoderDashboard', function ($request, $response, $args) {
@@ -107,7 +107,7 @@ $app->GET ('/loadProjectBuilder', function ($request, $response, $args) {
 
     $result = [
         'structure' => $serializedStructure,
-        'projectName' => $project->get('name')
+        'project' => $project->toArray()
     ];
 
     return $response->write(json_encode($result, JSON_PRETTY_PRINT));
