@@ -31,7 +31,7 @@ $app->PUT('/assignments/{key}', function ($request, $response, $args) {
     $assignment->update('completion', floatval($formData['completion']));
     $assignment->update('encoding', $formData['encoding']);
 
-    var_dump( uab\mre\app\Assignment::parseFromJson($formData['encoding']));
+//    var_dump( uab\mre\app\Assignment::parseFromJson($formData['encoding']));
 
     try {
         $paper = $assignment->getPaper();
