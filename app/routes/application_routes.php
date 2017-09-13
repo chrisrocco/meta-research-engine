@@ -16,6 +16,14 @@ $app->GET('/loadPaperCoder', function($request, $response, $args) {
     $key = $queryParams['key'];
 
     $assignment = Assignment::retrieve( $key );
+
+    if ($assignment === false) {
+        return $response->withJson([
+            'status' => 'ASSIGNMENT_NOT_FOUND',
+            'msg' => "No assignment found with key: $key"
+        ])->withStatus(404);
+    }
+
     $paper = $assignment->getPaper();
     $project = $assignment->getProject();
     $questionsList = $project->getVariablesFlat();
