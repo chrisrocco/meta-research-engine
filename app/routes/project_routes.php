@@ -1,5 +1,4 @@
 <?php
-
 use uab\mre\app\AdjListStructure;
 use uab\mre\app\StructureService;
 use uab\MRE\dao\AdminOf;
@@ -17,7 +16,8 @@ use uab\mre\lib\DuplicateIdException;
 use uab\mre\lib\NoParentException;
 use uab\mre\lib\ObjValidator;
 use uab\mre\lib\SchemaValidatorException;
-use uab\mre\RectangleService;
+use uab\mre\app\RectangleService;
+use uab\mre\app\Rectangle;
 use vector\ArangoORM\DB\DB;
 use vector\PMCAdapter\PMCAdapter;
 use vector\MRE\Middleware\MRERoleValidator;
